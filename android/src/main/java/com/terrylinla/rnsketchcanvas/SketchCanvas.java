@@ -76,13 +76,32 @@ public class SketchCanvas extends View {
     public boolean openImageFile(String filename, String directory, String mode) {
         if(filename != null) {
             int res = mContext.getResources().getIdentifier(
-                filename.lastIndexOf('.') == -1 ? filename : filename.substring(0, filename.lastIndexOf('.')), 
-                "drawable", 
-                mContext.getPackageName());
+                    filename.lastIndexOf('.') == -1 ? filename : filename.substring(0, filename.lastIndexOf('.')),
+                    "drawable",
+                    mContext.getPackageName());
+
+            //  measure image to calc inSampleSize
             BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-            Bitmap bitmap = res == 0 ? 
-                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
-                BitmapFactory.decodeResource(mContext.getResources(), res);
+            Bitmap bitmap = res == 0 ?
+                    BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                    BitmapFactory.decodeResource(mContext.getResources(), res, bitmapOptions);
+            /*
+            bitmapOptions.inJustDecodeBounds = true;
+            if(res == 0)
+                BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions);
+            else
+                BitmapFactory.decodeResource(mContext.getResources(), res, bitmapOptions);
+
+            /*
+            //  decode image
+            bitmapOptions.inSampleSize = Utility.calculateInSampleSize(bitmapOptions, 720, 1280);
+            bitmapOptions.inJustDecodeBounds = false;
+            Bitmap bitmap = res == 0 ?
+                    BitmapFactory.decodeFile(new File(filename, directory == null ? "" : directory).toString(), bitmapOptions) :
+                    BitmapFactory.decodeResource(mContext.getResources(), res, bitmapOptions);
+
+            */
+
             if(bitmap != null) {
                 mBackgroundImage = bitmap;
                 mOriginalHeight = bitmap.getHeight();
@@ -401,13 +420,9 @@ public class SketchCanvas extends View {
         if (mBackgroundImage != null) {
             Rect dstRect = new Rect();
             canvas.getClipBounds(dstRect);
-            canvas.drawBitmap(mBackgroundImage, null, 
-                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode), 
+            canvas.drawBitmap(mBackgroundImage, null,
+                Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(), dstRect.width(), dstRect.height(), mContentMode),
                 null);
-        }
-
-        for(CanvasText text: mArrSketchOnText) {
-            canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
         if (mDrawingBitmap != null) {
@@ -418,9 +433,12 @@ public class SketchCanvas extends View {
             canvas.drawBitmap(mTranslucentDrawingBitmap, 0, 0, mPaint);
         }
 
-        for(CanvasText text: mArrTextOnSketch) {
-            canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+        if(mDrawingBitmap != null){
+            for(CanvasText text: mArrTextOnSketch) {
+                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
+            }
         }
+
     }
 
     private void invalidateCanvas(boolean shouldDispatchEvent) {
