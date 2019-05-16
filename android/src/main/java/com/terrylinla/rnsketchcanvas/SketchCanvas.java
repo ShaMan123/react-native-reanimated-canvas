@@ -356,7 +356,7 @@ public class SketchCanvas extends View {
     @Override
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (getWidth() > 0 && getHeight() > 0) {
+        if (getWidth() > 0 && getHeight() > 0 && (w != oldw || h != oldh)) {
             if(currentRunningThread != null) currentRunningThread.interrupt();
             currentRunningThread = new Thread(new Runnable() {
                 public void run() {
