@@ -23,7 +23,9 @@
   "peerDependencies": {
     "prop-types": "*",
     "react": "*",
-    "react-native": "*",
+    "react-native": "*"
+  },
+  "optionalDependencies": {
     "react-native-gesture-handler": "*"
   },
   "dependencies": {

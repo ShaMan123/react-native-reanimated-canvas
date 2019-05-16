@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "react": "^16.8.6",
-    "react-native": "^0.57.8",
+    "react-native": "^0.59.8",
     "react-native-camera": "1.13.1",
     "react-native-gesture-handler": "^1.2.1"
   },
@@ -26,6 +26,7 @@
   },
   "resolutions": {
     "metro-config": "*",
-    "@babel/runtime": "*"
+    "@babel/runtime": "*",
+    "react-native-gesture-handler": "*"
   }
 }

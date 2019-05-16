@@ -14,26 +14,15 @@ import ReactNative, {
     View
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-//import * as fs from 'fs';
-//import * as path from 'path';
-
-const GHModule = (function () {
-    try {
-        require.
-        //const exists = fs.existsSync(path.resolve(__dirname, '../../../react-native-gesture-handler'));
-        //console.log('existsexistsexistsexistsexists', __dirname)
-        //const { dependencies } = require(__dirname + '/../../../package.json');
-        ///return exists ? require('react-native-gesture-handler') : {}
-        return {}
-    }
-    catch (err) {
-        return {};
-    }
-})();
-//console.log(GHModule)
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
-//const { PanGestureHandler, State } = GHModule;
-//import { cloneDeep } from 'lodash';
+let PanGestureHandler, GHState;
+try {
+    const { PanGestureHandler: Handler, State } = require('react-native-gesture-handler');
+    PanGestureHandler = Handler;
+    GHState = State;
+}
+catch (err) {
+    console.warn(err);
+}
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
@@ -391,8 +380,8 @@ class SketchCanvas extends React.Component {
     }
 
     onHandlerStateChange = (e) => {
-        if (e.nativeEvent.state === State.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
-        if (e.nativeEvent.oldState === State.ACTIVE) this.closePath();
+        if (e.nativeEvent.state === GHState.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
+        if (e.nativeEvent.oldState === GHState.ACTIVE) this.closePath();
     }
 
     onGestureEvent = (e) => {
@@ -427,7 +416,6 @@ class SketchCanvas extends React.Component {
                 ref={this._handleRef}
                 style={this.props.style}
                 onLayout={this.onLayout}
-                //{...this.panResponder.panHandlers}
                 onChange={this.onChange}
                 localSourceImage={this.props.localSourceImage}
                 permissionDialogTitle={this.props.permissionDialogTitle}

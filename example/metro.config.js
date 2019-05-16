@@ -1,28 +1,25 @@
 ﻿const blacklist = require('metro-config/src/defaults/blacklist');
+const { mergeConfig } = require("metro-config");
 const path = require('path');
 const pkg = require('./package.json');
+const _ = require('lodash');
+const configB = require('../metro.config');
 
-//const glob = require('glob-to-regexp');
-
-function getBlacklist() {
-    /*
-    const nodeModuleDirs = [
-        glob(`${path.resolve(__dirname, '..')}/node_modules/*`),
-        glob(`${path.resolve(__dirname)}/node_modules/*/node_modules/fbjs/*`),
-        glob(
-            `${path.resolve(
-                __dirname
-            )}/node_modules/*/node_modules/hoist-non-react-statics/*`
-        ),
-    ];
-    */
-    return blacklist(nodeModuleDirs);
-}
-
-module.exports = {
+const config = {
     resolver: {
         //blacklistRE: blacklist([path.resolve(__dirname, 'node_modules/react-native-gesture-handler')]),
-        providesModuleNodeModules: Object.keys(pkg.dependencies),
+        providesModuleNodeModules: Object.keys(pkg.dependencies)
     },
     watchFolders: [path.resolve(__dirname, '..')],
+    transformer: {
+        getTransformOptions: async () => ({
+            transform: {
+                experimentalImportSupport: true,
+                inlineRequires: true
+            }
+        })
+    },
+
 };
+
+module.exports = mergeConfig(config, configB);
