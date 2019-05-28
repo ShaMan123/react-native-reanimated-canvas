@@ -14,12 +14,22 @@ import ReactNative, {
     View
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-import { PanGestureHandler, State as GHState } from 'react-native-gesture-handler';
+import { PanGestureHandler, State as GHState, createNativeWrapper } from 'react-native-gesture-handler';
+
+UIManager.genericDirectEventTypes = {
+    ...UIManager.genericDirectEventTypes,
+    onStrokeStart: { registrationName: 'onStrokeStart' },
+    onStrokeChanged: { registrationName: 'onStrokeChanged' },
+    onStrokeEnd: { registrationName: 'onStrokeEnd' },
+};
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
     nativeOnly: {
         nativeID: true,
-        onChange: true
+        onChange: true,
+        onStrokeStart: true,
+        onStrokeChanged: true,
+        onStrokeEnd: true,
     }
 });
 const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
@@ -178,8 +188,8 @@ class SketchCanvas extends React.Component {
                     processColor(data.path.color),
                     data.path.width * this._screenScale,
                     data.path.data.map(p => {
-                        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
-                        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
+                        //const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
+                        return `${p.x * this._screenScale * this._size.width / data.size.width},${p.y * this._screenScale * this._size.height / data.size.height}`;
                     })
                 ];
             });
@@ -315,8 +325,18 @@ class SketchCanvas extends React.Component {
             ]
         );
 
-        this._path.data.push(`${pointX},${pointY}`);
-        this.props.onStrokeStart(pointX, pointY);
+        //this._path.data.push(`${pointX},${pointY}`);
+        //this.props.onStrokeStart(pointX, pointY);
+    }
+
+    onStrokeStart = (e) => {
+        this._path = {
+            id: e.nativeEvent.id,
+            color: this.props.strokeColor,
+            width: this.props.strokeWidth,
+            data: []
+        };
+        this.props.onStrokeStart(e.nativeEvent);
     }
 
     addPoint(x, y) {
@@ -329,21 +349,31 @@ class SketchCanvas extends React.Component {
                 parseFloat(pointY * this._screenScale)
             ]);
 
-            this._path.data.push(`${pointX},${pointY}`);
-            this.props.onStrokeChanged(pointX, pointY);
+            //this._path.data.push(`${pointX},${pointY}`);
+            //this.props.onStrokeChanged(pointX, pointY);
         }
     }
 
+    onStrokeChanged = (e) => this.props.onStrokeChanged(e.nativeEvent);
+
     endPath() {
-        if (this._path) {
-            this._paths.push({ path: this._path, size: this._size, drawer: this.props.user });
-            this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user });
-        }
         UIManager.dispatchViewManagerCommand(this._handle, Commands.endPath, []);
     }
 
-    _grantResponder = (evt, gestureState) => this.props.touchEnabled && evt.nativeEvent.touches.length === 1;//gestureState.numberActiveTouches === 1;
+    onStrokeEnd = (e) => {
+        if (this._path) {
+            this._path = e.nativeEvent;
+            const o = {
+                path: this._path,
+                size: this._size,
+                drawer: this.props.user
+            };
+            this._paths.push(o);
+            this.props.onStrokeEnd(o);
+        }
+    }
 
+    _grantResponder = (evt, gestureState) => this.props.touchEnabled && evt.nativeEvent.touches.length === 1;//gestureState.numberActiveTouches === 1;
 
     _loadPanResponder() {
         this.panResponder = PanResponder.create({
@@ -401,19 +431,26 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success);
         }
     }
-
+    
     renderBaseView() {
+        const { style, localSourceImage, permissionDialogTitle, permissionDialogMessage, hardwareAccelerated, touchEnabled, strokeColor, strokeWidth } = this.props;
         return (
             <RNSketchCanvas
                 ref={this._handleRef}
-                style={this.props.style}
+                style={style}
                 onLayout={this.onLayout}
                 onChange={this.onChange}
-                localSourceImage={this.props.localSourceImage}
-                permissionDialogTitle={this.props.permissionDialogTitle}
-                permissionDialogMessage={this.props.permissionDialogMessage}
+                localSourceImage={localSourceImage}
+                permissionDialogTitle={permissionDialogTitle}
+                permissionDialogMessage={permissionDialogMessage}
                 text={this.state.text}
-                hardwareAccelerated={this.props.hardwareAccelerated}
+                hardwareAccelerated={hardwareAccelerated}
+                touchEnabled={touchEnabled}
+                strokeColor={processColor(strokeColor)}
+                strokeWidth={strokeWidth}
+                onStrokeStart={this.onStrokeStart}
+                onStrokeChanged={this.onStrokeChanged}
+                onStrokeEnd={this.onStrokeEnd}
             />
         );
     }
@@ -441,7 +478,8 @@ class SketchCanvas extends React.Component {
     }
 
     render() {
-        return PanGestureHandler ? this.renderWithGestureHandler() : this.renderWithPanResponder();
+        //return PanGestureHandler ? this.renderWithGestureHandler() : this.renderWithPanResponder();
+        return this.renderBaseView();
     }
 }
 
@@ -450,4 +488,4 @@ SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : 
 SketchCanvas.LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
 SketchCanvas.CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
 
-module.exports = SketchCanvas;
+export default createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;

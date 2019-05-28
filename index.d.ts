@@ -63,6 +63,12 @@ export interface LocalSourceImage {
   mode?: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
 }
 
+export interface NativeTouchEvent {
+    x: number,
+    y: number,
+    id: number,
+}
+
 export interface SketchCanvasProps {
     style?: StyleProp<ViewStyle>
     strokeColor?: string

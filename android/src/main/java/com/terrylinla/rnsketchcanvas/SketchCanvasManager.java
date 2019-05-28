@@ -88,7 +88,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @ReactProp(name = PROPS_STROKE_WIDTH)
     public void setStrokeWidth(SketchCanvas viewContainer, int width) {
-        viewContainer.setStrokeWidth(width);
+        viewContainer.setStrokeWidth((int)(width * TouchEventHandler.scale));
     }
 
     @ReactProp(name = PROPS_TOUCH_ENABLED)
