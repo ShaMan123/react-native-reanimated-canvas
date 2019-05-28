@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -45,7 +46,8 @@ class CanvasText {
 }
 
 public class SketchCanvas extends View {
-    //final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+    public final static String TAG = "RNSketchCanvas";
+
     private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
     private SketchData mCurrentPath = null;
 
@@ -63,12 +65,68 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
 
     private int mTouchRadius = 0;
+    private int mStrokeColor;
+    private int mStrokeWidth;
+    private TouchState mTouchState;
 
-    public final static String TAG = "RNSketchCanvas";
+    private PointF touchStart;
+    private float minOffsetX = 10;
+    private long minDeltaT = 200;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+
+        Log.d(TAG, "onTouchEvent: " + event.getAction() + "   " + event.toString());
+        if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE){
+            if(mCurrentPath != null) end();
+            return false;
+        }
+
+        long delta = event.getDownTime() - event.getEventTime();
+        PointF point = new PointF(event.getX(), event.getY());
+
+        if(!mTouchState.canDraw()){
+            Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
+            return mTouchState.canTouch();
+        }
+
+
+        if(mCurrentPath == null || action == MotionEvent.ACTION_DOWN) {
+            newPath();
+            touchStart = point;
+        }
+/*
+        PointF offset = new PointF(Math.abs(touchStart.x - point.x), Math.abs(touchStart.y - point.y));
+        Log.d(TAG, "onTouchEvent: " + offset.toString());
+        if(offset.length() < minOffsetX || delta < minDeltaT){
+            Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
+            return  false;
+        }
+        */
+        addPoint(point.x, point.y);
+        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                getId(),
+                TouchEventHandler.getEventName(event),
+                TouchEventHandler.getEvent(event));
+        if(action == MotionEvent.ACTION_UP) {
+            WritableMap e = mCurrentPath.getMap();
+            end();
+            touchStart = null;
+
+            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    TouchEventHandler.getEventName(event),
+                    e);
+        }
+
+
+        return true;
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
@@ -78,6 +136,30 @@ public class SketchCanvas extends View {
         } else{
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+    }
+
+    public void setStrokeColor(int color){
+        mStrokeColor = color;
+    }
+
+    public void setStrokeWidth(int width){
+        mStrokeWidth = width;
+    }
+
+    public TouchState getTouchState(){
+        return mTouchState;
+    }
+    public TouchState setTouchState(boolean enabled){
+        mTouchState = new TouchState(enabled);
+        return mTouchState;
+    }
+    public TouchState setTouchState(String state){
+        mTouchState = new TouchState(state);
+        return mTouchState;
+    }
+    public TouchState setTouchState(int state){
+        mTouchState = new TouchState(state);
+        return mTouchState;
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -204,6 +286,10 @@ public class SketchCanvas extends View {
         mPaths.clear();
         mCurrentPath = null;
         invalidateCanvas(true);
+    }
+
+    public void newPath() {
+        newPath((int)(Math.random() * 100000000), mStrokeColor, mStrokeWidth);
     }
 
     public void newPath(int id, int strokeColor, float strokeWidth) {

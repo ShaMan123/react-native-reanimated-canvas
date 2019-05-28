@@ -13,7 +13,14 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.DisplayMetricsHolder;
+
 import java.util.ArrayList;
+
+import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 
 public class SketchData {
     public final ArrayList<PointF> points = new ArrayList<PointF>();
@@ -27,6 +34,24 @@ public class SketchData {
 
     public static PointF midPoint(PointF p1, PointF p2) {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
+    }
+
+    public WritableMap getMap(){
+        WritableMap path = Arguments.createMap();
+        WritableArray arr = Arguments.createArray();
+        float scale = TouchEventHandler.scale;
+
+        path.putInt("id", id);
+        path.putInt("color", strokeColor);
+        path.putDouble("width", strokeWidth / scale);
+        for(PointF point: points){
+            WritableMap p = Arguments.createMap();
+            p.putDouble("x", point.x / scale);
+            p.putDouble("y", point.y / scale);
+            arr.pushMap(p);
+        }
+        path.putArray("points", arr);
+        return path;
     }
 
     public SketchData(int id, int strokeColor, float strokeWidth) {

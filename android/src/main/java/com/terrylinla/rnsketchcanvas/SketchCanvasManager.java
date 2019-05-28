@@ -37,11 +37,12 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
 
-    public static SketchCanvas Canvas = null;
-
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
     private static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
+    private static final String PROPS_STROKE_COLOR = "strokeColor";
+    private static final String PROPS_STROKE_WIDTH = "strokeWidth";
+    private static final String PROPS_TOUCH_ENABLED = "touchEnabled";
 
     @Override
     public String getName() {
@@ -50,8 +51,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     protected SketchCanvas createViewInstance(ThemedReactContext context) {
-        SketchCanvasManager.Canvas = new SketchCanvas(context);
-        return SketchCanvasManager.Canvas;
+        return new SketchCanvas(context);
     }
 
     @Override
@@ -79,6 +79,31 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(SketchCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAccelerated(useAcceleration);
+    }
+
+    @ReactProp(name = PROPS_STROKE_COLOR)
+    public void setStrokeColor(SketchCanvas viewContainer, int color) {
+        viewContainer.setStrokeColor(color);
+    }
+
+    @ReactProp(name = PROPS_STROKE_WIDTH)
+    public void setStrokeWidth(SketchCanvas viewContainer, int width) {
+        viewContainer.setStrokeWidth(width);
+    }
+
+    @ReactProp(name = PROPS_TOUCH_ENABLED)
+    public void setTouchState(SketchCanvas viewContainer, boolean enabled) {
+        viewContainer.setTouchState(enabled);
+    }
+
+    @ReactProp(name = PROPS_TOUCH_ENABLED)
+    public void setTouchState(SketchCanvas viewContainer, String state) {
+        viewContainer.setTouchState(state);
+    }
+
+    @ReactProp(name = PROPS_TOUCH_ENABLED)
+    public void setTouchState(SketchCanvas viewContainer, int state) {
+        viewContainer.setTouchState(state);
     }
 
     @Override
