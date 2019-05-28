@@ -70,6 +70,7 @@ public class SketchCanvas extends View {
     private TouchState mTouchState;
 
     private PointF touchStart;
+    private int prevTouchAction = -1;
     private float minOffsetX = 10;
     private long minDeltaT = 200;
 
@@ -83,12 +84,12 @@ public class SketchCanvas extends View {
         int action = event.getAction();
 
         Log.d(TAG, "onTouchEvent: " + event.getAction() + "   " + event.toString());
-        if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE){
+        if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || (action == MotionEvent.ACTION_UP && prevTouchAction == MotionEvent.ACTION_UP)) {
             if(mCurrentPath != null) end();
             return false;
         }
 
-        long delta = event.getDownTime() - event.getEventTime();
+        //long delta = event.getDownTime() - event.getEventTime();
         PointF point = new PointF(event.getX(), event.getY());
 
         if(!mTouchState.canDraw()){
@@ -110,22 +111,30 @@ public class SketchCanvas extends View {
         }
         */
         addPoint(point.x, point.y);
+
+        WritableMap e = Arguments.createMap();
+        float scale = TouchEventHandler.scale;
+        e.putDouble("x", event.getX() / scale);
+        e.putDouble("y", event.getY() / scale);
+        e.putInt("id", mCurrentPath.id);
         mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                 getId(),
                 TouchEventHandler.getEventName(event),
-                TouchEventHandler.getEvent(event));
+                e);
+        
         if(action == MotionEvent.ACTION_UP) {
-            WritableMap e = mCurrentPath.getMap();
+            WritableMap ev = mCurrentPath.getMap();
             end();
             touchStart = null;
+            prevTouchAction = -1;
 
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
                     TouchEventHandler.getEventName(event),
-                    e);
+                    ev);
         }
 
-
+        prevTouchAction = action;
         return true;
     }
 
