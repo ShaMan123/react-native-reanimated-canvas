@@ -71,12 +71,17 @@ public class SketchCanvas extends View {
 
     private PointF touchStart;
     private int prevTouchAction = -1;
-    private float minOffsetX = 10;
-    private long minDeltaT = 200;
+    public boolean mShouldFireOnStrokeChangedEvent = false;
+    //private float minOffsetX = 10;
+    //private long minDeltaT = 200;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+    }
+
+    public void setShouldFireOnStrokeChangedEvent(boolean fire){
+        mShouldFireOnStrokeChangedEvent = fire;
     }
 
     @Override
@@ -112,16 +117,18 @@ public class SketchCanvas extends View {
         */
         addPoint(point.x, point.y);
 
-        WritableMap e = Arguments.createMap();
-        float scale = TouchEventHandler.scale;
-        e.putDouble("x", event.getX() / scale);
-        e.putDouble("y", event.getY() / scale);
-        e.putInt("id", mCurrentPath.id);
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                TouchEventHandler.getEventName(event),
-                e);
-        
+        if(mShouldFireOnStrokeChangedEvent){
+            WritableMap e = Arguments.createMap();
+            float scale = TouchEventHandler.scale;
+            e.putDouble("x", event.getX() / scale);
+            e.putDouble("y", event.getY() / scale);
+            e.putString("id", mCurrentPath.id);
+            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
+                    getId(),
+                    TouchEventHandler.getEventName(event),
+                    e);
+        }
+
         if(action == MotionEvent.ACTION_UP) {
             WritableMap ev = mCurrentPath.getMap();
             end();
@@ -298,10 +305,10 @@ public class SketchCanvas extends View {
     }
 
     public void newPath() {
-        newPath((int)(Math.random() * 100000000), mStrokeColor, mStrokeWidth);
+        newPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
     }
 
-    public void newPath(int id, int strokeColor, float strokeWidth) {
+    public void newPath(String id, int strokeColor, float strokeWidth) {
         mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
@@ -320,12 +327,12 @@ public class SketchCanvas extends View {
     public void  addPaths(@Nullable ReadableArray paths){
         for (int k = 0; k < paths.size(); k++){
             ReadableArray path = paths.getArray(k);
-            addPath(path.getInt(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
+            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
         }
         invalidateCanvas(true);
     }
 
-    private void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(SketchData data: mPaths) {
             if (data.id == id) {
@@ -346,7 +353,7 @@ public class SketchCanvas extends View {
         }
     }
 
-    public void deletePath(int id) {
+    public void deletePath(String id) {
         int index = -1;
         for(int i = 0; i<mPaths.size(); i++) {
             if (mPaths.get(i).id == id) {
@@ -543,7 +550,7 @@ public class SketchCanvas extends View {
         return bitmap;
     }
 
-    private int getPathIndex(int pathId){
+    private int getPathIndex(String pathId){
         for (int i=0; i < mPaths.size(); i++) {
             if(pathId == mPaths.get(i).id) {
                 return i;
@@ -566,7 +573,7 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public boolean isPointUnderTransparentPath(int x, int y, int pathId){
+    public boolean isPointUnderTransparentPath(int x, int y, String pathId){
         int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
         for (int i = getPathIndex(pathId); i < mPaths.size(); i++){
             SketchData mPath = mPaths.get(i);
@@ -578,7 +585,7 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public boolean isPointOnPath(int x, int y, int pathId){
+    public boolean isPointOnPath(int x, int y, String pathId){
         if(isPointUnderTransparentPath(x, y, pathId)) {
             return false;
         }
@@ -598,7 +605,7 @@ public class SketchCanvas extends View {
             mPath = mPaths.get(i);
             r = getTouchRadius(mPath.strokeWidth);
             if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
-                array.pushInt(mPath.id);
+                array.pushString(mPath.id);
             }
         }
 

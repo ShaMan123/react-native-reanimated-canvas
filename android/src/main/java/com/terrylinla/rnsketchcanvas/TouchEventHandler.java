@@ -26,13 +26,6 @@ public class TouchEventHandler {
         mTag = tag;
     }
 
-    public void dispatchEvent(MotionEvent event){
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                mTag,
-                getEventName(event),
-                getEvent(event));
-    }
-
     public static String getEventName(MotionEvent event){
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN: return STROKE_START;
@@ -40,13 +33,6 @@ public class TouchEventHandler {
             case MotionEvent.ACTION_UP: return STROKE_END;
             default: return STROKE_CHANGED;
         }
-    }
-
-    public static WritableMap getEvent(MotionEvent event){
-        WritableMap e = Arguments.createMap();
-        e.putDouble("x", event.getX() / scale);
-        e.putDouble("y", event.getY() / scale);
-        return e;
     }
 
     public static float getDeviceScale(){

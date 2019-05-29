@@ -15,6 +15,7 @@ import ReactNative, {
 } from 'react-native';
 import { requestPermissions } from './handlePermissions';
 import { PanGestureHandler, State as GHState, createNativeWrapper } from 'react-native-gesture-handler';
+import * as _ from 'lodash';
 
 UIManager.genericDirectEventTypes = {
     ...UIManager.genericDirectEventTypes,
@@ -110,7 +111,7 @@ class SketchCanvas extends React.Component {
     };
 
     static generatePathId() {
-        return Math.round(Math.random() * 100000000);
+        return _.uniqueId('SketchCanvasPath');
     }
     
     constructor(props) {
@@ -235,7 +236,7 @@ class SketchCanvas extends React.Component {
     }
 
     getPaths() {
-        return this._paths.map(p => p);
+        return _.cloneDeep(this._paths);
     }
 
     getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {

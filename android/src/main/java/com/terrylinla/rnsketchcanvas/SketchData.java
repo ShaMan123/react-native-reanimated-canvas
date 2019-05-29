@@ -24,7 +24,8 @@ import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 
 public class SketchData {
     public final ArrayList<PointF> points = new ArrayList<PointF>();
-    public final int id, strokeColor;
+    public final String id;
+    public final int strokeColor;
     public final float strokeWidth;
     public final boolean isTranslucent;
 
@@ -41,7 +42,7 @@ public class SketchData {
         WritableArray arr = Arguments.createArray();
         float scale = TouchEventHandler.scale;
 
-        path.putInt("id", id);
+        path.putString("id", id);
         path.putInt("color", strokeColor);
         path.putDouble("width", strokeWidth / scale);
         for(PointF point: points){
@@ -54,7 +55,7 @@ public class SketchData {
         return path;
     }
 
-    public SketchData(int id, int strokeColor, float strokeWidth) {
+    public SketchData(String id, int strokeColor, float strokeWidth) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
@@ -62,7 +63,7 @@ public class SketchData {
         mPath = this.isTranslucent ? new Path() : null;
     }
 
-    public SketchData(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    public SketchData(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
@@ -282,4 +283,5 @@ public class SketchData {
     }
 
     */
+
 }

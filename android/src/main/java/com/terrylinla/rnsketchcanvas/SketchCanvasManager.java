@@ -43,6 +43,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     private static final String PROPS_STROKE_COLOR = "strokeColor";
     private static final String PROPS_STROKE_WIDTH = "strokeWidth";
     private static final String PROPS_TOUCH_ENABLED = "touchEnabled";
+    private static final String PROPS_ON_STROKE = "onStrokeChanged";
 
     @Override
     public String getName() {
@@ -106,6 +107,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.setTouchState(state);
     }
 
+    @ReactProp(name = PROPS_ON_STROKE)
+    public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, Callback callback) {
+        viewContainer.setShouldFireOnStrokeChangedEvent(callback != null);
+    }
+
     @Override
     public Map<String,Integer> getCommandsMap() {
         Map<String, Integer> map = new HashMap<>();
@@ -145,7 +151,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 return;
             }
             case COMMAND_NEW_PATH: {
-                view.newPath(args.getInt(0), args.getInt(1), (float)args.getDouble(2));
+                view.newPath(args.getString(0), args.getInt(1), (float)args.getDouble(2));
                 return;
             }
             case COMMAND_CLEAR: {
@@ -159,7 +165,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
             }
             case COMMAND_DELETE_PATHS: {
                 for (int k = 0; k < args.size(); k++) {
-                    view.deletePath(args.getInt(k));
+                    view.deletePath(args.getString(k));
                 }
                 return;
             }
