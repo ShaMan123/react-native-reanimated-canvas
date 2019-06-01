@@ -10,6 +10,8 @@ import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
 
+import javax.annotation.Nullable;
+
 public class SketchCanvasModule extends ReactContextBaseJavaModule {
     SketchCanvasModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -39,14 +41,14 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     @TargetApi(19)
-    public void isPointOnPath(final int tag, final int x, final int y, final int pathId, final Callback callback){
+    public void isPointOnPath(final int tag, final int x, final int y, @Nullable final String pathId, final Callback callback){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    callback.invoke(null, pathId == -1? view.isPointOnPath(x, y): view.isPointOnPath(x, y, pathId));
+                    callback.invoke(null, pathId == null ? view.isPointOnPath(x, y): view.isPointOnPath(x, y, pathId));
                 }
             });
         } catch (Exception e) {

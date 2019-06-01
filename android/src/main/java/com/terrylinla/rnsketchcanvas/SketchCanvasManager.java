@@ -10,7 +10,7 @@ import android.content.res.Configuration;
 import android.util.Log;
 
 import com.facebook.common.logging.FLog;
-import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactMethod;
@@ -108,7 +108,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     }
 
     @ReactProp(name = PROPS_ON_STROKE)
-    public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, Callback callback) {
+    public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.setShouldFireOnStrokeChangedEvent(callback != null);
     }
 
@@ -133,25 +133,16 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     }
 
-    public static ArrayList<PointF> parsePathCoords(ReadableArray coords){
-        ArrayList<PointF> pointPath;
-        pointPath = new ArrayList<PointF>(coords.size());
-        for (int i=0; i<coords.size(); i++) {
-            String[] coor = coords.getString(i).split(",");
-            pointPath.add(new PointF(Float.parseFloat(coor[0]), Float.parseFloat(coor[1])));
-        }
-        return pointPath;
-    }
-
     @Override
     public void receiveCommand(SketchCanvas view, int commandType, @Nullable ReadableArray args) {
+        float scale = TouchEventHandler.scale;
         switch (commandType) {
             case COMMAND_ADD_POINT: {
-                view.addPoint((float)args.getDouble(0), (float)args.getDouble(1));
+                view.addPoint((float)args.getDouble(0) * scale, (float)args.getDouble(1) * scale);
                 return;
             }
             case COMMAND_NEW_PATH: {
-                view.newPath(args.getString(0), args.getInt(1), (float)args.getDouble(2));
+                view.newPath(args.getString(0), args.getInt(1), (float)args.getDouble(2) * scale);
                 return;
             }
             case COMMAND_CLEAR: {

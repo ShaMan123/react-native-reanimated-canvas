@@ -53,7 +53,7 @@ class SketchCanvas extends React.Component {
                 id: PropTypes.number,
                 color: PropTypes.string,
                 width: PropTypes.number,
-                data: PropTypes.arrayOf(PropTypes.string),
+                points: PropTypes.arrayOf(PropTypes.string),
             }),
             size: PropTypes.shape({
                 width: PropTypes.number,
@@ -92,7 +92,7 @@ class SketchCanvas extends React.Component {
         strokeWidth: 3,
         onPathsChange: () => { },
         onStrokeStart: () => { },
-        onStrokeChanged: () => { },
+        onStrokeChanged: null,
         onStrokeEnd: () => { },
         onSketchSaved: () => { },
         user: null,
@@ -155,68 +155,31 @@ class SketchCanvas extends React.Component {
         return SketchCanvas._processText(text);
     }
 
-    clear() {
-        this._paths = [];
-        this._path = null;
-        UIManager.dispatchViewManagerCommand(this._handle, Commands.clear, []);
-    }
-
-    undo() {
-        let lastId = -1;
-        this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId);
-        if (lastId >= 0) this.deletePath(lastId);
-        return lastId;
+    findPath(pathId) {
+        return _.find(this._paths, (p) => _.isEqual(p.path.id, pathId));
     }
 
     addPaths(paths) {
         if (this._initialized) {
             const parsedPaths = paths.map((data) => {
-                if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
-                /*
-                return {
-                    id: data.path.id,
-                    color: processColor(data.path.color),
-                    strokeWidth: data.path.width * this._screenScale,
-                    coords: data.path.data.map(p => {
-                        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
-                        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
-                    })
-                };
-                */
-
+                if (_.isNil(this.findPath(data.path.id))) this._paths.push(data);
+                const scaler = this._screenScale * this._size.width / data.size.width;
                 return [
                     data.path.id,
                     processColor(data.path.color),
                     data.path.width * this._screenScale,
-                    data.path.data.map(p => {
-                        //const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
-                        return `${p.x * this._screenScale * this._size.width / data.size.width},${p.y * this._screenScale * this._size.height / data.size.height}`;
+                    _.map(data.path.points, (p) => {
+                        return _.mapValues(p, (val) => val * scaler);
                     })
                 ];
             });
-            
+
             UIManager.dispatchViewManagerCommand(this._handle, Commands.addPaths, parsedPaths);
         }
         else {
             paths.map((data) => this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data));
         }
     }
-    /*
-    addPath(data) {
-        if (this._initialized) {
-            if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
-            const pathData = data.path.data.map(p => {
-                const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
-                return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
-            })
-            UIManager.dispatchViewManagerCommand(this._handle, Commands.addPath, [
-                data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
-            ])
-        } else {
-            this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)
-        }
-    }
-    */
 
     addPath(data) {
         return this.addPaths([data]);
@@ -231,12 +194,102 @@ class SketchCanvas extends React.Component {
         this.deletePaths([id]);
     }
 
-    save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
-        UIManager.dispatchViewManagerCommand(this._handle, Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize]);
-    }
-
     getPaths() {
         return _.cloneDeep(this._paths);
+    }
+
+    startPath(x, y) {
+        this._path = {
+            id: SketchCanvas.generatePathId(),
+            color: this.props.strokeColor,
+            width: this.props.strokeWidth,
+            points: []
+        };
+        const pointX = parseFloat(x.toFixed(2));
+        const pointY = parseFloat(y.toFixed(2));
+
+        UIManager.dispatchViewManagerCommand(
+            this._handle,
+            Commands.newPath,
+            [
+                this._path.id,
+                processColor(this._path.color),
+                this._path.width * this._screenScale
+            ]
+        );
+
+        UIManager.dispatchViewManagerCommand(
+            this._handle,
+            Commands.addPoint,
+            [
+                parseFloat(pointX * this._screenScale),
+                parseFloat(pointY * this._screenScale)
+            ]
+        );
+
+        //this._path.data.push(`${pointX},${pointY}`);
+        //this.props.onStrokeStart(pointX, pointY);
+    }
+
+    onStrokeStart = (e) => {
+        this._path = {
+            id: e.nativeEvent.id,
+            color: this.props.strokeColor,
+            width: this.props.strokeWidth,
+            points: []
+        };
+        this.props.onStrokeStart(e.nativeEvent);
+    }
+
+    addPoint(x, y) {
+        if (this._path) {
+            const pointX = parseFloat(x.toFixed(2));
+            const pointY = parseFloat(y.toFixed(2));
+
+            UIManager.dispatchViewManagerCommand(this._handle, Commands.addPoint, [
+                parseFloat(pointX * this._screenScale),
+                parseFloat(pointY * this._screenScale)
+            ]);
+
+            //this._path.data.push(`${pointX},${pointY}`);
+            //this.props.onStrokeChanged(pointX, pointY);
+        }
+    }
+
+    onStrokeChanged = this.props.onStrokeChanged ? (e) => this.props.onStrokeChanged(e.nativeEvent) : null;
+
+    endPath() {
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.endPath, []);
+    }
+
+    onStrokeEnd = (e) => {
+        if (this._path) {
+            _.assign(this._path, { points: e.nativeEvent.points });
+            const o = {
+                path: this._path,
+                size: this._size,
+                drawer: this.props.user
+            };
+            this._paths.push(o);
+            this.props.onStrokeEnd(o);
+        }
+    }
+
+    clear() {
+        this._paths = [];
+        this._path = null;
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.clear, []);
+    }
+
+    undo() {
+        let lastId = null;
+        this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId);
+        if (lastId !== null) this.deletePath(lastId);
+        return lastId;
+    }
+
+    save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
+        UIManager.dispatchViewManagerCommand(this._handle, Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize]);
     }
 
     getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
@@ -250,7 +303,7 @@ class SketchCanvas extends React.Component {
     isPointOnPath(x, y, pathId, callback) {
         const nativeX = Math.round(x * this._screenScale);
         const nativeY = Math.round(y * this._screenScale);
-        const normalizedPathId = typeof pathId === 'number' ? pathId : -1;
+        const normalizedPathId = typeof pathId === 'number' ? pathId : null;
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
                 SketchCanvasManager.isPointOnPath(this._handle, nativeX, nativeY, normalizedPathId, callback);
@@ -297,82 +350,6 @@ class SketchCanvas extends React.Component {
         }
     }
 
-    startPath(x, y) {
-        this._path = {
-            id: SketchCanvas.generatePathId(),
-            color: this.props.strokeColor,
-            width: this.props.strokeWidth,
-            data: []
-        };
-        const pointX = parseFloat(x.toFixed(2));
-        const pointY = parseFloat(y.toFixed(2));
-
-        UIManager.dispatchViewManagerCommand(
-            this._handle,
-            Commands.newPath,
-            [
-                this._path.id,
-                processColor(this._path.color),
-                this._path.width * this._screenScale
-            ]
-        );
-
-        UIManager.dispatchViewManagerCommand(
-            this._handle,
-            Commands.addPoint,
-            [
-                parseFloat(pointX * this._screenScale),
-                parseFloat(pointY * this._screenScale)
-            ]
-        );
-
-        //this._path.data.push(`${pointX},${pointY}`);
-        //this.props.onStrokeStart(pointX, pointY);
-    }
-
-    onStrokeStart = (e) => {
-        this._path = {
-            id: e.nativeEvent.id,
-            color: this.props.strokeColor,
-            width: this.props.strokeWidth,
-            data: []
-        };
-        this.props.onStrokeStart(e.nativeEvent);
-    }
-
-    addPoint(x, y) {
-        if (this._path) {
-            const pointX = parseFloat(x.toFixed(2));
-            const pointY = parseFloat(y.toFixed(2));
-
-            UIManager.dispatchViewManagerCommand(this._handle, Commands.addPoint, [
-                parseFloat(pointX * this._screenScale),
-                parseFloat(pointY * this._screenScale)
-            ]);
-
-            //this._path.data.push(`${pointX},${pointY}`);
-            //this.props.onStrokeChanged(pointX, pointY);
-        }
-    }
-
-    onStrokeChanged = (e) => this.props.onStrokeChanged(e.nativeEvent);
-
-    endPath() {
-        UIManager.dispatchViewManagerCommand(this._handle, Commands.endPath, []);
-    }
-
-    onStrokeEnd = (e) => {
-        if (this._path) {
-            this._path = e.nativeEvent;
-            const o = {
-                path: this._path,
-                size: this._size,
-                drawer: this.props.user
-            };
-            this._paths.push(o);
-            this.props.onStrokeEnd(o);
-        }
-    }
 
     _grantResponder = (evt, gestureState) => this.props.touchEnabled && evt.nativeEvent.touches.length === 1;//gestureState.numberActiveTouches === 1;
 

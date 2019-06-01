@@ -30,6 +30,6 @@ public final class Utility {
     private static int i = 0;
     public static String generateId(){
         i++;
-        return "aSketchCanvasPath${i}";
+        return "aSketchCanvasPath" + String.valueOf(i);
     }
 }

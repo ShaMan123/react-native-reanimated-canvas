@@ -235,12 +235,12 @@ export default class example extends Component {
                               style={{ flex: 1 }}
                               strokeColor={this.state.color}
                               strokeWidth={this.state.thickness}
-                              onStrokeStart={(x, y) => {
-                                  console.log('x: ', x, ', y: ', y)
+                              onStrokeStart={(ev) => {
+                                  console.log(ev);
                                   this.setState({ message: 'Start' })
                               }}
-                              onStrokeChanged={(x, y) => {
-                                  console.log('x: ', x, ', y: ', y)
+                              onStrokeChanged={(ev) => {
+                                  console.log(ev);
                                   this.setState({ message: 'Changed' })
                               }}
                               onStrokeEnd={() => {
@@ -286,8 +286,6 @@ export default class example extends Component {
                           user={'user1'}
                           containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
                           canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-                          onStrokeEnd={data => {
-                          }}
                           closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
                           onClosePressed={() => {
                               this.setState({ example: 0 })
@@ -331,6 +329,7 @@ export default class example extends Component {
                           }}
                           onSketchSaved={this.onSketchSaved}
                           onStrokeEnd={(path) => {
+                              console.log(path)
                               this.canvas2.addPath(path)
                           }}
                           onPathsChange={(pathsCount) => {
@@ -342,8 +341,6 @@ export default class example extends Component {
                           user={'user2'}
                           containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
                           canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-                          onStrokeEnd={data => {
-                          }}
                           undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
                           onUndoPressed={(id) => {
                               this.canvas1.deletePath(id)
@@ -405,6 +402,7 @@ export default class example extends Component {
                               flashMode={RNCamera.Constants.FlashMode.on}
                               permissionDialogTitle={'Permission to use camera'}
                               permissionDialogMessage={'We need your permission to use your camera phone'}
+                              captureAudio={false}
                           />
                           <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center', }}>
                               <TouchableOpacity

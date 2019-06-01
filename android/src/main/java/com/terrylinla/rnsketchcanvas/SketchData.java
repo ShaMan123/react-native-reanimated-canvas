@@ -47,8 +47,8 @@ public class SketchData {
         path.putDouble("width", strokeWidth / scale);
         for(PointF point: points){
             WritableMap p = Arguments.createMap();
-            p.putDouble("x", point.x / scale);
-            p.putDouble("y", point.y / scale);
+            p.putDouble("x", Math.round(point.x) / scale);
+            p.putDouble("y", Math.round(point.y) / scale);
             arr.pushMap(p);
         }
         path.putArray("points", arr);

@@ -36,15 +36,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-class CanvasText {
-    public String text;
-    public Paint paint;
-    public PointF anchor, position, drawPosition, lineOffset;
-    public boolean isAbsoluteCoordinate;
-    public Rect textBounds;
-    public float height;
-}
-
 public class SketchCanvas extends View {
     public final static String TAG = "RNSketchCanvas";
 
@@ -88,7 +79,6 @@ public class SketchCanvas extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
 
-        Log.d(TAG, "onTouchEvent: " + event.getAction() + "   " + event.toString());
         if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || (action == MotionEvent.ACTION_UP && prevTouchAction == MotionEvent.ACTION_UP)) {
             if(mCurrentPath != null) end();
             return false;
@@ -120,8 +110,8 @@ public class SketchCanvas extends View {
         if(mShouldFireOnStrokeChangedEvent){
             WritableMap e = Arguments.createMap();
             float scale = TouchEventHandler.scale;
-            e.putDouble("x", event.getX() / scale);
-            e.putDouble("y", event.getY() / scale);
+            e.putDouble("x", Math.round(event.getX()) / scale);
+            e.putDouble("y", Math.round(event.getY()) / scale);
             e.putString("id", mCurrentPath.id);
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
@@ -137,7 +127,7 @@ public class SketchCanvas extends View {
 
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
-                    TouchEventHandler.getEventName(event),
+                    TouchEventHandler.STROKE_END,
                     ev);
         }
 
@@ -324,10 +314,21 @@ public class SketchCanvas extends View {
         invalidate();
     }
 
+    public static ArrayList<PointF> parsePathCoords(ReadableArray coords){
+        ArrayList<PointF> pointPath;
+        pointPath = new ArrayList<PointF>(coords.size());
+        float scale = TouchEventHandler.scale;
+        for (int i=0; i<coords.size(); i++) {
+            ReadableMap p = coords.getMap(i);
+            pointPath.add(new PointF((float) p.getDouble("x") * scale, (float)p.getDouble("y") * scale));
+        }
+        return pointPath;
+    }
+
     public void  addPaths(@Nullable ReadableArray paths){
         for (int k = 0; k < paths.size(); k++){
             ReadableArray path = paths.getArray(k);
-            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
+            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2), parsePathCoords(path.getArray(3)));
         }
         invalidateCanvas(true);
     }

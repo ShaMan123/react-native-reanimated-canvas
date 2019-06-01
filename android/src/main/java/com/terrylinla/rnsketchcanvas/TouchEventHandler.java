@@ -29,8 +29,6 @@ public class TouchEventHandler {
     public static String getEventName(MotionEvent event){
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN: return STROKE_START;
-            case MotionEvent.ACTION_MOVE: return STROKE_CHANGED;
-            case MotionEvent.ACTION_UP: return STROKE_END;
             default: return STROKE_CHANGED;
         }
     }
