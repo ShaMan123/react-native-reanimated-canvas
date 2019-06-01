@@ -41,14 +41,15 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     @TargetApi(19)
-    public void isPointOnPath(final int tag, final int x, final int y, @Nullable final String pathId, final Callback callback){
+    public void isPointOnPath(final int tag, final float x, final float y, @Nullable final String pathId, final Callback callback){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
+                    float scale = TouchEventHandler.scale;
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    callback.invoke(null, pathId == null ? view.isPointOnPath(x, y): view.isPointOnPath(x, y, pathId));
+                    callback.invoke(null, pathId == null ? view.isPointOnPath(x * scale, y * scale): view.isPointOnPath(x * scale, y * scale, pathId));
                 }
             });
         } catch (Exception e) {
@@ -64,7 +65,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    view.setTouchRadius(r);
+                    view.setTouchRadius((int)(r * TouchEventHandler.scale));
                     callback.invoke(null, true);
                 }
             });

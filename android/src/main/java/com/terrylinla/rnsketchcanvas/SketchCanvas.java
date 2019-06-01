@@ -325,10 +325,10 @@ public class SketchCanvas extends View {
         return pointPath;
     }
 
-    public void  addPaths(@Nullable ReadableArray paths){
+    public void addPaths(@Nullable ReadableArray paths){
         for (int k = 0; k < paths.size(); k++){
             ReadableArray path = paths.getArray(k);
-            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2), parsePathCoords(path.getArray(3)));
+            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2) * TouchEventHandler.scale, parsePathCoords(path.getArray(3)));
         }
         invalidateCanvas(true);
     }
@@ -356,13 +356,15 @@ public class SketchCanvas extends View {
 
     public void deletePath(String id) {
         int index = -1;
+
         for(int i = 0; i<mPaths.size(); i++) {
-            if (mPaths.get(i).id == id) {
+            Log.d(TAG, "deletePath: loop" + mPaths.get(i).id);
+            if (id.equals(mPaths.get(i).id)) {
                 index = i;
                 break;
             }
         }
-
+        Log.d(TAG, "deletePath: " + id + "   i: " + index);
         if (index > -1) {
             mPaths.remove(index);
             invalidateCanvas(true);
@@ -568,13 +570,16 @@ public class SketchCanvas extends View {
     public void setTouchRadius(int value){
         mTouchRadius = value;
     }
+    public void setTouchRadius(float value){
+        mTouchRadius = (int)value;
+    }
 
     private int getTouchRadius(float strokeWidth){
         return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
     }
 
     @TargetApi(19)
-    public boolean isPointUnderTransparentPath(int x, int y, String pathId){
+    public boolean isPointUnderTransparentPath(float x, float y, String pathId){
         int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
         for (int i = getPathIndex(pathId); i < mPaths.size(); i++){
             SketchData mPath = mPaths.get(i);
@@ -586,7 +591,7 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public boolean isPointOnPath(int x, int y, String pathId){
+    public boolean isPointOnPath(float x, float y, String pathId){
         if(isPointUnderTransparentPath(x, y, pathId)) {
             return false;
         }
@@ -597,7 +602,7 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public WritableArray isPointOnPath(int x, int y){
+    public WritableArray isPointOnPath(float x, float y){
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
         SketchData mPath;

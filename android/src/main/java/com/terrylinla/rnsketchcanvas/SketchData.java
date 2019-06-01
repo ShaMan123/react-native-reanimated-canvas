@@ -249,14 +249,14 @@ public class SketchData {
 
     //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
     @TargetApi(19)
-    boolean isPointOnPath(int x, int y, int r, Region boundingRegion) {
-        int radius = r;       //Math.max((int)(strokeWidth * 0.5), r);
+    boolean isPointOnPath(float x, float y, float r, Region boundingRegion) {
+        float radius = r;       //Math.max((int)(strokeWidth * 0.5), r);
         Path path = mPath == null ? evaluatePath(): mPath;
         Path mTouchPath = new Path();
         mTouchPath.addCircle(x, y, radius, Path.Direction.CW);
 
         Region region1 = new Region();
-        region1.setPath(mTouchPath, new Region(Math.max(x - radius, 0), Math.max(y - radius, 0), Math.max(x + radius, 0), Math.max(y + radius, 0)));
+        region1.setPath(mTouchPath, new Region((int)(Math.max(x - radius, 0)), (int)(Math.max(y - radius, 0)), (int)(Math.max(x + radius, 0)), (int)(Math.max(y + radius, 0))));
         Region region2 = new Region();
         region2.setPath(path, boundingRegion);
 

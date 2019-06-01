@@ -163,11 +163,11 @@ class SketchCanvas extends React.Component {
         if (this._initialized) {
             const parsedPaths = paths.map((data) => {
                 if (_.isNil(this.findPath(data.path.id))) this._paths.push(data);
-                const scaler = this._screenScale * this._size.width / data.size.width;
+                const scaler = this._size.width / data.size.width;
                 return [
                     data.path.id,
                     processColor(data.path.color),
-                    data.path.width * this._screenScale,
+                    data.path.width,
                     _.map(data.path.points, (p) => {
                         return _.mapValues(p, (val) => val * scaler);
                     })
@@ -187,6 +187,7 @@ class SketchCanvas extends React.Component {
 
     deletePaths(pathIds) {
         this._paths = this._paths.filter(p => pathIds.findIndex(id => p.path.id === id) === -1);
+        console.log('del',pathIds)
         UIManager.dispatchViewManagerCommand(this._handle, Commands.deletePaths, pathIds);
     }
 
@@ -214,7 +215,7 @@ class SketchCanvas extends React.Component {
             [
                 this._path.id,
                 processColor(this._path.color),
-                this._path.width * this._screenScale
+                this._path.width
             ]
         );
 
@@ -222,8 +223,8 @@ class SketchCanvas extends React.Component {
             this._handle,
             Commands.addPoint,
             [
-                parseFloat(pointX * this._screenScale),
-                parseFloat(pointY * this._screenScale)
+                pointX,
+                pointY
             ]
         );
 
@@ -247,8 +248,8 @@ class SketchCanvas extends React.Component {
             const pointY = parseFloat(y.toFixed(2));
 
             UIManager.dispatchViewManagerCommand(this._handle, Commands.addPoint, [
-                parseFloat(pointX * this._screenScale),
-                parseFloat(pointY * this._screenScale)
+                pointX,
+                pointY
             ]);
 
             //this._path.data.push(`${pointX},${pointY}`);
@@ -285,6 +286,7 @@ class SketchCanvas extends React.Component {
         let lastId = null;
         this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId);
         if (lastId !== null) this.deletePath(lastId);
+        console.log('undo', lastId)
         return lastId;
     }
 
@@ -301,8 +303,8 @@ class SketchCanvas extends React.Component {
     }
 
     isPointOnPath(x, y, pathId, callback) {
-        const nativeX = Math.round(x * this._screenScale);
-        const nativeY = Math.round(y * this._screenScale);
+        const nativeX = x;
+        const nativeY = y;
         const normalizedPathId = typeof pathId === 'number' ? pathId : null;
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
@@ -326,7 +328,7 @@ class SketchCanvas extends React.Component {
     }
 
     setTouchRadius(radius, callback) {
-        const r = typeof radius === 'number' ? Math.round(radius * this._screenScale) : 0;
+        const r = typeof radius === 'number' ? Math.round(radius) : 0;
 
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
