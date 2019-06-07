@@ -11,17 +11,20 @@ import {
   Text,
   View,
   Alert,
-  TouchableOpacity,
+  //TouchableOpacity,
     ScrollView,
     Platform, 
     Button,
     Modal,
     TouchableHighlight,
-    Image
+    Image,
+    Animated
 } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 
 import RNSketchCanvas, { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import { createNativeWrapper, TouchableOpacity, TapGestureHandler, State, LongPressGestureHandler } from 'react-native-gesture-handler';
+import Example8 from './Example8';
 
 export default class example extends Component {
   constructor(props) {
@@ -88,6 +91,13 @@ export default class example extends Component {
                 </View>
             </Modal>
         );
+    }
+
+    _canvas = React.createRef();
+    tapHandler = React.createRef();
+    longPressHandler = React.createRef();
+    get ref() {
+        return this._canvas.current;
     }
 
   render() {
@@ -643,99 +653,10 @@ export default class example extends Component {
 
               {
                   this.state.example === 8 &&
-                  <View style={[styles.page]}
+                  <View
+                      style={[styles.page, { flex: 1 }]}
                   >
-                      <Text style={{ color: 'blue', alignContent: 'center', alignSelf: 'center', fontSize: 24, margin: 5, fontWeight: 'bold' }}>{this.state.touchState.toLocaleUpperCase()}</Text>
-                      <TouchableOpacity
-                          style={{flex:1, flexDirection: 'column'}}
-                          pointerEvents={this.state.touchState === 'touch' ? 'auto':'box-none'}
-                          onPress={(evt) => {
-                              const { locationX, locationY } = evt.nativeEvent;
-                              const paths = this.canvas.getPaths();
-                              if (!paths || paths.length === 0) return;
-                              const pathId = this.canvas.getPaths()[0].path.id;
-                              Promise.all([
-                                  this.canvas.isPointOnPath(locationX, locationY),
-                                  this.canvas.isPointOnPath(locationX, locationY, pathId)
-                              ]).then(([pathArr, isOnSpecifiedPath]) => {
-                                  const message = (pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
-                                      `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`); //+ `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
-                                  Alert.alert('TouchableSketchCanvas', message);
-                              });
-                          }}
-                          onLongPress={(evt) => {
-                              //await this.canvas.setTouchRadius(100);
-                              //Alert.alert('TouchRadius', 'The radius of the touch has been changed');
-                              const { locationX, locationY } = evt.nativeEvent;
-                              this.canvas.isPointOnPath(locationX, locationY)
-                                  .then((paths) => {
-                                      console.log(paths);
-
-                                      if (paths.length > 0) {
-                                          const selectedPath = paths.pop();
-                                          //Alert.alert('Selection Change', `Path ${selectedPath} has been selected, change UI to signal user`);
-
-                                          const replica = this.canvas.getPaths().find((p) => p.path.id === selectedPath);
-                                          const cb = this._restorePath;
-                                          this._restorePath = restorePath.bind(this, replica);
-
-                                          const selected = { ...replica };
-                                          selected.path.color = 'yellow';
-
-                                          this.canvas.deletePath(selected.path.id);
-                                          this.canvas.addPath(selected);
-                                          cb && cb();
-                                          this.setState({ selectedPath });
-                                      }
-                                  });
-
-
-                              function restorePath(path) {
-                                  if (this.state.selectedPath) {
-                                      path.path.id = Math.round(Math.random() * 1000000);
-                                      path.path.color = 'red';
-
-                                      const paths = this.canvas.getPaths()
-                                          .splice(this.canvas.getPaths().findIndex((p) => p.path.id === path) + 1)
-                                          .map((p) => {
-                                              //
-                                              p.path.id = Math.round(Math.random() * 1000000);
-                                              return p;
-                                          });
-                                      paths.push(path);
-                                      this.canvas.deletePaths([...paths.map(p => p.path.id), this.state.selectedPath]);
-                                      this.canvas.addPaths(paths);
-                                  }
-                              }
-
-                          }}
-                      >
-                          <View
-                              style={{flex:1}}
-                              pointerEvents={this.state.touchState === 'draw' ? 'box-none' : 'none'}
-                          >
-                          <SketchCanvas
-                                  style={{ flex: 1 }}
-                                  contentContainerStyle={{ flex: 1 }}
-                                  strokeWidth={24}
-                                  strokeColor={this.state.color}
-                                  ref={ref => this.canvas = ref}
-                                  touchEnabled={this.state.touchState === 'draw' ? true : false}
-                                  onStrokeEnd={() => this.setState({ touchState: 'touch' })}
-                                  hardwareAccelerated={false}
-                              />
-                              </View>
-                      </TouchableOpacity>
-                      <Button
-                          disabled={this.state.touchState !== 'touch'}
-                          title='Press to draw'
-                          onPress={() => this.setState({ touchState: 'draw', color: 'red' })}
-                      />
-                      <Button
-                          disabled={this.state.touchState !== 'touch'}
-                          title='Press to erase'
-                          onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })}
-                      />
+                      <Example8 />
                       <Button
                           title='BACK'
                           onPress={() => this.setState({ example: 0 })}
