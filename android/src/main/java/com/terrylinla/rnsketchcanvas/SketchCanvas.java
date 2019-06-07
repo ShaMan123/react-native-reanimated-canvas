@@ -66,6 +66,7 @@ public class SketchCanvas extends View {
     public boolean mShouldFireOnStrokeChangedEvent = false;
     //private float minOffsetX = 10;
     //private long minDeltaT = 200;
+    private long eventStart;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
@@ -79,7 +80,12 @@ public class SketchCanvas extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
+        long startTime = event.getDownTime();
+        boolean isNewEvent = startTime != eventStart;
 
+        eventStart = startTime;
+
+        if(isNewEvent && mCurrentPath != null) end();
         if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || (action == MotionEvent.ACTION_UP && prevTouchAction == MotionEvent.ACTION_UP)) {
             if(mCurrentPath != null) end();
             return false;
@@ -89,7 +95,7 @@ public class SketchCanvas extends View {
         PointF point = new PointF(event.getX(), event.getY());
 
         if(!mTouchState.canDraw()){
-            Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
+            //Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
             return mTouchState.canTouch();
         }
 
@@ -605,10 +611,9 @@ public class SketchCanvas extends View {
     public WritableArray isPointOnPath(float x, float y){
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
-        SketchData mPath;
         int r;
-        for (int i=0; i < mPaths.size(); i++) {
-            mPath = mPaths.get(i);
+
+        for(SketchData mPath: mPaths) {
             r = getTouchRadius(mPath.strokeWidth);
             if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
                 array.pushString(mPath.id);
