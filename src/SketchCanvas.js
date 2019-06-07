@@ -120,6 +120,7 @@ class SketchCanvas extends React.Component {
         this._paths = [];
         this._path = null;
         this._handle = null;
+        this._ref = null;
         this._screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
         this._offset = { x: 0, y: 0 };
         this._size = { width: 0, height: 0 };
@@ -187,7 +188,6 @@ class SketchCanvas extends React.Component {
 
     deletePaths(pathIds) {
         this._paths = this._paths.filter(p => pathIds.findIndex(id => p.path.id === id) === -1);
-        console.log('del',pathIds)
         UIManager.dispatchViewManagerCommand(this._handle, Commands.deletePaths, pathIds);
     }
 
@@ -286,7 +286,6 @@ class SketchCanvas extends React.Component {
         let lastId = null;
         this._paths.forEach(d => lastId = d.drawer === this.props.user ? d.path.id : lastId);
         if (lastId !== null) this.deletePath(lastId);
-        console.log('undo', lastId)
         return lastId;
     }
 
@@ -391,7 +390,12 @@ class SketchCanvas extends React.Component {
     }
     
     _handleRef = (ref) => {
+        this._ref = ref;
         this._handle = ReactNative.findNodeHandle(ref);
+    }
+
+    setNativeProps(props) {
+        this._ref && this._ref.setNativeProps(props);
     }
 
     onLayout = (e) => {
@@ -463,9 +467,12 @@ class SketchCanvas extends React.Component {
     }
 }
 
-SketchCanvas.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
-SketchCanvas.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
-SketchCanvas.LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
-SketchCanvas.CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
+const ExportedComponent = createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;
 
-export default createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;
+ExportedComponent.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
+ExportedComponent.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
+ExportedComponent.LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
+ExportedComponent.CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
+ExportedComponent.generatePathId = SketchCanvas.generatePathId;
+
+export default ExportedComponent;
