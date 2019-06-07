@@ -7,6 +7,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
 
@@ -47,9 +48,10 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
-                    float scale = TouchEventHandler.scale;
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    callback.invoke(null, pathId == null ? view.isPointOnPath(x * scale, y * scale): view.isPointOnPath(x * scale, y * scale, pathId));
+                    float nativeX = PixelUtil.toPixelFromDIP(x);
+                    float nativeY = PixelUtil.toPixelFromDIP(y);
+                    callback.invoke(null, pathId == null ? view.isPointOnPath(nativeX, nativeY): view.isPointOnPath(nativeX, nativeY, pathId));
                 }
             });
         } catch (Exception e) {
@@ -65,7 +67,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    view.setTouchRadius((int)(r * TouchEventHandler.scale));
+                    view.setTouchRadius((int)PixelUtil.toPixelFromDIP(r));
                     callback.invoke(null, true);
                 }
             });

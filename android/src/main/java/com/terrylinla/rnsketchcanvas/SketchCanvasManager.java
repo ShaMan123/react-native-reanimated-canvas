@@ -17,6 +17,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -89,7 +90,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @ReactProp(name = PROPS_STROKE_WIDTH)
     public void setStrokeWidth(SketchCanvas viewContainer, int width) {
-        viewContainer.setStrokeWidth((int)(width * TouchEventHandler.scale));
+        viewContainer.setStrokeWidth((int) PixelUtil.toPixelFromDIP(width));
     }
 
     @ReactProp(name = PROPS_TOUCH_ENABLED)
@@ -135,14 +136,13 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     public void receiveCommand(SketchCanvas view, int commandType, @Nullable ReadableArray args) {
-        float scale = TouchEventHandler.scale;
         switch (commandType) {
             case COMMAND_ADD_POINT: {
-                view.addPoint((float)args.getDouble(0) * scale, (float)args.getDouble(1) * scale);
+                view.addPoint(PixelUtil.toPixelFromDIP(args.getDouble(0)), PixelUtil.toPixelFromDIP(args.getDouble(1)));
                 return;
             }
             case COMMAND_NEW_PATH: {
-                view.newPath(args.getString(0), args.getInt(1), (float)args.getDouble(2) * scale);
+                view.newPath(args.getString(0), args.getInt(1), PixelUtil.toPixelFromDIP(args.getDouble(2)));
                 return;
             }
             case COMMAND_CLEAR: {

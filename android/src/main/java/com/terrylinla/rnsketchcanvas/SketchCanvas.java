@@ -25,6 +25,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
@@ -109,9 +110,8 @@ public class SketchCanvas extends View {
 
         if(mShouldFireOnStrokeChangedEvent){
             WritableMap e = Arguments.createMap();
-            float scale = TouchEventHandler.scale;
-            e.putDouble("x", Math.round(event.getX()) / scale);
-            e.putDouble("y", Math.round(event.getY()) / scale);
+            e.putDouble("x", PixelUtil.toDIPFromPixel(event.getX()));
+            e.putDouble("y", PixelUtil.toDIPFromPixel(event.getY()));
             e.putString("id", mCurrentPath.id);
             mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
                     getId(),
@@ -317,10 +317,9 @@ public class SketchCanvas extends View {
     public static ArrayList<PointF> parsePathCoords(ReadableArray coords){
         ArrayList<PointF> pointPath;
         pointPath = new ArrayList<PointF>(coords.size());
-        float scale = TouchEventHandler.scale;
         for (int i=0; i<coords.size(); i++) {
             ReadableMap p = coords.getMap(i);
-            pointPath.add(new PointF((float) p.getDouble("x") * scale, (float)p.getDouble("y") * scale));
+            pointPath.add(new PointF(PixelUtil.toPixelFromDIP(p.getDouble("x")), PixelUtil.toPixelFromDIP(p.getDouble("y"))));
         }
         return pointPath;
     }
@@ -328,7 +327,7 @@ public class SketchCanvas extends View {
     public void addPaths(@Nullable ReadableArray paths){
         for (int k = 0; k < paths.size(); k++){
             ReadableArray path = paths.getArray(k);
-            addPath(path.getString(0), path.getInt(1), (float)path.getInt(2) * TouchEventHandler.scale, parsePathCoords(path.getArray(3)));
+            addPath(path.getString(0), path.getInt(1), PixelUtil.toPixelFromDIP(path.getInt(2)), parsePathCoords(path.getArray(3)));
         }
         invalidateCanvas(true);
     }
@@ -466,6 +465,7 @@ public class SketchCanvas extends View {
                 text.drawPosition = position;
 
             }
+            invalidate();
         }
     }
 
