@@ -4,7 +4,7 @@ import {
     StyleProp,
     ViewStyle
 } from "react-native";
-import { GestureHandlerProperties, PanGestureHandler } from "react-native-gesture-handler";
+//import { GestureHandlerProperties, PanGestureHandler } from "react-native-gesture-handler";
 
 type ImageType = 'png' | 'jpg'
 
@@ -13,11 +13,16 @@ type Size = {
   height: number
 }
 
+type Point = {
+    x: number,
+    y: number
+}
+
 type PathData = {
   id: number
   color: string
   width: number
-  data: string[]
+  points: Point[]
 }
 
 type Path = {
@@ -76,6 +81,13 @@ export interface SketchCanvasProps {
     user?: string
     paths?: Path[]
     text?: CanvasText[]
+    /**
+       * {
+       *    path: string, 
+       *    directory: string, 
+       *    mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
+       * }
+       */
     localSourceImage?: LocalSourceImage
     touchEnabled?: boolean
 
@@ -94,18 +106,16 @@ export interface SketchCanvasProps {
      */
     hardwareAccelerated?: boolean
 
-    onStrokeStart?: (x: number, y: number) => void
-    onStrokeChanged?: (x: number, y: number) => void
+    onStrokeStart?: (pathData: Path['path']) => void
+    onStrokeChanged?: (NativeTouchEvent) => void
     onStrokeEnd?: (path: Path) => void
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
-
-
 }
 
-export type GestureHandlerProps = Pick<GestureHandlerProperties, "simultaneousHandlers" | "waitFor"> & { panHandler: React.RefObject<PanGestureHandler> };
+//export type GestureHandlerProps = Pick<GestureHandlerProperties, "simultaneousHandlers" | "waitFor"> & { panHandler: React.RefObject<PanGestureHandler> };
 
-export class SketchCanvas extends React.Component<SketchCanvasProps & GestureHandlerProps & ViewProperties> {
+export class SketchCanvas extends React.Component<SketchCanvasProps /*& GestureHandlerProps*/ & ViewProperties> {
     clear(): void
     undo(): number
     addPath(data: Path): void
@@ -181,17 +191,13 @@ export class SketchCanvas extends React.Component<SketchCanvasProps & GestureHan
     static generatePathId(): number
 }
 
-export interface RNSketchCanvasProps {
+export interface RNSketchCanvasProps extends SketchCanvasProps {
   containerStyle?: StyleProp<ViewStyle>
   canvasStyle?: StyleProp<ViewStyle>
-  onStrokeStart?: (x: number, y: number) => void
-  onStrokeChanged?: (x: number, y: number) => void
-  onStrokeEnd?: (path: Path) => void
   onClosePressed?: () => void
   onUndoPressed?: (id: number) => void
   onClearPressed?: () => void
   onPathsChange?: (pathsCount: number) => void
-  user?: string
 
   closeComponent?: JSX.Element,
   eraseComponent?: JSX.Element,
@@ -216,24 +222,15 @@ export interface RNSketchCanvasProps {
    * @param cropToImageSize default false
    */
   savePreference?: () => {folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean}
-  onSketchSaved?: (result: boolean, path: string) => void
-
-  text?: CanvasText[]
-  /**
-   * {
-   *    path: string, 
-   *    directory: string, 
-   *    mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
-   * }
-   */
-  localSourceImage?: LocalSourceImage
 }
 
 export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps & ViewProperties> {
   clear(): void
   undo(): number
   addPath(data: Path): void
+  addPaths(paths: Path[]): void
   deletePath(id: number): void
+  deletePaths(ids: number[]): void
   save(): void
   nextStrokeWidth(): void
 
