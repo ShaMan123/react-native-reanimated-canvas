@@ -46,8 +46,6 @@ public class SketchCanvas extends View {
     private ThemedReactContext mContext;
     private boolean mDisableHardwareAccelerated = false;
 
-    private Paint mPaint = new Paint();
-
     private int mOriginalWidth, mOriginalHeight;
     private Picture mBackgroundImage;
     private String mContentMode;
@@ -60,85 +58,21 @@ public class SketchCanvas extends View {
     private int mStrokeColor;
     private int mStrokeWidth;
     private TouchState mTouchState;
-
-    private PointF touchStart;
-    private int prevTouchAction = -1;
-    public boolean mShouldFireOnStrokeChangedEvent = false;
-    //private float minOffsetX = 10;
-    //private long minDeltaT = 200;
-    private long eventStart;
+    private TouchEventHandler touchHandler;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+        touchHandler = new TouchEventHandler(this);
     }
 
     public void setShouldFireOnStrokeChangedEvent(boolean fire){
-        mShouldFireOnStrokeChangedEvent = fire;
+        touchHandler.setShouldFireOnStrokeChanged(fire);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-        long startTime = event.getDownTime();
-        boolean isNewEvent = startTime != eventStart;
-
-        eventStart = startTime;
-
-        if(isNewEvent && mCurrentPath != null) end();
-        if(event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || (action == MotionEvent.ACTION_UP && prevTouchAction == MotionEvent.ACTION_UP)) {
-            if(mCurrentPath != null) end();
-            return false;
-        }
-
-        //long delta = event.getDownTime() - event.getEventTime();
-        PointF point = new PointF(event.getX(), event.getY());
-
-        if(!mTouchState.canDraw()){
-            //Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
-            return mTouchState.canTouch();
-        }
-
-
-        if(mCurrentPath == null || action == MotionEvent.ACTION_DOWN) {
-            newPath();
-            touchStart = point;
-        }
-/*
-        PointF offset = new PointF(Math.abs(touchStart.x - point.x), Math.abs(touchStart.y - point.y));
-        Log.d(TAG, "onTouchEvent: " + offset.toString());
-        if(offset.length() < minOffsetX || delta < minDeltaT){
-            Log.d(TAG, "isPointOnPath: " + isPointOnPath((int)point.x, (int)point.y));
-            return  false;
-        }
-        */
-        addPoint(point.x, point.y);
-
-        if(mShouldFireOnStrokeChangedEvent){
-            WritableMap e = Arguments.createMap();
-            e.putDouble("x", PixelUtil.toDIPFromPixel(event.getX()));
-            e.putDouble("y", PixelUtil.toDIPFromPixel(event.getY()));
-            e.putString("id", mCurrentPath.id);
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                    getId(),
-                    TouchEventHandler.getEventName(event),
-                    e);
-        }
-
-        if(action == MotionEvent.ACTION_UP) {
-            WritableMap ev = mCurrentPath.getMap();
-            end();
-            touchStart = null;
-            prevTouchAction = -1;
-
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                    getId(),
-                    TouchEventHandler.STROKE_END,
-                    ev);
-        }
-
-        prevTouchAction = action;
-        return true;
+        return touchHandler.run(event);
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
@@ -172,6 +106,10 @@ public class SketchCanvas extends View {
     public TouchState setTouchState(int state){
         mTouchState = new TouchState(state);
         return mTouchState;
+    }
+
+    @Nullable public SketchData getCurrentPath(){
+        return mCurrentPath;
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -316,7 +254,11 @@ public class SketchCanvas extends View {
     }
 
     public void addPoint(float x, float y) {
-        Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
+        addPoint(new PointF(x, y));
+    }
+
+    public void addPoint(PointF point) {
+        Rect updateRect = mCurrentPath.addPoint(point);
         invalidate();
     }
 

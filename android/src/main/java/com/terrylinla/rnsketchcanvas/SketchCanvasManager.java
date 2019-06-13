@@ -131,7 +131,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, SketchCanvas view) {
-
+        //super.addEventEmitters(reactContext, view);
     }
 
     @Override
@@ -174,5 +174,14 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                         commandType,
                         getClass().getSimpleName()));
         }
+    }
+
+
+    public static Map<String, Object> createExportedCustomDirectEventTypeConstants() {
+        return MapBuilder.<String, Object>builder()
+                .put(TouchEventHandler.STROKE_START, MapBuilder.of("registrationName", TouchEventHandler.STROKE_START))
+                .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))
+                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.STROKE_END))
+                .build();
     }
 }
