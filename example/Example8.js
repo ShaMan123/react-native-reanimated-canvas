@@ -23,9 +23,9 @@ import {
 import { RNCamera } from 'react-native-camera';
 
 import RNSketchCanvas, { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
-import { createNativeWrapper, TouchableOpacity, TapGestureHandler, State, LongPressGestureHandler, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { createNativeWrapper, TouchableOpacity, TapGestureHandler, State, LongPressGestureHandler } from 'react-native-gesture-handler';
 
-//const GHSC = createNativeWrapper(SketchCanvas, { disallowInterruption: true, enabled: true });
+const GHSC = createNativeWrapper(SketchCanvas, { disallowInterruption: true, enabled: true, shouldActivateOnStart: true, shouldCancelWhenOutside: false });
 
 export default class Example8 extends Component {
     constructor(props) {
@@ -113,7 +113,8 @@ export default class Example8 extends Component {
             ]).then(([pathArr, isOnSpecifiedPath]) => {
                 const message = (pathArr.length === 0 ? `The point (${Math.round(x)}, ${Math.round(y)}) is NOT contained by any path` :
                     `The point (${Math.round(x)}, ${Math.round(y)}) is contained by the following paths:\n\n${pathArr.join('\n')}`); //+ `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
-                Alert.alert('TouchableSketchCanvas', message);
+                //console.log('TouchableSketchCanvas', message);
+                this.setState({ message });
             });
         }
     }
@@ -165,12 +166,17 @@ export default class Example8 extends Component {
         }
     }
 
+    get caption() {
+        const a = this.state.color === '#00000000' ? 'erase': this.state.touchState;
+        return this.state.message || a.toLocaleUpperCase();
+    }
+
     render() {
         return (
             <View
                 style={[styles.page, { flex: 1 }]}
             >
-                <Text style={styles.stateText}>{this.state.touchState.toLocaleUpperCase()}</Text>
+               
                 <TapGestureHandler
                     numberOfTaps={1}
                     style={{ flex: 1, flexDirection: 'column' }}
@@ -181,6 +187,7 @@ export default class Example8 extends Component {
                     <LongPressGestureHandler
                         ref={this.longPressHandler}
                         onHandlerStateChange={this.longPress}
+                        enabled={false}
                     >
                         <Animated.View
                             style={{ flex: 1 }}
@@ -191,23 +198,26 @@ export default class Example8 extends Component {
                                 strokeWidth={24}
                                 strokeColor={this.state.color}
                                 ref={this._canvas}
-                                touchEnabled={this.state.touchState === 'draw' ? true : false}
-                                onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+                                touchEnabled
+                                onStrokeStart={e => {
+                                    this.setState({ message: null });
+                                    console.log(e.nativeEvent)
+                                }}
+                                //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                                 hardwareAccelerated={false}
                                 waitFor={[this.tapHandler, this.longPressHandler]}
                             />
                         </Animated.View>
                     </LongPressGestureHandler>
                 </TapGestureHandler>
+                <Text
+                    style={[styles.stateText, this.state.message && styles.smallText]}
+                >
+                    {this.caption}
+                </Text>
                 <Button
-                    disabled={this.state.touchState !== 'touch'}
-                    title='Press to draw'
-                    onPress={() => this.setState({ touchState: 'draw', color: 'red' })}
-                />
-                <Button
-                    disabled={this.state.touchState !== 'touch'}
-                    title='Press to erase'
-                    onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })}
+                    title={this.state.color === '#00000000' ? 'Press to draw' : 'Press to erase'}
+                    onPress={() => this.state.color === '#00000000' ? this.setState({ color: 'red' }):this.setState({ color: '#00000000' })}
                 />
             </View>
         );
@@ -278,5 +288,8 @@ const styles = StyleSheet.create({
     },
     stateText: {
         color: 'blue', alignContent: 'center', alignSelf: 'center', fontSize: 24, margin: 5, fontWeight: 'bold' 
+    },
+    smallText: {
+        fontSize: 10, fontWeight: 'normal' 
     }
 });
