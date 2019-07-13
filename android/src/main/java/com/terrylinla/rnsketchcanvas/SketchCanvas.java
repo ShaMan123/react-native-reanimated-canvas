@@ -72,7 +72,8 @@ public class SketchCanvas extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return touchHandler.run(event);
+        return false;
+        //return touchHandler.run(event);
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
