@@ -462,8 +462,11 @@ class SketchCanvas extends React.Component {
     }
 
     render() {
-        //return PanGestureHandler ? this.renderWithGestureHandler() : this.renderWithPanResponder();
-        return this.renderBaseView();
+        //use this for handling touches from js
+        return PanGestureHandler ? this.renderWithGestureHandler() : this.renderWithPanResponder();
+
+        //use this for handling touches from native
+        //return this.renderBaseView(); 
     }
 }
 
