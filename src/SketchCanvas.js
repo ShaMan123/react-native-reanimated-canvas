@@ -13,6 +13,7 @@ UIManager.genericDirectEventTypes = {
     onStrokeChanged: { registrationName: 'onStrokeChanged' },
     onStrokeEnd: { registrationName: 'onStrokeEnd' },
     onPress: { registrationName: 'onPress' },
+    onLongPress: { registrationName: 'onLongPress' },
 };
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
@@ -22,6 +23,8 @@ const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
         onStrokeStart: true,
         onStrokeChanged: true,
         onStrokeEnd: true,
+        onPress: true,
+        onLongPress: true
     }
 });
 const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
@@ -38,6 +41,7 @@ class SketchCanvas extends React.Component {
         onStrokeChanged: PropTypes.func,
         onStrokeEnd: PropTypes.func,
         onPress: PropTypes.func,
+        onLongPress: PropTypes.func,
         onSketchSaved: PropTypes.func,
         user: PropTypes.string,
         paths: PropTypes.arrayOf(PropTypes.shape({
@@ -88,6 +92,7 @@ class SketchCanvas extends React.Component {
         onStrokeChanged: null,
         onStrokeEnd: () => { },
         onPress: null,
+        onLongPress: null,
         onSketchSaved: () => { },
         user: null,
         paths: [],
@@ -347,6 +352,7 @@ class SketchCanvas extends React.Component {
     }
 
     onPress = this.props.onPress ? (e) => this.props.onPress(e.nativeEvent) : null;
+    onLongPress = this.props.onLongPress ? (e) => this.props.onLongPress(e.nativeEvent) : null;
 
     _grantResponder = (evt, gestureState) => this.props.touchEnabled && evt.nativeEvent.touches.length === 1;//gestureState.numberActiveTouches === 1;
 
@@ -432,6 +438,7 @@ class SketchCanvas extends React.Component {
                 onStrokeChanged={this.onStrokeChanged}
                 onStrokeEnd={this.onStrokeEnd}
                 onPress={this.onPress}
+                onLongPress={this.onLongPress}
             />
         );
     }

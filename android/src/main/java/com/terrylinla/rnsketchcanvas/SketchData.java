@@ -17,6 +17,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
+import com.facebook.react.uimanager.PixelUtil;
 
 import java.util.ArrayList;
 
@@ -40,15 +41,13 @@ public class SketchData {
     public WritableMap getMap(){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
-        float scale = TouchEventHandler.scale;
-
         path.putString("id", id);
         path.putInt("color", strokeColor);
-        path.putDouble("width", strokeWidth / scale);
+        path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
         for(PointF point: points){
             WritableMap p = Arguments.createMap();
-            p.putDouble("x", Math.round(point.x) / scale);
-            p.putDouble("y", Math.round(point.y) / scale);
+            p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
+            p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
             arr.pushMap(p);
         }
         path.putArray("points", arr);

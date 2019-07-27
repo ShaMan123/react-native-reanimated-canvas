@@ -34,6 +34,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     private static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "handleTouchesInNative";
     private static final String PROPS_ON_STROKE = "onStrokeChanged";
     private static final String PROPS_ON_PRESS = "onPress";
+    private static final String PROPS_ON_LONG_PRESS = "onLongPress";
 
     SketchCanvasManager(){
         super();
@@ -116,6 +117,11 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.getTouchHandler().setShouldFireOnPressEvent(callback != null);
     }
 
+    @ReactProp(name = PROPS_ON_LONG_PRESS)
+    public void shouldFireOnLongPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
+        viewContainer.getTouchHandler().setShouldFireOnLongPressEvent(callback != null);
+    }
+
     @Override
     public Map<String,Integer> getCommandsMap() {
         Map<String, Integer> map = new HashMap<>();
@@ -186,6 +192,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))
                 .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.STROKE_END))
                 .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.ON_PRESS))
+                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.ON_LONG_PRESS))
                 .build();
     }
 }

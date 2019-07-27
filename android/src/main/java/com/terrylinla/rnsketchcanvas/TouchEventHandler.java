@@ -23,12 +23,13 @@ public class TouchEventHandler {
     public final static String STROKE_CHANGED = "onStrokeChanged";
     public final static String STROKE_END = "onStrokeEnd";
     public final static String ON_PRESS = "onPress";
-    public final static float scale = getDeviceScale();
+    public final static String ON_LONG_PRESS = "onLongPress";
 
     private SketchCanvas mView;
     private int prevTouchAction = -1;
     private boolean mShouldFireOnStrokeChangedEvent = false;
     private boolean mShouldFireOnPressEvent = false;
+    private boolean mShouldFireOnLongPressEvent = false;
     private boolean mShouldHandleTouches = true;
 
     private GestureDetector detector;
@@ -51,8 +52,12 @@ public class TouchEventHandler {
         mShouldFireOnStrokeChangedEvent = fire;
     }
 
-    public void setShouldFireOnPressEvent(boolean shouldFireOnPressEvent) {
-        this.mShouldFireOnPressEvent = shouldFireOnPressEvent;
+    public void setShouldFireOnPressEvent(boolean shouldFireEvent) {
+        this.mShouldFireOnPressEvent = shouldFireEvent;
+    }
+
+    public void setShouldFireOnLongPressEvent(boolean shouldFireEvent) {
+        this.mShouldFireOnLongPressEvent = shouldFireEvent;
     }
 
     public void setShouldHandleTouches(boolean shouldHandleTouches) {
@@ -79,7 +84,7 @@ public class TouchEventHandler {
 
         @Override
         public void onLongPress(MotionEvent motionEvent) {
-
+            if(mShouldFireOnLongPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), ON_LONG_PRESS);
         }
 
         @Override
@@ -117,10 +122,7 @@ public class TouchEventHandler {
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
-            Log.d(TAG, "onScroll: " + motionEvent.toString());
-            if(mShouldFireOnPressEvent){
-                emitOnPress(motionEvent.getX(), motionEvent.getY());
-            }
+            if(mShouldFireOnPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
             return false;
         }
     }
@@ -160,13 +162,13 @@ public class TouchEventHandler {
         emit(STROKE_END, mView.getCurrentPath().getMap());
     }
 
-    public void emitOnPress(float x, float y){
+    public void emitPress(float x, float y, String eventName){
         WritableMap e = Arguments.createMap();
         e.putArray("paths", mView.isPointOnPath(x, y));
         e.putDouble("x", PixelUtil.toDIPFromPixel(x));
         e.putDouble("y", PixelUtil.toDIPFromPixel(y));
         if(mView.getTouchRadius() > 0) e.putDouble("radius", PixelUtil.toDIPFromPixel(mView.getTouchRadius()));
-        emit(ON_PRESS, e);
+        emit(eventName, e);
     }
 
     public static String getEventName(MotionEvent event){

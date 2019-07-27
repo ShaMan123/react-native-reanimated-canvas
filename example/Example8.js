@@ -208,6 +208,7 @@ export default class Example8 extends Component {
                                     this.setState({ message: null });
                                 }}
                                 onPress={(nativeEvent)=>this.updateMessage(nativeEvent.x,nativeEvent.y,nativeEvent.paths)}
+                                onLongPress={(nativeEvent)=>console.log('LongPress detected', nativeEvent)}
                                 //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                                 hardwareAccelerated={false}
                                 waitFor={[this.tapHandler, this.longPressHandler]}
