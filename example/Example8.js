@@ -111,12 +111,16 @@ export default class Example8 extends Component {
                 this.ref.isPointOnPath(x, y),
                 this.ref.isPointOnPath(x, y, pathId)
             ]).then(([pathArr, isOnSpecifiedPath]) => {
-                const message = (pathArr.length === 0 ? `The point (${Math.round(x)}, ${Math.round(y)}) is NOT contained by any path` :
-                    `The point (${Math.round(x)}, ${Math.round(y)}) is contained by the following paths:\n\n${pathArr.join('\n')}`); //+ `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
-                //console.log('TouchableSketchCanvas', message);
-                this.setState({ message });
+                this.updateMessage(x, y, pathArr);
             });
         }
+    }
+
+    updateMessage(x, y, pathArr) {
+        const message = (pathArr.length === 0 ? `The point (${Math.round(x)}, ${Math.round(y)}) is NOT contained by any path` :
+            `The point (${Math.round(x)}, ${Math.round(y)}) is contained by the following paths:\n\n${pathArr.join('\n')}`); //+ `\n\nAnd is ${isOnSpecifiedPath ? '' : 'NOT '}contained by path ${pathId}`
+        //console.log('TouchableSketchCanvas', message);
+        this.setState({ message });
     }
 
     longPress = (e) => {
@@ -183,6 +187,7 @@ export default class Example8 extends Component {
                     ref={this.tapHandler}
                     onHandlerStateChange={this.tap}
                     waitFor={[this.longPressHandler]}
+                    enabled={false}
                 >
                     <LongPressGestureHandler
                         ref={this.longPressHandler}
@@ -201,8 +206,8 @@ export default class Example8 extends Component {
                                 touchEnabled
                                 onStrokeStart={e => {
                                     this.setState({ message: null });
-                                    console.log(e.nativeEvent)
                                 }}
+                                onPress={(nativeEvent)=>this.updateMessage(nativeEvent.x,nativeEvent.y,nativeEvent.paths)}
                                 //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                                 hardwareAccelerated={false}
                                 waitFor={[this.tapHandler, this.longPressHandler]}

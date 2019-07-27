@@ -1,27 +1,18 @@
 'use strict';
 
-import React from 'react';
-import PropTypes from 'prop-types';
-import ReactNative, {
-    requireNativeComponent,
-    NativeModules,
-    UIManager,
-    PanResponder,
-    PixelRatio,
-    Platform,
-    ViewPropTypes,
-    processColor,
-    View
-} from 'react-native';
-import { requestPermissions } from './handlePermissions';
-import { PanGestureHandler, State as GHState, createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
+import PropTypes from 'prop-types';
+import React from 'react';
+import ReactNative, { NativeModules, PanResponder, PixelRatio, Platform, processColor, requireNativeComponent, UIManager, ViewPropTypes } from 'react-native';
+import { createNativeWrapper, PanGestureHandler, State as GHState } from 'react-native-gesture-handler';
+import { requestPermissions } from './handlePermissions';
 
 UIManager.genericDirectEventTypes = {
     ...UIManager.genericDirectEventTypes,
     onStrokeStart: { registrationName: 'onStrokeStart' },
     onStrokeChanged: { registrationName: 'onStrokeChanged' },
     onStrokeEnd: { registrationName: 'onStrokeEnd' },
+    onPress: { registrationName: 'onPress' },
 };
 
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
@@ -46,6 +37,7 @@ class SketchCanvas extends React.Component {
         onStrokeStart: PropTypes.func,
         onStrokeChanged: PropTypes.func,
         onStrokeEnd: PropTypes.func,
+        onPress: PropTypes.func,
         onSketchSaved: PropTypes.func,
         user: PropTypes.string,
         paths: PropTypes.arrayOf(PropTypes.shape({
@@ -82,7 +74,8 @@ class SketchCanvas extends React.Component {
 
         hardwareAccelerated: PropTypes.bool,
 
-        panHandler: PropTypes.any
+        panHandler: PropTypes.any,
+        handleTouchesInNative: PropTypes.bool
     };
 
     static defaultProps = {
@@ -94,6 +87,7 @@ class SketchCanvas extends React.Component {
         onStrokeStart: () => { },
         onStrokeChanged: null,
         onStrokeEnd: () => { },
+        onPress: null,
         onSketchSaved: () => { },
         user: null,
         paths: [],
@@ -107,7 +101,8 @@ class SketchCanvas extends React.Component {
 
         hardwareAccelerated: Platform.OS === 'android' ? false : undefined,
 
-        panHandler: React.createRef()
+        panHandler: React.createRef(),
+        handleTouchesInNative: Platform.OS === 'android'
     };
 
     static generatePathId() {
@@ -327,7 +322,7 @@ class SketchCanvas extends React.Component {
     }
 
     setTouchRadius(radius, callback) {
-        const r = typeof radius === 'number' ? Math.round(radius) : 0;
+        const r = typeof radius === 'number' ? radius : 0;
 
         const nativeMethod = (callback) => {
             if (Platform.OS === 'ios') {
@@ -351,6 +346,7 @@ class SketchCanvas extends React.Component {
         }
     }
 
+    onPress = this.props.onPress ? (e) => this.props.onPress(e.nativeEvent) : null;
 
     _grantResponder = (evt, gestureState) => this.props.touchEnabled && evt.nativeEvent.touches.length === 1;//gestureState.numberActiveTouches === 1;
 
@@ -435,6 +431,7 @@ class SketchCanvas extends React.Component {
                 onStrokeStart={this.onStrokeStart}
                 onStrokeChanged={this.onStrokeChanged}
                 onStrokeEnd={this.onStrokeEnd}
+                onPress={this.onPress}
             />
         );
     }
@@ -461,16 +458,19 @@ class SketchCanvas extends React.Component {
         );
     }
 
-    render() {
-        //use this for handling touches from js
+    /**
+     * use this for handling touches from js
+     * */
+    renderJSImpl() {
         return PanGestureHandler ? this.renderWithGestureHandler() : this.renderWithPanResponder();
+    }
 
-        //use this for handling touches from native
-        //return this.renderBaseView(); 
+    render() {
+        return this.props.handleTouchesInNative ? this.renderBaseView() : this.renderJSImpl();
     }
 }
 
-const ExportedComponent = createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;
+const ExportedComponent = Platform.OS === 'android' ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;
 
 ExportedComponent.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
 ExportedComponent.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';

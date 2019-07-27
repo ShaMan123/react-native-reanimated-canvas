@@ -1,22 +1,11 @@
 package com.terrylinla.rnsketchcanvas;
 
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.util.Log;
 
-import com.facebook.common.logging.FLog;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.common.ReactConstants;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -24,8 +13,6 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
-import android.graphics.PointF;
 
 import javax.annotation.Nullable;
 
@@ -44,7 +31,13 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     private static final String PROPS_STROKE_COLOR = "strokeColor";
     private static final String PROPS_STROKE_WIDTH = "strokeWidth";
     private static final String PROPS_TOUCH_ENABLED = "touchEnabled";
+    private static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "handleTouchesInNative";
     private static final String PROPS_ON_STROKE = "onStrokeChanged";
+    private static final String PROPS_ON_PRESS = "onPress";
+
+    SketchCanvasManager(){
+        super();
+    }
 
     @Override
     public String getName() {
@@ -108,9 +101,19 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.setTouchState(state);
     }
 
+    @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = true)
+    public void shouldHandleTouches(SketchCanvas viewContainer, boolean handle) {
+        viewContainer.getTouchHandler().setShouldHandleTouches(handle);
+    }
+
     @ReactProp(name = PROPS_ON_STROKE)
     public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
-        viewContainer.setShouldFireOnStrokeChangedEvent(callback != null);
+        viewContainer.getTouchHandler().setShouldFireOnStrokeChangedEvent(callback != null);
+    }
+
+    @ReactProp(name = PROPS_ON_PRESS)
+    public void shouldFireOnPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
+        viewContainer.getTouchHandler().setShouldFireOnPressEvent(callback != null);
     }
 
     @Override
@@ -182,6 +185,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 .put(TouchEventHandler.STROKE_START, MapBuilder.of("registrationName", TouchEventHandler.STROKE_START))
                 .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))
                 .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.STROKE_END))
+                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.ON_PRESS))
                 .build();
     }
 }

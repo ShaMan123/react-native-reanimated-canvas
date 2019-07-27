@@ -54,7 +54,7 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
 
-    private int mTouchRadius = 0;
+    private float mTouchRadius = 0;
     private int mStrokeColor;
     private int mStrokeWidth;
     private TouchState mTouchState;
@@ -66,14 +66,13 @@ public class SketchCanvas extends View {
         touchHandler = new TouchEventHandler(this);
     }
 
-    public void setShouldFireOnStrokeChangedEvent(boolean fire){
-        touchHandler.setShouldFireOnStrokeChanged(fire);
+    public TouchEventHandler getTouchHandler(){
+        return touchHandler;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
-        //return touchHandler.run(event);
+        return touchHandler.onTouchEvent(event);
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
@@ -306,13 +305,11 @@ public class SketchCanvas extends View {
         int index = -1;
 
         for(int i = 0; i<mPaths.size(); i++) {
-            Log.d(TAG, "deletePath: loop" + mPaths.get(i).id);
             if (id.equals(mPaths.get(i).id)) {
                 index = i;
                 break;
             }
         }
-        Log.d(TAG, "deletePath: " + id + "   i: " + index);
         if (index > -1) {
             mPaths.remove(index);
             invalidateCanvas(true);
@@ -517,14 +514,17 @@ public class SketchCanvas extends View {
     }
 
     public void setTouchRadius(int value){
-        mTouchRadius = value;
+        mTouchRadius = ((float) value);
     }
     public void setTouchRadius(float value){
-        mTouchRadius = (int)value;
+        mTouchRadius = value;
     }
 
-    private int getTouchRadius(float strokeWidth){
-        return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
+    public float getTouchRadius(){
+        return mTouchRadius;
+    }
+    public float getTouchRadius(float strokeWidth){
+        return mTouchRadius <= 0 && strokeWidth > 0? (strokeWidth * 0.5f): mTouchRadius;
     }
 
     @TargetApi(19)
@@ -554,7 +554,7 @@ public class SketchCanvas extends View {
     public WritableArray isPointOnPath(float x, float y){
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
-        int r;
+        float r;
 
         for(SketchData mPath: mPaths) {
             r = getTouchRadius(mPath.strokeWidth);

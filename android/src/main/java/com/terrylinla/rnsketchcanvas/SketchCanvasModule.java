@@ -60,14 +60,14 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setTouchRadius(final int tag, final int r, final Callback callback){
+    public void setTouchRadius(final int tag, final float r, final Callback callback){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    view.setTouchRadius((int)PixelUtil.toPixelFromDIP(r));
+                    view.setTouchRadius(PixelUtil.toPixelFromDIP(r));
                     callback.invoke(null, true);
                 }
             });

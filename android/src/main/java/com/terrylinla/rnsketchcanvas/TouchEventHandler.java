@@ -3,6 +3,7 @@ package com.terrylinla.rnsketchcanvas;
 import android.content.Context;
 import android.graphics.PointF;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import com.facebook.react.bridge.Arguments;
@@ -21,87 +22,112 @@ public class TouchEventHandler {
     public final static String STROKE_START = "onStrokeStart";
     public final static String STROKE_CHANGED = "onStrokeChanged";
     public final static String STROKE_END = "onStrokeEnd";
+    public final static String ON_PRESS = "onPress";
     public final static float scale = getDeviceScale();
 
     private SketchCanvas mView;
     private int prevTouchAction = -1;
     private boolean mShouldFireOnStrokeChangedEvent = false;
-    private long eventStart = -1;
-    PointF touchStart;
-    private static int MAJOR_MOVE_THRESHOLD = 10;
-    private boolean mShouldHandle = false;
+    private boolean mShouldFireOnPressEvent = false;
+    private boolean mShouldHandleTouches = true;
+
+    private GestureDetector detector;
 
     public TouchEventHandler(SketchCanvas view){
         mView = view;
+        detector =  new GestureDetector(mView.getContext(), new GestureListener()){
+            @Override
+            public boolean onTouchEvent(MotionEvent ev) {
+                if(ev.getAction() == MotionEvent.ACTION_UP && mView.getCurrentPath() != null) {
+                    emitOnStrokeEnd();
+                    mView.end();
+                }
+                return super.onTouchEvent(ev);
+            }
+        };
     }
 
-    public void setShouldFireOnStrokeChanged(boolean fire){
+    public void setShouldFireOnStrokeChangedEvent(boolean fire){
         mShouldFireOnStrokeChangedEvent = fire;
     }
 
-    public boolean run(MotionEvent event){
-        int action = event.getAction();
-        long startTime = event.getDownTime();
-        boolean isNewEvent = startTime != eventStart;
-        PointF point = new PointF(event.getX(), event.getY());
+    public void setShouldFireOnPressEvent(boolean shouldFireOnPressEvent) {
+        this.mShouldFireOnPressEvent = shouldFireOnPressEvent;
+    }
 
-        eventStart = startTime;
+    public void setShouldHandleTouches(boolean shouldHandleTouches) {
+        this.mShouldHandleTouches = shouldHandleTouches;
+    }
 
-        SketchData mCurrentPath = mView.getCurrentPath();
+    public boolean onTouchEvent(MotionEvent ev){
+        return mShouldHandleTouches && detector.onTouchEvent(ev);
+    }
 
-        if(isNewEvent && mCurrentPath != null) mView.end();
-
-        if(shouldFail(event)) {
-            if(mCurrentPath != null) mView.end();
-            event.setAction(MotionEvent.ACTION_CANCEL);
+    private class GestureListener implements GestureDetector.OnGestureListener {
+        @Override
+        public boolean onDown(MotionEvent event) {
+            int action = event.getAction();
+            if(mView.getCurrentPath() != null) mView.end();
             prevTouchAction = action;
+            return true;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent motionEvent) {
+
+        }
+
+        @Override
+        public void onLongPress(MotionEvent motionEvent) {
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
             return false;
         }
 
-        if(shouldHandle(event)){
-            if(mCurrentPath == null) {
+        @Override
+        public boolean onScroll(MotionEvent downEvent, MotionEvent event, float dx, float dy) {
+            int action = event.getAction();
+            PointF point = new PointF(event.getX(), event.getY());
+
+            if(prevTouchAction == MotionEvent.ACTION_DOWN){
                 mView.newPath();
                 emitOnStrokeStart();
             }
-            Log.d(TAG, "onTouchEvent: " + event.toString());
-            mView.addPoint(point);
-            if(mShouldFireOnStrokeChangedEvent) emitOnStrokeChanged(point);
-        }
 
-        if(action == MotionEvent.ACTION_UP) {
-            if(mCurrentPath != null){
-                emitOnStrokeEnd();
-                mView.end();
+            SketchData mCurrentPath = mView.getCurrentPath();
+
+            if(shouldFail(event)) {
+                if(mCurrentPath != null) mView.end();
+                event.setAction(MotionEvent.ACTION_CANCEL);
+                prevTouchAction = action;
+                return false;
             }
-            endEvent();
+
+            if(mCurrentPath != null){
+                mView.addPoint(point);
+                if(mShouldFireOnStrokeChangedEvent) emitOnStrokeChanged(point);
+            }
+
+            prevTouchAction = action;
+            return true;
         }
 
-        prevTouchAction = action;
-        return true;
+        @Override
+        public boolean onSingleTapUp(MotionEvent motionEvent) {
+            Log.d(TAG, "onScroll: " + motionEvent.toString());
+            if(mShouldFireOnPressEvent){
+                emitOnPress(motionEvent.getX(), motionEvent.getY());
+            }
+            return false;
+        }
     }
 
     private boolean shouldFail(MotionEvent event){
         int action = event.getAction();
-        boolean isSecondUp = action == MotionEvent.ACTION_UP && prevTouchAction == MotionEvent.ACTION_UP;
-        if(isSecondUp) event.setAction(MotionEvent.ACTION_CANCEL);
         return event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || action == MotionEvent.ACTION_CANCEL;
-    }
-
-    private boolean shouldHandle(MotionEvent event){
-        PointF point = new PointF(event.getX(), event.getY());
-        if(touchStart == null) touchStart = point;
-        if(!mShouldHandle) {
-            PointF offset = new PointF(Math.abs(touchStart.x - point.x), Math.abs(touchStart.y - point.y));
-            boolean overThreshold = offset.x >= MAJOR_MOVE_THRESHOLD || offset.y >= MAJOR_MOVE_THRESHOLD;
-            boolean moving = event.getAction() == MotionEvent.ACTION_MOVE && prevTouchAction == MotionEvent.ACTION_MOVE;
-            mShouldHandle = moving && overThreshold;
-        }
-        return mShouldHandle;
-    }
-
-    private void endEvent(){
-        touchStart = null;
-        mShouldHandle = false;
     }
 
     public void emit(String JSEventName, WritableMap e){
@@ -132,6 +158,15 @@ public class TouchEventHandler {
 
     public void emitOnStrokeEnd(){
         emit(STROKE_END, mView.getCurrentPath().getMap());
+    }
+
+    public void emitOnPress(float x, float y){
+        WritableMap e = Arguments.createMap();
+        e.putArray("paths", mView.isPointOnPath(x, y));
+        e.putDouble("x", PixelUtil.toDIPFromPixel(x));
+        e.putDouble("y", PixelUtil.toDIPFromPixel(y));
+        if(mView.getTouchRadius() > 0) e.putDouble("radius", PixelUtil.toDIPFromPixel(mView.getTouchRadius()));
+        emit(ON_PRESS, e);
     }
 
     public static String getEventName(MotionEvent event){
