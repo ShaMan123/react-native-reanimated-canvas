@@ -191,8 +191,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 .put(TouchEventHandler.STROKE_START, MapBuilder.of("registrationName", TouchEventHandler.STROKE_START))
                 .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))
                 .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.STROKE_END))
-                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.ON_PRESS))
-                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.ON_LONG_PRESS))
+                .put(TouchEventHandler.ON_PRESS, MapBuilder.of("registrationName", TouchEventHandler.ON_PRESS))
+                .put(TouchEventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", TouchEventHandler.ON_LONG_PRESS))
                 .build();
     }
 }
