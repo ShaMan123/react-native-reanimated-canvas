@@ -36,5 +36,10 @@
   },
   "scripts": {
     "postinstall": "node ./alertConfigChangeNeededScript.js"
-  }
+  },
+  "files": [
+    "/src",
+    "/android",
+    "/ios"
+  ]
 }
