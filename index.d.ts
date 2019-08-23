@@ -31,7 +31,7 @@ type Path = {
   path: PathData
 }
 
-//export type TouchStates = true | false | 'draw' | 'touch' | 'none';
+export type TouchStates = 'draw' | 'touch' | 'none';
 
 type CanvasText = {
   text: string
@@ -89,7 +89,7 @@ export interface SketchCanvasProps {
        * }
        */
     localSourceImage?: LocalSourceImage
-    touchEnabled?: boolean
+    touchEnabled?: boolean | TouchStates
 
     /**
      * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
