@@ -494,7 +494,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 -------------
 The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
 
-Check full example app in the [example](./example) folder 
+Check full example app in the [SketchExample](./SketchExample) folder 
 
 ## Troubleshooting
 -------------
