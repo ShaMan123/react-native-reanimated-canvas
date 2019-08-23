@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -95,17 +96,17 @@ public class SketchCanvas extends View {
     public TouchState getTouchState(){
         return mTouchState;
     }
-    public TouchState setTouchState(boolean enabled){
-        mTouchState = new TouchState(enabled);
-        return mTouchState;
-    }
-    public TouchState setTouchState(String state){
-        mTouchState = new TouchState(state);
-        return mTouchState;
-    }
-    public TouchState setTouchState(int state){
-        mTouchState = new TouchState(state);
-        return mTouchState;
+
+    public void setTouchState(TouchState touchState){
+        mTouchState = touchState;
+        ViewParent parent = getParent();
+        if(parent != null) {
+            if (mTouchState.getState() == TouchState.NONE) {
+                parent.requestDisallowInterceptTouchEvent(false);
+            } else {
+                parent.requestDisallowInterceptTouchEvent(true);
+            }
+        }
     }
 
     @Nullable public SketchData getCurrentPath(){

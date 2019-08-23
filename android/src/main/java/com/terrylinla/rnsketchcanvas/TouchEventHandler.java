@@ -65,7 +65,7 @@ public class TouchEventHandler {
     }
 
     public boolean onTouchEvent(MotionEvent ev){
-        return mShouldHandleTouches && detector.onTouchEvent(ev);
+        return mShouldHandleTouches && mView.getTouchState().enabled() && detector.onTouchEvent(ev);
     }
 
     private class GestureListener implements GestureDetector.OnGestureListener {

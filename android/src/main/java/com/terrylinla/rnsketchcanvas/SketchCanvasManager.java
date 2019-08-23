@@ -5,6 +5,7 @@ import android.util.Log;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
@@ -52,7 +53,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @Override
     public void onDropViewInstance(SketchCanvas view) {
-        Log.i(getName(), "Tearing down SketchCanvas " +  view.toString());
+        if (BuildConfig.DEBUG) Log.i(getName(), "Tearing down SketchCanvas " +  view.toString());
         view.tearDown();
     }
 
@@ -88,18 +89,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     }
 
     @ReactProp(name = PROPS_TOUCH_ENABLED)
-    public void setTouchState(SketchCanvas viewContainer, boolean enabled) {
-        viewContainer.setTouchState(enabled);
-    }
-
-    @ReactProp(name = PROPS_TOUCH_ENABLED)
-    public void setTouchState(SketchCanvas viewContainer, String state) {
-        viewContainer.setTouchState(state);
-    }
-
-    @ReactProp(name = PROPS_TOUCH_ENABLED)
-    public void setTouchState(SketchCanvas viewContainer, int state) {
-        viewContainer.setTouchState(state);
+    public void setTouchState(SketchCanvas viewContainer, Dynamic propValue) {
+        viewContainer.setTouchState(new TouchState(propValue));
     }
 
     @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = true)
