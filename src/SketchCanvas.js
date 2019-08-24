@@ -477,7 +477,7 @@ class SketchCanvas extends React.Component {
   }
 }
 
-const ExportedComponent = Platform.OS === 'android' ? createNativeWrapper(SketchCanvas, { disallowInterruption: true }) : SketchCanvas;
+const ExportedComponent = Platform.OS === 'android' && createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true, shouldActivateOnStart: true }) : SketchCanvas;
 
 ExportedComponent.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
 ExportedComponent.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
