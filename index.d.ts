@@ -71,6 +71,12 @@ export interface LocalSourceImage {
 export interface NativeTouchEvent {
     x: number,
     y: number,
+    paths: number,
+}
+
+export interface NativeSketchEvent {
+    x: number,
+    y: number,
     id: number,
 }
 
@@ -107,10 +113,16 @@ export interface SketchCanvasProps {
     hardwareAccelerated?: boolean
 
     onStrokeStart?: (pathData: Path['path']) => void
-    onStrokeChanged?: (NativeTouchEvent) => void
+    onStrokeChanged?: (NativeSketchEvent) => void
     onStrokeEnd?: (path: Path) => void
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
+
+    handleTouchesInNative: boolean
+    /** fires only if `handleTouchesInNative` is set to `true` */
+    onPress: (NativeTouchEvent) => void
+    /** fires only if `handleTouchesInNative` is set to `true` */
+    onLongPress: (NativeTouchEvent) => void
 }
 
 //export type GestureHandlerProps = Pick<GestureHandlerProperties, "simultaneousHandlers" | "waitFor"> & { panHandler: React.RefObject<PanGestureHandler> };
