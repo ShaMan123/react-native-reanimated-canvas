@@ -122,7 +122,10 @@ public class TouchEventHandler {
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
-            if(mShouldFireOnPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
+            if(mShouldFireOnPressEvent) {
+                emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
+                return true;
+            }
             return false;
         }
     }
