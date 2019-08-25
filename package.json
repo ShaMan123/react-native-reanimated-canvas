@@ -41,5 +41,6 @@
     "/src",
     "/android",
     "/ios"
-  ]
+  ],
+  "types": "index.d.ts"
 }
