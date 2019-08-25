@@ -7,7 +7,6 @@ import {
   NavigationState,
   SceneRendererProps,
 } from 'react-native-tab-view';
-import Example from 'react-native-tab-view/example'
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
 
