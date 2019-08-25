@@ -60,7 +60,7 @@ export default class example extends Component {
   }
 
   onSketchSaved = (success, path) => {
-    //Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
+    Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
     if (success) {
       this.setState({
         modalVisible: true,
