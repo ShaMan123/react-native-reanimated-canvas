@@ -56,7 +56,7 @@ public class TouchState {
     }
 
     public static int fromBoolean(boolean touchEnabled){
-        return touchEnabled? DRAW: TOUCH;
+        return touchEnabled ? DRAW : NONE;
     }
 
     public static int parse(Dynamic touchState){
