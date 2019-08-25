@@ -31,6 +31,7 @@ const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
 const { Commands, Constants } = UIManager.getViewManagerConfig ? UIManager.getViewManagerConfig('RNSketchCanvas') : UIManager.RNSketchCanvas;
 
 class SketchCanvas extends React.Component {
+    /*
   static propTypes = {
     style: ViewPropTypes.style,
     onLayout: PropTypes.func,
@@ -46,7 +47,7 @@ class SketchCanvas extends React.Component {
     user: PropTypes.string,
     paths: PropTypes.arrayOf(PropTypes.shape({
       path: PropTypes.shape({
-        id: PropTypes.number,
+        id: PropTypes.string,
         color: PropTypes.string,
         width: PropTypes.number,
         points: PropTypes.arrayOf(PropTypes.string),
@@ -81,6 +82,7 @@ class SketchCanvas extends React.Component {
     panHandler: PropTypes.any,
     handleTouchesInNative: PropTypes.bool
   };
+  */
 
   static defaultProps = {
     style: null,
