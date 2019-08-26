@@ -395,7 +395,6 @@ class SketchCanvas extends React.Component {
     onHandlerStateChange = (e) => {
         if (e.nativeEvent.state === GHState.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
         if (e.nativeEvent.oldState === GHState.ACTIVE) this.endPath();
-        this.prop.onHandlerStateChange && this.prop.onHandlerStateChange(e);
     }
 
     onGestureEvent = (e) => {
@@ -489,7 +488,7 @@ class SketchCanvas extends React.Component {
     }
 
     renderNativeGHImpl() {
-        const { gestureHandler, touchEnabled, simultaneousHandlers, waitFor, disallowInterruption, shouldActivateOnStart, onHandlerStateChange } = this.props;
+        const { gestureHandler, touchEnabled, simultaneousHandlers, waitFor, disallowInterruption, shouldActivateOnStart } = this.props;
         return (
             <NativeViewGestureHandler
                 ref={gestureHandler}
@@ -498,7 +497,6 @@ class SketchCanvas extends React.Component {
                 waitFor={waitFor}
                 disallowInterruption={disallowInterruption}
                 shouldActivateOnStart={shouldActivateOnStart}
-                onHandlerStateChange={onHandlerStateChange}
             >
                 {this.renderBaseView()}
             </NativeViewGestureHandler>
