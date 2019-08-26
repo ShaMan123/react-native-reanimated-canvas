@@ -24,9 +24,7 @@ import {
 import { RNCamera } from 'react-native-camera';
 
 import RNSketchCanvas, { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
-import { createNativeWrapper, TouchableOpacity as TO, TapGestureHandler, State, LongPressGestureHandler } from 'react-native-gesture-handler';
 import Example8 from './Example8';
-import Tabs from './Tabs';
 
 export default class example extends Component {
   constructor(props) {
@@ -658,7 +656,7 @@ export default class example extends Component {
           <View
             style={[styles.page, { flex: 1 }]}
           >
-            <Tabs />
+            <Example8 />
             <Button
               title='BACK'
               onPress={() => this.setState({ example: 0 })}
