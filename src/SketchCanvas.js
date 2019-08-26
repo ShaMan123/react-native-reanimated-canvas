@@ -393,13 +393,14 @@ class SketchCanvas extends React.Component {
     }
 
     onHandlerStateChange = (e) => {
-        console.log('panning', GHState.print(e.nativeEvent.state))
         if (e.nativeEvent.state === GHState.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
         if (e.nativeEvent.oldState === GHState.ACTIVE) this.endPath();
+        this.prop.onHandlerStateChange && this.prop.onHandlerStateChange(e);
     }
 
     onGestureEvent = (e) => {
         this.addPoint(e.nativeEvent.x, e.nativeEvent.y);
+        this.prop.onGestureEvent && this.prop.onGestureEvent(e);
     }
 
     _handleRef = (ref) => {
@@ -467,7 +468,7 @@ class SketchCanvas extends React.Component {
                 ref={gestureHandler}
                 enabled={touchEnabled}
                 maxPointers={1}
-                minDist={200}
+                //minDist={1}
                 simultaneousHandlers={simultaneousHandlers}
                 waitFor={waitFor}
                 onHandlerStateChange={this.onHandlerStateChange}
@@ -488,7 +489,7 @@ class SketchCanvas extends React.Component {
     }
 
     renderNativeGHImpl() {
-        const { gestureHandler, touchEnabled, simultaneousHandlers, waitFor, disallowInterruption, shouldActivateOnStart } = this.props;
+        const { gestureHandler, touchEnabled, simultaneousHandlers, waitFor, disallowInterruption, shouldActivateOnStart, onHandlerStateChange } = this.props;
         return (
             <NativeViewGestureHandler
                 ref={gestureHandler}
@@ -497,6 +498,7 @@ class SketchCanvas extends React.Component {
                 waitFor={waitFor}
                 disallowInterruption={disallowInterruption}
                 shouldActivateOnStart={shouldActivateOnStart}
+                onHandlerStateChange={onHandlerStateChange}
             >
                 {this.renderBaseView()}
             </NativeViewGestureHandler>
@@ -504,12 +506,11 @@ class SketchCanvas extends React.Component {
     }
 
     render() {
-        if (__DEV__) console.log(`SketchCanvas rendering ${this.props.handleTouchesInNative ? 'native handler' : PanGestureHandler ? 'gesture handler' : 'pan responder'} `);
         return this.props.handleTouchesInNative ? NativeViewGestureHandler ? this.renderNativeGHImpl() : this.renderBaseView() : this.renderJSImpl();
     }
 }
 
-const ExportedComponent = /*Platform.OS === 'android' && createNativeWrapper ? createNativeWrapper(SketchCanvas, { disallowInterruption: true, shouldActivateOnStart: true }) :*/ SketchCanvas;
+const ExportedComponent = SketchCanvas;
 
 ExportedComponent.MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
 ExportedComponent.DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
