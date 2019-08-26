@@ -114,7 +114,7 @@ export interface SketchCanvasProps {
 
     onStrokeStart?: (pathData: Path['path']) => void
     onStrokeChanged?: (NativeSketchEvent) => void
-    onStrokeEnd?: (path: Path) => void
+    onStrokeEnd?: (pathData: Path['path']) => void
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
 
