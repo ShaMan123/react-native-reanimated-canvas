@@ -4,7 +4,7 @@ import {
     StyleProp,
     ViewStyle
 } from "react-native";
-//import { GestureHandlerProperties, PanGestureHandler } from "react-native-gesture-handler";
+//import { GestureHandlerProperties, PanGestureHandler, NativeViewGestureHandlerProperties, PanGestureHandlerProperties } from "react-native-gesture-handler";
 
 type ImageType = 'png' | 'jpg'
 
@@ -80,6 +80,16 @@ export interface NativeSketchEvent {
     id: number,
 }
 
+interface NativeTouchProps {
+    handleTouchesInNative: boolean
+    /** fires only if `handleTouchesInNative` is set to `true` */
+    onPress: (NativeTouchEvent) => void
+    /** fires only if `handleTouchesInNative` is set to `true` */
+    onLongPress: (NativeTouchEvent) => void
+
+    gestureHandler: React.RefObject<any>
+}
+
 export interface SketchCanvasProps extends NativeTouchProps {
     style?: StyleProp<ViewStyle>
     strokeColor?: string
@@ -118,16 +128,6 @@ export interface SketchCanvasProps extends NativeTouchProps {
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
 }
-
-interface NativeTouchProps {
-    handleTouchesInNative: boolean
-    /** fires only if `handleTouchesInNative` is set to `true` */
-    onPress: (NativeTouchEvent) => void
-    /** fires only if `handleTouchesInNative` is set to `true` */
-    onLongPress: (NativeTouchEvent) => void
-}
-
-//export type GestureHandlerProps = Pick<GestureHandlerProperties, "simultaneousHandlers" | "waitFor"> & { panHandler: React.RefObject<PanGestureHandler> };
 
 export class SketchCanvas extends React.Component<SketchCanvasProps /*& GestureHandlerProps*/ & ViewProperties> {
     clear(): void
