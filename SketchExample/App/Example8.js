@@ -69,33 +69,36 @@ export default class Example8 extends Component {
     }
 
     longPress = (e) => {
-        console.log('FGFEFGFDFGDFGDFGFDFDG')
         const { x, y, state, oldState } = e.nativeEvent;
         if (state === State.ACTIVE) {
-            //await this.ref.setTouchRadius(100);
-            //Alert.alert('TouchRadius', 'The radius of the touch has been changed');
-            this.ref.isPointOnPath(x, y)
-                .then((paths) => {
-                    console.log(paths);
-
-                    if (paths.length > 0) {
-                        const selectedPath = paths.pop();
-                        //Alert.alert('Selection Change', `Path ${selectedPath} has been selected, change UI to signal user`);
-
-                        const replica = this.ref.getPaths().find((p) => p.path.id === selectedPath);
-                        const cb = this._restorePath;
-                        this._restorePath = this.restorePath.bind(this, replica);
-
-                        const selected = { ...replica };
-                        selected.path.color = 'yellow';
-
-                        this.ref.deletePath(selected.path.id);
-                        this.ref.addPath(selected);
-                        cb && cb();
-                        this.setState({ selectedPath });
-                    }
-                });
+            this.onPressChangePathColor(x, y);
         }
+    }
+
+    onPressChangePathColor(x, y) {
+        //await this.ref.setTouchRadius(100);
+        //Alert.alert('TouchRadius', 'The radius of the touch has been changed');
+        this.ref.isPointOnPath(x, y)
+            .then((paths) => {
+                console.log(paths);
+
+                if (paths.length > 0) {
+                    const selectedPath = paths.pop();
+                    //Alert.alert('Selection Change', `Path ${selectedPath} has been selected, change UI to signal user`);
+
+                    const replica = this.ref.getPaths().find((p) => p.path.id === selectedPath);
+                    const cb = this._restorePath;
+                    this._restorePath = this.restorePath.bind(this, replica);
+
+                    const selected = { ...replica };
+                    selected.path.color = 'yellow';
+
+                    this.ref.deletePath(selected.path.id);
+                    this.ref.addPath(selected);
+                    cb && cb();
+                    this.setState({ selectedPath });
+                }
+            });
     }
 
     restorePath(path) {
@@ -111,7 +114,8 @@ export default class Example8 extends Component {
                     return p;
                 });
             paths.push(path);
-            this.ref.deletePaths([...paths.map(p => p.path.id), this.state.selectedPath]);
+            //this.ref.deletePaths([...paths.map(p => p.path.id), this.state.selectedPath]);
+            this.ref.clear();
             this.ref.addPaths(paths);
         }
     }
@@ -186,7 +190,7 @@ export default class Example8 extends Component {
                                         >
                                             <Animated.View collapsable={false} style={{ flex: 1 }}>
                                                 {/* <Image source={require('./p.png')} style={{ width: 100, height: 100 }} />*/}
-                                                <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: this.scale }, {translateX:this.transX}] }]}>
+                                                <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: this.scale }, {translateX:Animated.divide(this.transX,this.scale)}] }]}>
                                                     <SketchCanvas
                                                         style={{ flex: 1 }}
                                                         gestureHandler={this.panRef}
@@ -206,14 +210,14 @@ export default class Example8 extends Component {
                                                             console.log('Press detected', nativeEvent)
                                                             this.updateMessage(nativeEvent.x, nativeEvent.y, nativeEvent.paths);
                                                         }}
-                                                        onLongPress={(nativeEvent) => console.log('LongPress detected', nativeEvent)}
+                                                        onLongPress={(nativeEvent) => this.onPressChangePathColor(nativeEvent.x, nativeEvent.y)}
 
                                                         //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
                                                         //hardwareAccelerated={false}
                                                         waitFor={[this.tapHandler, this.longPressHandler, this.pinchRef]}
 
                                                         
-                                                        onHandlerStateChange={(e) => Animated.set(this.tState, e.nativeEvent.state)}
+                                                        //onHandlerStateChange={(e) => Animated.set(this.tState, e.nativeEvent.state)}
                                                     //handleTouchesInNative={false}   //  <--------------------------------------------------
                                                     />
                                                 </Animated.View>
