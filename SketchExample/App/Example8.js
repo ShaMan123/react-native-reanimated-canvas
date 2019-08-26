@@ -128,6 +128,10 @@ export default class Example8 extends Component {
     scaler = new Animated.Value(1);
     scale = Animated.multiply(this.scaler, this.pinch);
 
+    panX = new Animated.Value(1);
+    tState = new Animated.Value(-1);
+    transX = Animated.cond(Animated.not(Animated.or(Animated.eq(this.tState, State.ACTIVE,Animated.eq(this.tState, State.BEGAN)))), this.panX)
+
     render() {
         return (
             <View
@@ -140,7 +144,7 @@ export default class Example8 extends Component {
                     ref={this.tapHandler}
                     onHandlerStateChange={this.tap}
                     waitFor={[this.longPressHandler, this.panRef]}
-                enabled={false}
+                    enabled={false}
                 >
                     <Animated.View
                         collapsable={false}
@@ -149,58 +153,74 @@ export default class Example8 extends Component {
                         <LongPressGestureHandler
                             ref={this.longPressHandler}
                             onHandlerStateChange={this.longPress}
-                        enabled={false}
+                            enabled={false}
                         >
                             <Animated.View
                                 collapsable={false}
                                 style={{ flex: 1 }}
                             >
-                                <PinchGestureHandler
-                                    ref={this.pinchRef}
-                                    //simultaneousHandlers={[this.panRef]}
-                                    onHandlerStateChange={e => {
-                                        if (e.nativeEvent.oldState === State.ACTIVE) {
-                                            Animated.set(this.scaler, this.pinch)
-                                            Animated.set(this.pinch, 1)
-                                        }
-                                    }}
+                                <PanGestureHandler
                                     onGestureEvent={Animated.event([{
-                                        nativeEvent: { scale: this.pinch }
-                                    }], {useNativeDriver: true})}
-                                //enabled={false}
+                                        nativeEvent: { translationX: this.panX }
+                                    }], { useNativeDriver: true })}
+                                    minPointers={2}
+                                    //waitFor={this.panRef}
                                 >
-                                    <Animated.View collapsable={false} style={{ flex: 1 }}>
-                                        <Image source={require('./p.png')} style={{ width: 100, height: 100 }} />
-                                        <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale:this.scale }] }]}>
-                                            <SketchCanvas
-                                                style={{ flex: 1 }}
-                                                gestureHandler={this.panRef}
-                                                style={{ flex: 1 }}
-                                                strokeWidth={24}
-                                                strokeColor={this.state.color}
-                                                ref={this._canvas}
-                                                //touchEnabled={false}
-                                                onStrokeStart={e => {
-                                                    console.log(e)
-                                                    this.setState({ message: null });
-                                                }}
+                                    <Animated.View
+                                        collapsable={false}
+                                        style={{ flex: 1 }}
+                                    >
+                                        <PinchGestureHandler
+                                            ref={this.pinchRef}
+                                            //simultaneousHandlers={[this.panRef]}
+                                            onHandlerStateChange={e => {
+                                                if (e.nativeEvent.oldState === State.ACTIVE) {
+                                                    Animated.set(this.scaler, Animated.multiply(this.scaler, this.pinch))
+                                                    Animated.set(this.pinch, 1)
+                                                }
+                                            }}
+                                            onGestureEvent={Animated.event([{
+                                                nativeEvent: { scale: this.pinch }
+                                            }], { useNativeDriver: true })}
+                                        //enabled={false}
+                                        >
+                                            <Animated.View collapsable={false} style={{ flex: 1 }}>
+                                                {/* <Image source={require('./p.png')} style={{ width: 100, height: 100 }} />*/}
+                                                <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: this.scale }, {translateX:this.transX}] }]}>
+                                                    <SketchCanvas
+                                                        style={{ flex: 1 }}
+                                                        gestureHandler={this.panRef}
+                                                        style={{ flex: 1 }}
+                                                        strokeWidth={24}
+                                                        strokeColor={this.state.color}
+                                                        ref={this._canvas}
+                                                        //touchEnabled={false}
+                                                        onStrokeStart={e => {
+                                                            console.log(e)
+                                                            this.setState({ message: null });
+                                                        }}
 
-                                                onStrokeEnd={(...args) => console.log(args)}
+                                                        onStrokeEnd={(...args) => console.log(args)}
 
-                                                onPress={(nativeEvent) => {
-                                                    console.log('Press detected', nativeEvent)
-                                                    this.updateMessage(nativeEvent.x, nativeEvent.y, nativeEvent.paths);
-                                                }}
-                                                onLongPress={(nativeEvent) => console.log('LongPress detected', nativeEvent)}
+                                                        onPress={(nativeEvent) => {
+                                                            console.log('Press detected', nativeEvent)
+                                                            this.updateMessage(nativeEvent.x, nativeEvent.y, nativeEvent.paths);
+                                                        }}
+                                                        onLongPress={(nativeEvent) => console.log('LongPress detected', nativeEvent)}
 
-                                                //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
-                                                hardwareAccelerated={false}
-                                                waitFor={[this.tapHandler, this.longPressHandler, this.pinchRef]}
-                                                //handleTouchesInNative={false}   //  <--------------------------------------------------
-                                            />
-                                        </Animated.View>
+                                                        //onStrokeEnd={() => this.setState({ touchState: 'touch' })}
+                                                        //hardwareAccelerated={false}
+                                                        waitFor={[this.tapHandler, this.longPressHandler, this.pinchRef]}
+
+                                                        
+                                                        onHandlerStateChange={(e) => Animated.set(this.tState, e.nativeEvent.state)}
+                                                    //handleTouchesInNative={false}   //  <--------------------------------------------------
+                                                    />
+                                                </Animated.View>
+                                            </Animated.View>
+                                        </PinchGestureHandler>
                                     </Animated.View>
-                                </PinchGestureHandler>
+                                </PanGestureHandler>
                             </Animated.View>
                         </LongPressGestureHandler>
                     </Animated.View>
