@@ -80,7 +80,7 @@ export interface NativeSketchEvent {
     id: number,
 }
 
-export interface SketchCanvasProps {
+export interface SketchCanvasProps extends NativeTouchProps {
     style?: StyleProp<ViewStyle>
     strokeColor?: string
     strokeWidth?: number
@@ -95,7 +95,7 @@ export interface SketchCanvasProps {
        * }
        */
     localSourceImage?: LocalSourceImage
-    touchEnabled?: boolean | TouchStates
+    touchEnabled?: boolean
 
     /**
      * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -117,7 +117,9 @@ export interface SketchCanvasProps {
     onStrokeEnd?: (pathData: Path['path']) => void
     onSketchSaved?: (result: boolean, path: string) => void
     onPathsChange?: (pathsCount: number) => void,
+}
 
+interface NativeTouchProps {
     handleTouchesInNative: boolean
     /** fires only if `handleTouchesInNative` is set to `true` */
     onPress: (NativeTouchEvent) => void

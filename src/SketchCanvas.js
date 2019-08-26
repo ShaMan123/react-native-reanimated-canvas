@@ -430,9 +430,10 @@ class SketchCanvas extends React.Component {
     }
 
     renderBaseView() {
-        const { style, localSourceImage, permissionDialogTitle, permissionDialogMessage, hardwareAccelerated, touchEnabled, strokeColor, strokeWidth, handleTouchesInNative } = this.props;
+        const { style, localSourceImage, permissionDialogTitle, permissionDialogMessage, hardwareAccelerated, touchEnabled, strokeColor, strokeWidth, handleTouchesInNative, ...props } = this.props;
         return (
             <RNSketchCanvas
+                {...props}
                 ref={this._handleRef}
                 style={style}
                 onLayout={this.onLayout}
