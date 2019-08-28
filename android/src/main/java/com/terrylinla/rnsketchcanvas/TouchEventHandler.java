@@ -69,11 +69,13 @@ public class TouchEventHandler {
     }
 
     private class GestureListener implements GestureDetector.OnGestureListener {
+        private boolean isLongPress;
         @Override
         public boolean onDown(MotionEvent event) {
             int action = event.getAction();
             if(mView.getCurrentPath() != null) mView.end();
             prevTouchAction = action;
+            isLongPress = false;
             return true;
         }
 
@@ -84,6 +86,7 @@ public class TouchEventHandler {
 
         @Override
         public void onLongPress(MotionEvent motionEvent) {
+            isLongPress = true;
             if(mShouldFireOnLongPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), ON_LONG_PRESS);
         }
 
@@ -123,7 +126,7 @@ public class TouchEventHandler {
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
             if(mShouldFireOnPressEvent) {
-                emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
+                if(!isLongPress) emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
                 return true;
             }
             return false;
