@@ -399,7 +399,7 @@ class SketchCanvas extends React.Component {
 
     onGestureEvent = (e) => {
         this.addPoint(e.nativeEvent.x, e.nativeEvent.y);
-        this.prop.onGestureEvent && this.prop.onGestureEvent(e);
+        this.props.onGestureEvent && this.props.onGestureEvent(e);
     }
 
     _handleRef = (ref) => {
