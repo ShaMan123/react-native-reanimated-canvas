@@ -1,65 +1,10 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import ReactNative, {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  ViewPropTypes,
-} from 'react-native'
-import SketchCanvas from './src/SketchCanvas';
-import { requestPermissions } from './src/handlePermissions';
+import React, { Component } from 'react';
+import { FlatList, TouchableOpacity, View } from 'react-native';
+import { requestPermissions } from './handlePermissions';
+import SketchCanvas from './SketchCanvas';
+import { RNSketchCanvasProps } from '../index';
 
-export default class RNSketchCanvas extends React.Component {
-  static propTypes = {
-    containerStyle: ViewPropTypes.style,
-    canvasStyle: ViewPropTypes.style,
-    onStrokeStart: PropTypes.func,
-    onStrokeChanged: PropTypes.func,
-    onStrokeEnd: PropTypes.func,
-    onClosePressed: PropTypes.func,
-    onUndoPressed: PropTypes.func,
-    onClearPressed: PropTypes.func,
-    onPathsChange: PropTypes.func,
-    user: PropTypes.string,
-
-    closeComponent: PropTypes.node,
-    eraseComponent: PropTypes.node,
-    undoComponent: PropTypes.node,
-    clearComponent: PropTypes.node,
-    saveComponent: PropTypes.node,
-    strokeComponent: PropTypes.func,
-    strokeSelectedComponent: PropTypes.func,
-    strokeWidthComponent: PropTypes.func,
-
-    strokeColors: PropTypes.arrayOf(PropTypes.shape({ color: PropTypes.string })),
-    defaultStrokeIndex: PropTypes.number,
-    defaultStrokeWidth: PropTypes.number,
-
-    minStrokeWidth: PropTypes.number,
-    maxStrokeWidth: PropTypes.number,
-    strokeWidthStep: PropTypes.number,
-
-    savePreference: PropTypes.func,
-    onSketchSaved: PropTypes.func,
-
-    text: PropTypes.arrayOf(PropTypes.shape({
-      text: PropTypes.string,
-      font: PropTypes.string,
-      fontSize: PropTypes.number,
-      fontColor: PropTypes.string,
-      overlay: PropTypes.oneOf(['TextOnSketch', 'SketchOnText']),
-      anchor: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-      position: PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
-      coordinate: PropTypes.oneOf(['Absolute', 'Ratio']),
-      alignment: PropTypes.oneOf(['Left', 'Center', 'Right']),
-      lineHeightMultiple: PropTypes.number,
-    })),
-    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.string }),
-
-    permissionDialogTitle: PropTypes.string,
-    permissionDialogMessage: PropTypes.string,
-  };
+export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> {
 
   static defaultProps = {
     containerStyle: null,
@@ -279,7 +224,3 @@ RNSketchCanvas.MAIN_BUNDLE = SketchCanvas.MAIN_BUNDLE;
 RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
 RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
 RNSketchCanvas.CACHES = SketchCanvas.CACHES;
-
-export {
-    SketchCanvas
-}
