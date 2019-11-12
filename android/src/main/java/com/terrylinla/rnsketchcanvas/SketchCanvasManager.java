@@ -93,7 +93,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.setTouchState(new TouchState(propValue));
     }
 
-    @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = true)
+    @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = false)
     public void shouldHandleTouches(SketchCanvas viewContainer, boolean handle) {
         viewContainer.getTouchHandler().setShouldHandleTouches(handle);
     }
