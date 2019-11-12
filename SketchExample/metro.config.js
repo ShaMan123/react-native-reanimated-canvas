@@ -10,6 +10,7 @@ const { mergeConfig } = require("metro-config");
 const path = require('path');
 const pkg = require('./package.json');
 const configB = require('../metro.config');
+const _ = require('lodash');
 
 const config = {
   resolver: {
@@ -17,7 +18,8 @@ const config = {
       path.resolve(__dirname, '../node_modules/react-native-gesture-handler'),
       path.resolve(__dirname, '..', 'example'),
     ]),
-    providesModuleNodeModules: Object.keys(pkg.dependencies)
+    //providesModuleNodeModules: _.keys(pkg.dependencies),
+    extraNodeModules: _.mapValues(pkg.dependencies, (n) => path.resolve(__dirname, 'node_modules', n))
   },
   watchFolders: [path.resolve(__dirname, '..')],
   transformer: {

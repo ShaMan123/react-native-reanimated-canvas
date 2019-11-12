@@ -1,10 +1,15 @@
 'use strict';
 
+import _ from 'lodash';
+import { useMemo } from 'react';
 import { NativeModules, Platform, UIManager } from 'react-native';
 import { ImageType } from '../index';
+import { Commands } from './types';
 
-const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
-const { Commands } = UIManager.getViewManagerConfig('RNSketchCanvas');
+const NativeModuleManager = Platform.select({
+  ios: NativeModules.RNSketchCanvasManager,
+  default: NativeModules.SketchCanvasModule
+});
 
 /**
    * @param imageType "png" or "jpg"
@@ -40,30 +45,24 @@ export function getBase64(
   cropToImageSize: boolean,
   callback: (error: any, result?: string) => void
   ) {
-  if (Platform.OS === 'ios') {
-    SketchCanvasManager.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
-  } else {
-    NativeModules.SketchCanvasModule.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
-  }
+  return NativeModuleManager.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
 }
 
+export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
+export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R = T extends number ? boolean : Array<number>>(
+export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>, C extends (error: any, result?: R) => void> (
   handle: number,
   x: number,
   y: number,
-  pathId: T,
-  callback: (error: any, result?: R) => void
+  pathId?: T,
+  callback?: C
 ) {
   const nativeX = x;
   const nativeY = y;
   const normalizedPathId = typeof pathId === 'number' ? pathId : null;
   const nativeMethod = (callback: (error: any, result?: R) => void) => {
-    if (Platform.OS === 'ios') {
-      SketchCanvasManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, callback);
-    } else {
-      NativeModules.SketchCanvasModule.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, callback);
-    }
+    return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, callback);
   };
 
   if (callback) {
@@ -75,9 +74,9 @@ export function isPointOnPath<T, R = T extends number ? boolean : Array<number>>
         if (err) reject(err);
         resolve(success);
       });
-    });
+    }) as Promise<R>;
   }
-}
+};
 
 export function setTouchRadius(handle: number, radius: number, callback: (error: any, result?: boolean) => void) {
   const r = typeof radius === 'number' ? radius : 0;
@@ -86,8 +85,9 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
     if (Platform.OS === 'ios') {
       //  need to implement native callback 
       //SketchCanvasManager.setTouchRadius(handle, r, callback);
+      throw new Error('Sketch Canvas: `setTouchRadius` isn\'t implemented yet');
     } else {
-      NativeModules.SketchCanvasModule.setTouchRadius(handle, r, callback);
+      NativeModuleManager.setTouchRadius(handle, r, callback);
     }
   };
 
@@ -102,4 +102,16 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
       });
     });
   }
+}
+
+export function useModule(handle?: number | null) {
+  return useMemo(() => {
+    const methods = { save, getBase64, isPointOnPath, setTouchRadius };
+    if (_.isNil(handle)) {
+      const stub = () => { };
+      return _.mapValues(methods, () => stub);
+    } else {
+      return _.mapValues(methods, (m) => m.bind({}, handle));
+    }
+  }, [handle]);
 }

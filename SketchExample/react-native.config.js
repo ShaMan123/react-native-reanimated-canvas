@@ -4,9 +4,9 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 
 module.exports = {
-    dependencies: {
-        '@terrylinla/react-native-sketch-canvas': {
-            root,
-        }
-    },
+  dependencies: {
+    'react-native-reanimated-canvas': {
+      root,
+    }
+  },
 };

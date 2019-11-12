@@ -15,7 +15,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_ADD_POINT = 1;
@@ -32,7 +32,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     private static final String PROPS_STROKE_COLOR = "strokeColor";
     private static final String PROPS_STROKE_WIDTH = "strokeWidth";
     private static final String PROPS_TOUCH_ENABLED = "touchEnabled";
-    private static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "handleTouchesInNative";
+    private static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "useNativeDriver";
     private static final String PROPS_ON_STROKE = "onStrokeChanged";
     private static final String PROPS_ON_PRESS = "onPress";
     private static final String PROPS_ON_LONG_PRESS = "onLongPress";
@@ -73,7 +73,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.setCanvasText(text);
     }
 
-    @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
+    @ReactProp(name = PROPS_HARDWARE_ACCELERATED, defaultBoolean = false)
     public void setHardwareAccelerated(SketchCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAccelerated(useAcceleration);
     }
@@ -88,7 +88,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.setStrokeWidth((int) PixelUtil.toPixelFromDIP(width));
     }
 
-    @ReactProp(name = PROPS_TOUCH_ENABLED)
+    @ReactProp(name = PROPS_TOUCH_ENABLED, defaultBoolean = true)
     public void setTouchState(SketchCanvas viewContainer, Dynamic propValue) {
         viewContainer.setTouchState(new TouchState(propValue));
     }
@@ -98,17 +98,17 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         viewContainer.getTouchHandler().setShouldHandleTouches(handle);
     }
 
-    @ReactProp(name = PROPS_ON_STROKE)
+    @ReactProp(name = PROPS_ON_STROKE, defaultBoolean = false)
     public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getTouchHandler().setShouldFireOnStrokeChangedEvent(callback != null);
     }
 
-    @ReactProp(name = PROPS_ON_PRESS)
+    @ReactProp(name = PROPS_ON_PRESS, defaultBoolean = false)
     public void shouldFireOnPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getTouchHandler().setShouldFireOnPressEvent(callback != null);
     }
 
-    @ReactProp(name = PROPS_ON_LONG_PRESS)
+    @ReactProp(name = PROPS_ON_LONG_PRESS, defaultBoolean = false)
     public void shouldFireOnLongPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getTouchHandler().setShouldFireOnLongPressEvent(callback != null);
     }
@@ -176,8 +176,9 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         }
     }
 
-
-    public static Map<String, Object> createExportedCustomDirectEventTypeConstants() {
+    @Nullable
+    @Override
+    public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
                 .put(TouchEventHandler.STROKE_START, MapBuilder.of("registrationName", TouchEventHandler.STROKE_START))
                 .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
-import { requestPermissions } from './handlePermissions';
-import SketchCanvas from './SketchCanvas';
-import { RNSketchCanvasProps } from '../index';
+import SketchCanvas from 'react-native-reanimated-canvas';
 
-export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> {
+export default class RNSketchCanvas extends Component {
 
   static defaultProps = {
     containerStyle: null,
@@ -64,6 +62,7 @@ export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> 
     permissionDialogMessage: '',
   };
 
+  _ref = React.createRef();
 
   constructor(props) {
     super(props)
@@ -138,13 +137,7 @@ export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> 
   componentDidUpdate() {
     this._colorChanged = false
   }
-
-  async componentDidMount() {
-    const isStoragePermissionAuthorized = await requestPermissions(
-      this.props.permissionDialogTitle,
-      this.props.permissionDialogMessage,
-    );
-  }
+  
 
   render() {
     return (
@@ -190,20 +183,14 @@ export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> 
           </View>
         </View>
         <SketchCanvas
-          ref={ref => this._sketchCanvas = ref}
+          {...this.props}
+          ref={ref => {
+            this._sketchCanvas = ref;
+          }}
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
-          onStrokeStart={this.props.onStrokeStart}
-          onStrokeChanged={this.props.onStrokeChanged}
-          onStrokeEnd={this.props.onStrokeEnd}
-          user={this.props.user}
           strokeWidth={this.state.strokeWidth}
-          onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
-          onPathsChange={this.props.onPathsChange}
-          text={this.props.text}
-          localSourceImage={this.props.localSourceImage}
-          permissionDialogTitle={this.props.permissionDialogTitle}
-          permissionDialogMessage={this.props.permissionDialogMessage}
+          onSketchSaved={({ nativeEvent: { success, path } }) => { this.props.onSketchSaved(success, path) }}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList
@@ -219,8 +206,3 @@ export default class RNSketchCanvas extends Component<RNSketchCanvasProps, any> 
     );
   }
 };
-
-RNSketchCanvas.MAIN_BUNDLE = SketchCanvas.MAIN_BUNDLE;
-RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
-RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
-RNSketchCanvas.CACHES = SketchCanvas.CACHES;

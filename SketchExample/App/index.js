@@ -6,25 +6,15 @@
 
 import React, { Component } from 'react';
 import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Alert,
+  Alert, AppRegistry, Button, Image, Modal, Platform,
   //TouchableOpacity,
-  ScrollView,
-  Platform,
-  Button,
-  Modal,
-  TouchableHighlight,
-  Image,
-  Animated,
-  TouchableOpacity
+  ScrollView, StyleSheet, Text, TouchableOpacity, View
 } from 'react-native';
 import { RNCamera } from 'react-native-camera';
-
-import RNSketchCanvas, { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import SketchCanvas from 'react-native-reanimated-canvas';
+import RNSketchCanvas from '../App/RNSketchCanvas';
 import Example8 from './Example8';
+
 
 export default class example extends Component {
   constructor(props) {
@@ -57,7 +47,9 @@ export default class example extends Component {
     this.setState({ modalVisible: visible });
   }
 
-  onSketchSaved = (success, path) => {
+  onSketchSaved = (e) => {
+    console.log(e.nativeEvent)
+    const { success, path } = e.nativeEvent;
     Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
     if (success) {
       this.setState({
@@ -164,8 +156,6 @@ export default class example extends Component {
             <RNSketchCanvas
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-              onStrokeEnd={data => {
-              }}
               closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
@@ -208,7 +198,7 @@ export default class example extends Component {
                 }
               }}
               onSketchSaved={this.onSketchSaved}
-              onPathsChange={(pathsCount) => {
+              onPathsChange={({ nativeEvent: { pathsCount } }) => {
                 console.log('pathsCount', pathsCount)
               }}
             />
@@ -246,18 +236,13 @@ export default class example extends Component {
                 strokeColor={this.state.color}
                 strokeWidth={this.state.thickness}
                 onStrokeStart={(ev) => {
-                  console.log(ev);
                   this.setState({ message: 'Start' })
                 }}
                 onStrokeChanged={(ev) => {
-                  console.log(ev);
                   this.setState({ message: 'Changed' })
                 }}
                 onStrokeEnd={() => {
                   this.setState({ message: 'End' })
-                }}
-                onPathsChange={(pathsCount) => {
-                  console.log('pathsCount', pathsCount)
                 }}
               />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -338,12 +323,9 @@ export default class example extends Component {
                 }
               }}
               onSketchSaved={this.onSketchSaved}
-              onStrokeEnd={(path) => {
-                console.log(path)
-                this.canvas2.addPath(path)
-              }}
-              onPathsChange={(pathsCount) => {
-                console.log('pathsCount(user1)', pathsCount)
+              onStrokeEnd={(e) => {
+                console.log(e)
+                this.canvas2.addPath(e.nativeEvent)
               }}
             />
             <RNSketchCanvas
@@ -389,11 +371,8 @@ export default class example extends Component {
                 }
               }}
               onSketchSaved={this.onSketchSaved}
-              onStrokeEnd={(path) => {
-                this.canvas1.addPath(path)
-              }}
-              onPathsChange={(pathsCount) => {
-                console.log('pathsCount(user2)', pathsCount)
+              onStrokeEnd={(e) => {
+                this.canvas1.addPath(e.nativeEvent)
               }}
             />
           </View>
@@ -491,16 +470,11 @@ export default class example extends Component {
               // localSourceImage={{ filename: 'bulb.png', directory: RNSketchCanvas.MAIN_BUNDLE }}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-              onStrokeEnd={data => {
-              }}
               closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
               undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
-              onUndoPressed={(id) => {
-                // Alert.alert('do something')
-              }}
               clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
               onClearPressed={() => {
                 // Alert.alert('do something')
@@ -537,9 +511,6 @@ export default class example extends Component {
                 }
               }}
               onSketchSaved={this.onSketchSaved}
-              onPathsChange={(pathsCount) => {
-                console.log('pathsCount', pathsCount)
-              }}
             />
           </View>
         }
@@ -556,20 +527,12 @@ export default class example extends Component {
               ]}
               containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
               canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-              onStrokeEnd={data => {
-              }}
               closeComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View>}
               onClosePressed={() => {
                 this.setState({ example: 0 })
               }}
               undoComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Undo</Text></View>}
-              onUndoPressed={(id) => {
-                // Alert.alert('do something')
-              }}
               clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
-              onClearPressed={() => {
-                // Alert.alert('do something')
-              }}
               eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
               strokeComponent={color => (
                 <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
@@ -603,9 +566,7 @@ export default class example extends Component {
                 }
               }}
               onSketchSaved={this.onSketchSaved}
-              onPathsChange={(pathsCount) => {
-                console.log('pathsCount', pathsCount)
-              }}
+              
             />
           </View>
         }

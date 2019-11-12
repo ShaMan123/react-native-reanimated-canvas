@@ -1,5 +1,5 @@
 {
-  "name": "@terrylinla/react-native-sketch-canvas",
+  "name": "react-native-reanimated-canvas",
   "repository": {
     "type": "git",
     "url": "https://github.com/terrylinla/react-native-sketch-canvas"
@@ -26,7 +26,7 @@
   },
   "optionalDependencies": {
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "^1.4.0"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",

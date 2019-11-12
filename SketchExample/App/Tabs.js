@@ -10,7 +10,7 @@ import {
 import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
 
-import { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import SketchCanvas from 'react-native-reanimated-canvas';
 import Example8 from './Example8';
 
 const GHSC = createNativeWrapper(SketchCanvas, {
