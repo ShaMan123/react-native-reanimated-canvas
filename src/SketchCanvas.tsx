@@ -56,9 +56,9 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   const [_size, size] = useRefGetter({ width: 0, height: 0 });
   const [_ref, handle, ref] = useRefGetter(null as any, (current) => findNodeHandle(current));
   const [_currentPath, currentPath] = useRefGetter<string>();
-  const [_paths, paths] = useRefGetter([] as Path[]);
+  const [_paths, paths] = useRefGetter([] as PathData[]);
   const [_path, path] = useRefGetter({} as PathData);
-  const [_pathsToProcess, pathsToProcess] = useRefGetter<Path[]>([]);
+  const [_pathsToProcess, pathsToProcess] = useRefGetter<PathData[]>([]);
 
   const dispatchCommand = useCallback((command: Commands, data: any[] = []) =>
     UIManager.dispatchViewManagerCommand(handle(), command, data),
@@ -68,42 +68,42 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   const module = useModule(handle());
 
   const findPath = useCallback((pathId: string) =>
-    _.find(paths(), (p) => _.isEqual(p.path.id, pathId)),
+    _.find(paths(), (p) => _.isEqual(p.id, pathId)),
     [paths]
   );
 
-  const addPaths = useCallback((data: Path[]) => {
+  const addPaths = useCallback((data: PathData[]) => {
     if (isInitialized()) {
-      const parsedPaths = data.map((data) => {
-        if (_.isNil(findPath(data.path.id))) paths().push(data);
-        const scaler = size().width / data.size.width;
+      const parsedPaths = data.map((d) => {
+        if (_.isNil(findPath(d.id))) paths().push(d);
+        const scaler = 1;    //size().width / data.size.width;
         return [
-          data.path.id,
-          processColor(data.path.color),
-          data.path.width,
-          _.map(data.path.points, (p) => {
+          d.id,
+          typeof d.color === 'number'?d.color:processColor(d.color),
+          d.width,
+          _.map(d.points, (p) => {
             return _.mapValues(p, (val) => val * scaler);
           })
         ];
       });
-
+      //console.log(parsedPaths)
       dispatchCommand(Commands.addPaths, parsedPaths);
     }
     else {
-      data.map((data) => pathsToProcess().filter(p => p.path.id === data.path.id).length === 0 && pathsToProcess().push(data));
+      data.map((data) => pathsToProcess().filter(p => p.id === data.id).length === 0 && pathsToProcess().push(data));
     }
   },
     [isInitialized, dispatchCommand, findPath, paths, pathsToProcess, size]
   );
 
-  const addPath = useCallback((data: Path) =>
+  const addPath = useCallback((data: PathData) =>
     addPaths([data]),
     [addPaths]
   );
 
   const deletePaths = useCallback((pathIds: string[]) => {
     _paths.current = paths()
-      .filter(p => pathIds.findIndex(id => p.path.id === id) === -1);
+      .filter(p => pathIds.findIndex(id => p.id === id) === -1);
     dispatchCommand(Commands.deletePaths, pathIds);
   }, [_paths, paths, dispatchCommand]);
 
@@ -146,7 +146,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
     props.onStrokeStart && props.onStrokeStart(path());
     */
   },
-    [_path, path]
+    [_path, path, strokeColor, strokeWidth]
   );
 
   const addPoint = useCallback((x: number, y: number) => {
@@ -224,6 +224,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   useImperativeHandle(forwardedRef, () =>
     ({
       ...module,
+      dispatchCommand,
       addPath,
       addPaths,
       deletePath,
@@ -240,6 +241,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
     }),
     [
       module,
+      dispatchCommand,
       addPath,
       addPaths,
       deletePath,
@@ -277,7 +279,8 @@ ForwardedSketchCanvas.defaultProps = {
   permissionDialogTitle: '',
   permissionDialogMessage: '',
 
-  hardwareAccelerated: false
+  hardwareAccelerated: false,
+  //useNativeDriver: false
 } as SketchCanvasProperties;
 ForwardedSketchCanvas.displayName = '() => SketchCanvas'
 
