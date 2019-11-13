@@ -14,6 +14,7 @@ import { RNCamera } from 'react-native-camera';
 import SketchCanvas from 'react-native-reanimated-canvas';
 import RNSketchCanvas from '../App/RNSketchCanvas';
 import Example8 from './Example8';
+import RCanvas from './reanimated';
 import Animated from 'react-native-reanimated';
 
 
@@ -94,6 +95,7 @@ export default class example extends Component {
   }
 
   render() {
+    return <RCanvas />
     return (
       <View style={styles.container}>
         
