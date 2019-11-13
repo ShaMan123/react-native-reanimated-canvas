@@ -1,5 +1,5 @@
 # react-native-reanimated-canvas
-===================
+
 This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
 The android code has been heavily refactored to boost performance.
 Some features have been added and a lot of javascript has been removed making it more light weight and low-level, befitting `react-native-reanimated`.
@@ -18,27 +18,8 @@ Install from `npm` (only support RN >= 0.60)
 npm install react-native-reanimated-canvas --save
 ```
 
-#### Update `metro.config.js`
-
-* Add the following config to programmatically select touch handling.
-* Uses `react-native-gesture-handler` if installed, otherwise defaults to `PanResponder`.
-* For more information see [metro-config](https://facebook.github.io/metro/docs/en/configuration#merging-example)
-
-```javascript
-+ const { mergeConfig } = require("metro-config");
-...
-+ const sketchCanvasConfig = require('@terrylinla/react-native-sketch-canvas/metro.config');
-const config = { ...your project's config }
-...
-+ module.exports = mergeConfig(config, sketchCanvasConfig);
-```
-
-
 ## Usage
--------------
-<img src="https://i.imgur.com/4qpiX8m.png" height="400" />
 
-### ● Using without UI component (for customizing UI)
 ```javascript
 import React, { Component } from 'react';
 import {
@@ -49,29 +30,16 @@ import {
 
 import { SketchCanvas } from 'react-native-reanimated-canvas';
 
-export default class example extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <SketchCanvas
+export default function(props) {
+  return (
+       <SketchCanvas
             style={{ flex: 1 }}
             strokeColor={'red'}
             strokeWidth={7}
           />
-        </View>
-      </View>
     );
-  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
-  },
-});
-
-AppRegistry.registerComponent('example', () => example);
 ```
 
 #### Properties
