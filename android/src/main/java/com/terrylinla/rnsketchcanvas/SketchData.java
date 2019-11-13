@@ -26,9 +26,9 @@ import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 public class SketchData {
     public final ArrayList<PointF> points = new ArrayList<PointF>();
     public final String id;
-    public final int strokeColor;
-    public final float strokeWidth;
-    public final boolean isTranslucent;
+    public int strokeColor;
+    public float strokeWidth;
+    public boolean isTranslucent;
 
     private Paint mPaint;
     private Path mPath;
@@ -38,19 +38,27 @@ public class SketchData {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
     }
 
-    public WritableMap getMap(){
+    public WritableMap getMap() {
+        return getMap(true);
+    }
+
+    public WritableMap getMap(Boolean includePoints){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
         path.putString("id", id);
         path.putInt("color", strokeColor);
         path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
-        for(PointF point: points){
-            WritableMap p = Arguments.createMap();
-            p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
-            p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
-            arr.pushMap(p);
+
+        if (includePoints) {
+            for(PointF point: points){
+                WritableMap p = Arguments.createMap();
+                p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
+                p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
+                arr.pushMap(p);
+            }
+            path.putArray("points", arr);
         }
-        path.putArray("points", arr);
+
         return path;
     }
 
