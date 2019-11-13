@@ -28,11 +28,11 @@ import {
   View,
 } from 'react-native';
 
-import { SketchCanvas } from 'react-native-reanimated-canvas';
+import AnimatedCanvas from 'react-native-reanimated-canvas';
 
 export default function(props) {
   return (
-       <SketchCanvas
+       <AnimatedCanvas
             style={{ flex: 1 }}
             strokeColor={'red'}
             strokeWidth={7}
@@ -216,6 +216,7 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 -------------
 Check full example app in the [Example](./SketchExample) folder 
 
+
 ## Troubleshooting
 -------------
-Please refer  [here](https://github.com/terrylinla/react-native-sketch-canvas/wiki/Troubleshooting).
+Feel free to submit issues and PRs.

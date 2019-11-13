@@ -15,44 +15,35 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
-class CanvasText {
-    public String text;
-    public Paint paint;
-    public PointF anchor, position, drawPosition, lineOffset;
-    public boolean isAbsoluteCoordinate;
-    public Rect textBounds;
-    public float height;
-}
-
 public class SketchCanvas extends View {
-    //final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+    public final static String TAG = "RNSketchCanvas";
+
     private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
     private SketchData mCurrentPath = null;
 
     private ThemedReactContext mContext;
     private boolean mDisableHardwareAccelerated = false;
-
-    private Paint mPaint = new Paint();
 
     private int mOriginalWidth, mOriginalHeight;
     private Picture mBackgroundImage;
@@ -62,13 +53,25 @@ public class SketchCanvas extends View {
     private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
     private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
 
-    private int mTouchRadius = 0;
-
-    public final static String TAG = "RNSketchCanvas";
+    private float mTouchRadius = 0;
+    private int mStrokeColor;
+    private int mStrokeWidth;
+    private TouchState mTouchState;
+    private EventHandler eventHandler;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
+        eventHandler = new EventHandler(this);
+    }
+
+    public EventHandler getEventHandler(){
+        return eventHandler;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return eventHandler.onTouchEvent(event);
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
@@ -78,6 +81,59 @@ public class SketchCanvas extends View {
         } else{
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
+    }
+
+    public void setStrokeColor(int color){
+        mStrokeColor = color;
+    }
+
+    public void setStrokeWidth(int width){
+        mStrokeWidth = width;
+    }
+
+    public TouchState getTouchState(){
+        return mTouchState;
+    }
+
+    public void setTouchState(TouchState touchState){
+        mTouchState = touchState;
+        ViewParent parent = getParent();
+        if(parent != null) {
+            if (mTouchState.getState() == TouchState.NONE) {
+                parent.requestDisallowInterceptTouchEvent(false);
+            } else {
+                parent.requestDisallowInterceptTouchEvent(true);
+            }
+        }
+    }
+
+    @Nullable public SketchData getCurrentPath(){
+        return mCurrentPath;
+    }
+
+    public SketchData getPath(String id){
+        for (SketchData path: mPaths) {
+            if (path.id.equals(id)) {
+                return path;
+            }
+        }
+
+        throw new JSApplicationIllegalArgumentException("SketchCanvas failed to find path with id + " + id);
+    }
+
+    public void setCurrentPath(String id){
+        mCurrentPath = getPath(id);
+    }
+
+    public void setAttributes(String id, ReadableMap attributes) {
+        SketchData path = getPath(id);
+        if (attributes.hasKey("color")) {
+            path.strokeColor = attributes.getInt("color");
+        }
+        if (attributes.hasKey("width")) {
+            path.strokeWidth = PixelUtil.toPixelFromDIP(attributes.getInt("width"));
+        }
+        invalidateCanvas(false);
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -206,7 +262,11 @@ public class SketchCanvas extends View {
         invalidateCanvas(true);
     }
 
-    public void newPath(int id, int strokeColor, float strokeWidth) {
+    public void newPath() {
+        newPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
+    }
+
+    public void newPath(String id, int strokeColor, float strokeWidth) {
         mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
@@ -218,19 +278,33 @@ public class SketchCanvas extends View {
     }
 
     public void addPoint(float x, float y) {
-        Rect updateRect = mCurrentPath.addPoint(new PointF(x, y));
+        addPoint(new PointF(x, y));
+    }
+
+    public void addPoint(PointF point) {
+        Rect updateRect = mCurrentPath.addPoint(point);
         invalidate();
     }
 
-    public void  addPaths(@Nullable ReadableArray paths){
+    public static ArrayList<PointF> parsePathCoords(ReadableArray coords){
+        ArrayList<PointF> pointPath;
+        pointPath = new ArrayList<PointF>(coords.size());
+        for (int i=0; i<coords.size(); i++) {
+            ReadableMap p = coords.getMap(i);
+            pointPath.add(new PointF(PixelUtil.toPixelFromDIP(p.getDouble("x")), PixelUtil.toPixelFromDIP(p.getDouble("y"))));
+        }
+        return pointPath;
+    }
+
+    public void addPaths(@Nullable ReadableArray paths){
         for (int k = 0; k < paths.size(); k++){
             ReadableArray path = paths.getArray(k);
-            addPath(path.getInt(0), path.getInt(1), (float)path.getInt(2), SketchCanvasManager.parsePathCoords(path.getArray(3)));
+            addPath(path.getString(0), path.getInt(1), PixelUtil.toPixelFromDIP(path.getInt(2)), parsePathCoords(path.getArray(3)));
         }
         invalidateCanvas(true);
     }
 
-    private void addPath(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(SketchData data: mPaths) {
             if (data.id == id) {
@@ -251,15 +325,15 @@ public class SketchCanvas extends View {
         }
     }
 
-    public void deletePath(int id) {
+    public void deletePath(String id) {
         int index = -1;
+
         for(int i = 0; i<mPaths.size(); i++) {
-            if (mPaths.get(i).id == id) {
+            if (id.equals(mPaths.get(i).id)) {
                 index = i;
                 break;
             }
         }
-
         if (index > -1) {
             mPaths.remove(index);
             invalidateCanvas(true);
@@ -277,10 +351,7 @@ public class SketchCanvas extends View {
         WritableMap event = Arguments.createMap();
         event.putBoolean("success", success);
         event.putString("path", path);
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            getId(),
-            "topChange",
-            event);
+        eventHandler.emit(EventHandler.ON_SKETCH_SAVED, event);
     }
 
     public void save(final String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
@@ -361,6 +432,7 @@ public class SketchCanvas extends View {
                 text.drawPosition = position;
 
             }
+            invalidate();
         }
     }
 
@@ -399,10 +471,7 @@ public class SketchCanvas extends View {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
             event.putInt("pathsUpdate", mPaths.size());
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                "topChange",
-                event);
+            eventHandler.emit(EventHandler.PATHS_UPDATE, event);
         }
         invalidate();
     }
@@ -448,7 +517,7 @@ public class SketchCanvas extends View {
         return bitmap;
     }
 
-    private int getPathIndex(int pathId){
+    private int getPathIndex(String pathId){
         for (int i=0; i < mPaths.size(); i++) {
             if(pathId == mPaths.get(i).id) {
                 return i;
@@ -463,15 +532,21 @@ public class SketchCanvas extends View {
     }
 
     public void setTouchRadius(int value){
+        mTouchRadius = ((float) value);
+    }
+    public void setTouchRadius(float value){
         mTouchRadius = value;
     }
 
-    private int getTouchRadius(float strokeWidth){
-        return mTouchRadius <= 0 && strokeWidth > 0? (int)(strokeWidth * 0.5): mTouchRadius;
+    public float getTouchRadius(){
+        return mTouchRadius;
+    }
+    public float getTouchRadius(float strokeWidth){
+        return mTouchRadius <= 0 && strokeWidth > 0? (strokeWidth * 0.5f): mTouchRadius;
     }
 
     @TargetApi(19)
-    public boolean isPointUnderTransparentPath(int x, int y, int pathId){
+    public boolean isPointUnderTransparentPath(float x, float y, String pathId){
         int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
         for (int i = getPathIndex(pathId); i < mPaths.size(); i++){
             SketchData mPath = mPaths.get(i);
@@ -483,7 +558,7 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public boolean isPointOnPath(int x, int y, int pathId){
+    public boolean isPointOnPath(float x, float y, String pathId){
         if(isPointUnderTransparentPath(x, y, pathId)) {
             return false;
         }
@@ -494,16 +569,15 @@ public class SketchCanvas extends View {
     }
 
     @TargetApi(19)
-    public WritableArray isPointOnPath(int x, int y){
+    public WritableArray isPointOnPath(float x, float y){
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
-        SketchData mPath;
-        int r;
-        for (int i=0; i < mPaths.size(); i++) {
-            mPath = mPaths.get(i);
+        float r;
+
+        for(SketchData mPath: mPaths) {
             r = getTouchRadius(mPath.strokeWidth);
             if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
-                array.pushInt(mPath.id);
+                array.pushString(mPath.id);
             }
         }
 

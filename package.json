@@ -1,5 +1,5 @@
 {
-  "name": "@terrylinla/react-native-sketch-canvas",
+  "name": "react-native-reanimated-canvas",
   "repository": {
     "type": "git",
     "url": "https://github.com/terrylinla/react-native-sketch-canvas"
@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "description": "react-native-sketch-canvas allows you to draw / sketch on both iOS and Android devices and sync the drawing data between users. Of course you can save as image.",
   "author": "Terry Lin",
-  "main": "index.js",
+  "main": "src/index.ts",
   "keywords": [
     "react-native",
     "react-native-sketch",
@@ -21,19 +21,35 @@
   "nativePackage": true,
   "license": "MIT",
   "peerDependencies": {
-    "prop-types": "*",
     "react": "*",
-    "react-native": "*",
-    "react-native-gesture-handler": "*"
+    "react-native": "*"
+  },
+  "optionalDependencies": {
+    "react-native-gesture-handler": "^1.5.0",
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",
-    "prop-types": "^15.7.2"
+    "typescript": "^3.7.2"
   },
   "devDependencies": {
-    "chalk": "^2.4.2"
+    "@types/jest": "^24.0.22",
+    "@types/lodash": "^4.14.146",
+    "@types/react": "^16.9.11",
+    "@types/react-native": "^0.60.22",
+    "@types/react-test-renderer": "^16.9.1",
+    "chalk": "^2.4.2",
+    "lodash": "^4.17.11",
+    "react-native-gesture-handler": "^1.5.0",
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
   },
   "scripts": {
     "postinstall": "node ./alertConfigChangeNeededScript.js"
-  }
+  },
+  "files": [
+    "/src",
+    "/android",
+    "/ios"
+  ],
+  "types": "index.d.ts"
 }

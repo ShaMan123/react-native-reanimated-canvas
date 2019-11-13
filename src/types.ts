@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { StyleProp, ViewProperties, ViewProps, ViewStyle, NativeSyntheticEvent } from "react-native";
-import { GestureHandlerProperties, PanGestureHandlerProperties } from 'react-native-gesture-handler';
+import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View } from "react-native";
+import SketchCanvas from './SketchCanvas';
 
 /*
 declare module 'react-native-sketch-canvas' {
@@ -8,26 +8,36 @@ declare module 'react-native-sketch-canvas' {
 }
 */
 
-type ImageType = 'png' | 'jpg'
+export enum Commands {
+  addPoint = 1,
+  newPath,
+  clear,
+  addPaths,
+  deletePaths,
+  save,
+  endPath
+}
 
-type Size = {
+export type ImageType = 'png' | 'jpg'
+
+export type Size = {
   width: number
   height: number
 }
 
-type Point = {
+export type Point = {
   x: number,
   y: number
 }
 
-type PathData = {
+export type PathData = {
   id: string
   color: string
   width: number
   points: Point[]
 }
 
-type Path = {
+export type Path = {
   drawer?: string
   size: Size
   path: PathData
@@ -35,7 +45,7 @@ type Path = {
 
 export type TouchStates = 'draw' | 'touch' | 'none';
 
-type CanvasText = {
+export type CanvasText = {
   text: string
   font?: string
   fontSize?: number
@@ -88,8 +98,6 @@ interface NativeTouchProps {
   onPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
   /** fires only if `useNativeDriver` is set to `true` */
   onLongPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
-
-  gestureHandler?: React.MutableRefObject<any>
 }
 
 export interface SketchCanvasProps extends NativeTouchProps {
@@ -127,15 +135,17 @@ export interface SketchCanvasProps extends NativeTouchProps {
   onStrokeStart?: (e: NativeSyntheticEvent<any>) => void
   onStrokeChanged?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
   onStrokeEnd?: (e: NativeSyntheticEvent<any>) => void
-  onSketchSaved?: (result: boolean, path: string) => void
-  onPathsChange?: (pathsCount: number) => void,
+  onSketchSaved?: (e: NativeSyntheticEvent<{ result: boolean, path: string }>) => void
+  onPathsChange?: (e: NativeSyntheticEvent<{ pathsCount: number }>) => void,
 }
 
 export type SketchCanvasProperties = SketchCanvasProps & ViewProps;
 
-export class SketchCanvas extends React.Component<SketchCanvasProperties> {
+
+export type SketchCanvasRef = {
   clear(): void
-  undo(): number
+  undo(): null | string
+  getPaths(): Path[]
   addPath(data: Path): void
   addPaths(paths: Path[]): void
   deletePath(id: string): void
@@ -148,7 +158,7 @@ export class SketchCanvas extends React.Component<SketchCanvasProperties> {
    * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
    */
   save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
-  getPaths(): Path[]
+  
 
   /**
    * @param imageType "png" or "jpg"
@@ -165,9 +175,9 @@ export class SketchCanvas extends React.Component<SketchCanvasProperties> {
  * @param callback If omitted the method returns a Promise
  */
   isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-  isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
+  //isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
   isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
-  isPointOnPath(x: number, y: number): Promise<number[]>
+  isPointOnPath(x: number, y: number): Promise<string[]>
 
   /**
    * start a new path
@@ -197,63 +207,9 @@ export class SketchCanvas extends React.Component<SketchCanvasProperties> {
    * */
   endPath(): void
 
+  getNode(): React.ComponentElement<SketchCanvasProperties, SketchCanvas>
 
-  static MAIN_BUNDLE: string
-  static DOCUMENT: string
-  static LIBRARY: string
-  static CACHES: string
+  handle(): number | null
 
-  /**
-   * Utility function that provides an id for future use
-   * */
-  static generatePathId(): number
-}
-
-export interface RNSketchCanvasProps extends SketchCanvasProperties {
-  containerStyle?: StyleProp<ViewStyle>
-  canvasStyle?: StyleProp<ViewStyle>
-  onClosePressed?: () => void
-  onUndoPressed?: (id: number) => void
-  onClearPressed?: () => void
-  onPathsChange?: (pathsCount: number) => void
-
-  closeComponent?: JSX.Element,
-  eraseComponent?: JSX.Element,
-  undoComponent?: JSX.Element,
-  clearComponent?: JSX.Element,
-  saveComponent?: JSX.Element,
-  strokeComponent?: (color: string) => JSX.Element
-  strokeSelectedComponent?: (color: string, index: number, changed: boolean) => JSX.Element
-  strokeWidthComponent?: (width: number) => JSX.Element
-
-  strokeColors?: { color: string }[]
-  defaultStrokeIndex?: number
-  defaultStrokeWidth?: number
-
-  minStrokeWidth?: number
-  maxStrokeWidth?: number
-  strokeWidthStep?: number
-
-  /**
-   * @param imageType "png" or "jpg"
-   * @param includeImage default true
-   * @param cropToImageSize default false
-   */
-  savePreference?: () => { folder: string, filename: string, transparent: boolean, imageType: ImageType, includeImage?: boolean, includeText?: boolean, cropToImageSize?: boolean }
-}
-
-export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps & ViewProperties> {
-  clear(): void
-  undo(): number
-  addPath(data: Path): void
-  addPaths(paths: Path[]): void
-  deletePath(id: number): void
-  deletePaths(ids: number[]): void
-  save(): void
-  nextStrokeWidth(): void
-
-  static MAIN_BUNDLE: string
-  static DOCUMENT: string
-  static LIBRARY: string
-  static CACHES: string
+  setNativeProps(props: SketchCanvasProperties): void
 }

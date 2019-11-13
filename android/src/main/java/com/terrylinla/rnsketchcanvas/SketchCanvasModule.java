@@ -7,8 +7,11 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
+
+import javax.annotation.Nullable;
 
 public class SketchCanvasModule extends ReactContextBaseJavaModule {
     SketchCanvasModule(ReactApplicationContext reactContext) {
@@ -39,14 +42,16 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     @TargetApi(19)
-    public void isPointOnPath(final int tag, final int x, final int y, final int pathId, final Callback callback){
+    public void isPointOnPath(final int tag, final float x, final float y, @Nullable final String pathId, final Callback callback){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    callback.invoke(null, pathId == -1? view.isPointOnPath(x, y): view.isPointOnPath(x, y, pathId));
+                    float nativeX = PixelUtil.toPixelFromDIP(x);
+                    float nativeY = PixelUtil.toPixelFromDIP(y);
+                    callback.invoke(null, pathId == null ? view.isPointOnPath(nativeX, nativeY): view.isPointOnPath(nativeX, nativeY, pathId));
                 }
             });
         } catch (Exception e) {
@@ -55,14 +60,14 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void setTouchRadius(final int tag, final int r, final Callback callback){
+    public void setTouchRadius(final int tag, final float r, final Callback callback){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
-                    view.setTouchRadius(r);
+                    view.setTouchRadius(PixelUtil.toPixelFromDIP(r));
                     callback.invoke(null, true);
                 }
             });

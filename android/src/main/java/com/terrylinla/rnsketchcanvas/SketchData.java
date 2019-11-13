@@ -13,13 +13,22 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.DisplayMetricsHolder;
+import com.facebook.react.uimanager.PixelUtil;
+
 import java.util.ArrayList;
+
+import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 
 public class SketchData {
     public final ArrayList<PointF> points = new ArrayList<PointF>();
-    public final int id, strokeColor;
-    public final float strokeWidth;
-    public final boolean isTranslucent;
+    public final String id;
+    public int strokeColor;
+    public float strokeWidth;
+    public boolean isTranslucent;
 
     private Paint mPaint;
     private Path mPath;
@@ -29,7 +38,31 @@ public class SketchData {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
     }
 
-    public SketchData(int id, int strokeColor, float strokeWidth) {
+    public WritableMap getMap() {
+        return getMap(true);
+    }
+
+    public WritableMap getMap(Boolean includePoints){
+        WritableMap path = Arguments.createMap();
+        WritableArray arr = Arguments.createArray();
+        path.putString("id", id);
+        path.putInt("color", strokeColor);
+        path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
+
+        if (includePoints) {
+            for(PointF point: points){
+                WritableMap p = Arguments.createMap();
+                p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
+                p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
+                arr.pushMap(p);
+            }
+            path.putArray("points", arr);
+        }
+
+        return path;
+    }
+
+    public SketchData(String id, int strokeColor, float strokeWidth) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
@@ -37,7 +70,7 @@ public class SketchData {
         mPath = this.isTranslucent ? new Path() : null;
     }
 
-    public SketchData(int id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    public SketchData(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
@@ -223,14 +256,14 @@ public class SketchData {
 
     //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
     @TargetApi(19)
-    boolean isPointOnPath(int x, int y, int r, Region boundingRegion) {
-        int radius = r;       //Math.max((int)(strokeWidth * 0.5), r);
+    boolean isPointOnPath(float x, float y, float r, Region boundingRegion) {
+        float radius = r;       //Math.max((int)(strokeWidth * 0.5), r);
         Path path = mPath == null ? evaluatePath(): mPath;
         Path mTouchPath = new Path();
         mTouchPath.addCircle(x, y, radius, Path.Direction.CW);
 
         Region region1 = new Region();
-        region1.setPath(mTouchPath, new Region(Math.max(x - radius, 0), Math.max(y - radius, 0), Math.max(x + radius, 0), Math.max(y + radius, 0)));
+        region1.setPath(mTouchPath, new Region((int)(Math.max(x - radius, 0)), (int)(Math.max(y - radius, 0)), (int)(Math.max(x + radius, 0)), (int)(Math.max(y + radius, 0))));
         Region region2 = new Region();
         region2.setPath(path, boundingRegion);
 
@@ -257,4 +290,5 @@ public class SketchData {
     }
 
     */
+
 }
