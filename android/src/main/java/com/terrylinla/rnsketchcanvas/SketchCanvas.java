@@ -17,24 +17,22 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -59,21 +57,21 @@ public class SketchCanvas extends View {
     private int mStrokeColor;
     private int mStrokeWidth;
     private TouchState mTouchState;
-    private TouchEventHandler touchHandler;
+    private EventHandler eventHandler;
 
     public SketchCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
-        touchHandler = new TouchEventHandler(this);
+        eventHandler = new EventHandler(this);
     }
 
-    public TouchEventHandler getTouchHandler(){
-        return touchHandler;
+    public EventHandler getEventHandler(){
+        return eventHandler;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return touchHandler.onTouchEvent(event);
+        return eventHandler.onTouchEvent(event);
     }
 
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
@@ -111,6 +109,31 @@ public class SketchCanvas extends View {
 
     @Nullable public SketchData getCurrentPath(){
         return mCurrentPath;
+    }
+
+    public SketchData getPath(String id){
+        for (SketchData path: mPaths) {
+            if (path.id.equals(id)) {
+                return path;
+            }
+        }
+
+        throw new JSApplicationIllegalArgumentException("SketchCanvas failed to find path with id + " + id);
+    }
+
+    public void setCurrentPath(String id){
+        mCurrentPath = getPath(id);
+    }
+
+    public void setAttributes(String id, ReadableMap attributes) {
+        SketchData path = getPath(id);
+        if (attributes.hasKey("color")) {
+            path.strokeColor = attributes.getInt("color");
+        }
+        if (attributes.hasKey("width")) {
+            path.strokeWidth = PixelUtil.toPixelFromDIP(attributes.getInt("width"));
+        }
+        invalidateCanvas(false);
     }
 
     public boolean openImageFile(String filename, String directory, String mode) {
@@ -328,10 +351,7 @@ public class SketchCanvas extends View {
         WritableMap event = Arguments.createMap();
         event.putBoolean("success", success);
         event.putString("path", path);
-        mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            getId(),
-            "topChange",
-            event);
+        eventHandler.emit(EventHandler.ON_SKETCH_SAVED, event);
     }
 
     public void save(final String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
@@ -451,10 +471,7 @@ public class SketchCanvas extends View {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
             event.putInt("pathsUpdate", mPaths.size());
-            mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-                getId(),
-                "topChange",
-                event);
+            eventHandler.emit(EventHandler.PATHS_UPDATE, event);
         }
         invalidate();
     }

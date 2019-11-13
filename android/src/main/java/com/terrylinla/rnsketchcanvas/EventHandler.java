@@ -12,18 +12,22 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIManagerModule;
+import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 import javax.annotation.Nullable;
 
 import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 
-public class TouchEventHandler {
+public class EventHandler {
     public final static String STROKE_START = "onStrokeStart";
     public final static String STROKE_CHANGED = "onStrokeChanged";
     public final static String STROKE_END = "onStrokeEnd";
     public final static String ON_PRESS = "onPress";
     public final static String ON_LONG_PRESS = "onLongPress";
+    public final static String PATHS_UPDATE = "pathsUpdate";
+    public final static String ON_SKETCH_SAVED = "onSketchSaved";
 
     private SketchCanvas mView;
     private int prevTouchAction = -1;
@@ -33,9 +37,11 @@ public class TouchEventHandler {
     private boolean mShouldHandleTouches = true;
 
     private GestureDetector detector;
+    private EventDispatcher mEventDispatcher;
 
-    public TouchEventHandler(SketchCanvas view){
+    public EventHandler(SketchCanvas view){
         mView = view;
+        mEventDispatcher = ((ReactContext) view.getContext()).getNativeModule(UIManagerModule.class).getEventDispatcher();
         detector =  new GestureDetector(mView.getContext(), new GestureListener()){
             @Override
             public boolean onTouchEvent(MotionEvent ev) {
@@ -138,18 +144,12 @@ public class TouchEventHandler {
         return event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || action == MotionEvent.ACTION_CANCEL;
     }
 
-    public void emit(String JSEventName, WritableMap e){
-        ((ReactContext) mView.getContext())
-                .getJSModule(RCTEventEmitter.class)
-                .receiveEvent(
-                        mView.getId(),
-                        JSEventName,
-                        e
-                );
+    public void emit(String eventName, WritableMap eventData){
+        mEventDispatcher.dispatchEvent(SketchEvent.obtain(mView.getId(), eventName, eventData));
     }
 
     public void emitOnStrokeStart(){
-        emit(STROKE_START, mView.getCurrentPath().getMap());
+        emit(STROKE_START, mView.getCurrentPath().getMap(false));
     }
 
     public void emitOnStrokeChanged(PointF p){
@@ -160,7 +160,7 @@ public class TouchEventHandler {
         WritableMap e = Arguments.createMap();
         e.putDouble("x", PixelUtil.toDIPFromPixel(x));
         e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        e.putString("id", mView.getCurrentPath().id);
+        e.merge(mView.getCurrentPath().getMap(false));
         emit(STROKE_CHANGED, e);
     }
 
