@@ -25,8 +25,8 @@
   "license": "MIT",
   "dependencies": {
     "color": "^2.0.1",
-    "component-docs": "^0.19.5",
-    "linaria": "^1.2.4",
-    "react-native-vector-icons": "^6.4.2"
+    "component-docs": "^0.20.3",
+    "core-js": "^3.4.1",
+    "react-native-vector-icons": "^6.6.0"
   }
 }
