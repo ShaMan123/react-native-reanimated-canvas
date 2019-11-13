@@ -1,8 +1,6 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
-import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
@@ -11,16 +9,10 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
-import com.facebook.react.uimanager.events.RCTEventEmitter;
 
-import javax.annotation.Nullable;
-
-import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
-
-public class EventHandler {
+public class RCanvasEventHandler {
     public final static String STROKE_START = "onStrokeStart";
     public final static String STROKE_CHANGED = "onStrokeChanged";
     public final static String STROKE_END = "onStrokeEnd";
@@ -29,7 +21,7 @@ public class EventHandler {
     public final static String PATHS_UPDATE = "pathsUpdate";
     public final static String ON_SKETCH_SAVED = "onSketchSaved";
 
-    private SketchCanvas mView;
+    private RCanvas mView;
     private int prevTouchAction = -1;
     private boolean mShouldFireOnStrokeChangedEvent = false;
     private boolean mShouldFireOnPressEvent = false;
@@ -39,7 +31,7 @@ public class EventHandler {
     private GestureDetector detector;
     private EventDispatcher mEventDispatcher;
 
-    public EventHandler(SketchCanvas view){
+    public RCanvasEventHandler(RCanvas view){
         mView = view;
         mEventDispatcher = ((ReactContext) view.getContext()).getNativeModule(UIManagerModule.class).getEventDispatcher();
         detector =  new GestureDetector(mView.getContext(), new GestureListener()){
@@ -111,7 +103,7 @@ public class EventHandler {
                 emitOnStrokeStart();
             }
 
-            SketchData mCurrentPath = mView.getCurrentPath();
+            RCanvasPath mCurrentPath = mView.getCurrentPath();
 
             if(shouldFail(event)) {
                 if(mCurrentPath != null) mView.end();
@@ -145,7 +137,7 @@ public class EventHandler {
     }
 
     public void emit(String eventName, WritableMap eventData){
-        mEventDispatcher.dispatchEvent(SketchEvent.obtain(mView.getId(), eventName, eventData));
+        mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
     }
 
     public void emitOnStrokeStart(){

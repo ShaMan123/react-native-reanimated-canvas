@@ -1,4 +1,4 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
 import android.util.Log;
 
@@ -17,9 +17,11 @@ import java.util.Map;
 
 import androidx.annotation.Nullable;
 
-public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
+public class RCanvasManager extends SimpleViewManager<RCanvas> {
+    public static final String NAME = "ReanimatedCanvasManager";
+
     public static final int COMMAND_ADD_POINT = 1;
-    public static final int COMMAND_NEW_PATH = 2;
+    public static final int COMMAND_START_PATH = 2;
     public static final int COMMAND_CLEAR = 3;
     public static final int COMMAND_ADD_PATHS = 4;
     public static final int COMMAND_DELETE_PATHS = 5;
@@ -39,28 +41,28 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     private static final String PROPS_ON_PRESS = "onPress";
     private static final String PROPS_ON_LONG_PRESS = "onLongPress";
 
-    SketchCanvasManager(){
+    RCanvasManager(){
         super();
     }
 
     @Override
     public String getName() {
-        return "RNSketchCanvas";
+        return NAME;
     }
 
     @Override
-    protected SketchCanvas createViewInstance(ThemedReactContext context) {
-        return new SketchCanvas(context);
+    protected RCanvas createViewInstance(ThemedReactContext context) {
+        return new RCanvas(context);
     }
 
     @Override
-    public void onDropViewInstance(SketchCanvas view) {
+    public void onDropViewInstance(RCanvas view) {
         if (BuildConfig.DEBUG) Log.i(getName(), "Tearing down SketchCanvas " +  view.toString());
         view.tearDown();
     }
 
     @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
-    public void setLocalSourceImage(SketchCanvas viewContainer, ReadableMap localSourceImage) {
+    public void setLocalSourceImage(RCanvas viewContainer, ReadableMap localSourceImage) {
         if (localSourceImage != null && localSourceImage.getString("filename") != null) {
             viewContainer.openImageFile(
                     localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
@@ -71,47 +73,47 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     }
 
     @ReactProp(name = PROPS_TEXT)
-    public void setText(SketchCanvas viewContainer, ReadableArray text) {
+    public void setText(RCanvas viewContainer, ReadableArray text) {
         viewContainer.setCanvasText(text);
     }
 
     @ReactProp(name = PROPS_HARDWARE_ACCELERATED, defaultBoolean = false)
-    public void setHardwareAccelerated(SketchCanvas viewContainer, boolean useAcceleration) {
+    public void setHardwareAccelerated(RCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAccelerated(useAcceleration);
     }
 
     @ReactProp(name = PROPS_STROKE_COLOR)
-    public void setStrokeColor(SketchCanvas viewContainer, int color) {
+    public void setStrokeColor(RCanvas viewContainer, int color) {
         viewContainer.setStrokeColor(color);
     }
 
     @ReactProp(name = PROPS_STROKE_WIDTH)
-    public void setStrokeWidth(SketchCanvas viewContainer, int width) {
+    public void setStrokeWidth(RCanvas viewContainer, int width) {
         viewContainer.setStrokeWidth((int) PixelUtil.toPixelFromDIP(width));
     }
 
     @ReactProp(name = PROPS_TOUCH_ENABLED, defaultBoolean = true)
-    public void setTouchState(SketchCanvas viewContainer, Dynamic propValue) {
+    public void setTouchState(RCanvas viewContainer, Dynamic propValue) {
         viewContainer.setTouchState(new TouchState(propValue));
     }
 
     @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = false)
-    public void shouldHandleTouches(SketchCanvas viewContainer, boolean handle) {
+    public void shouldHandleTouches(RCanvas viewContainer, boolean handle) {
         viewContainer.getEventHandler().setShouldHandleTouches(handle);
     }
 
     @ReactProp(name = PROPS_ON_STROKE, defaultBoolean = false)
-    public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
+    public void shouldFireOnStrokeEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnStrokeChangedEvent(callback != null);
     }
 
     @ReactProp(name = PROPS_ON_PRESS, defaultBoolean = false)
-    public void shouldFireOnPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
+    public void shouldFireOnPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnPressEvent(callback != null);
     }
 
     @ReactProp(name = PROPS_ON_LONG_PRESS, defaultBoolean = false)
-    public void shouldFireOnLongPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
+    public void shouldFireOnLongPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnLongPressEvent(callback != null);
     }
 
@@ -120,7 +122,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         /*
         return MapBuilder.<String, Object>builder()
                 .put(COMMAND_ADD_POINT, COMMAND_ADD_POINT)
-                .put(COMMAND_NEW_PATH, COMMAND_NEW_PATH)
+                .put(COMMAND_START_PATH, COMMAND_START_PATH)
                 .put(COMMAND_CLEAR,COMMAND_CLEAR)
                 .put(COMMAND_ADD_PATHS,COMMAND_ADD_PATHS)
                 .put(COMMAND_DELETE_PATHS,COMMAND_DELETE_PATHS)
@@ -132,7 +134,7 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         Map<String, Integer> map = new HashMap<>();
 
         map.put("addPoint", COMMAND_ADD_POINT);
-        map.put("newPath", COMMAND_NEW_PATH);
+        map.put("newPath", COMMAND_START_PATH);
         map.put("clear", COMMAND_CLEAR);
         map.put("addPaths", COMMAND_ADD_PATHS);
         map.put("deletePaths", COMMAND_DELETE_PATHS);
@@ -146,18 +148,18 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     }
 
     @Override
-    protected void addEventEmitters(ThemedReactContext reactContext, SketchCanvas view) {
+    protected void addEventEmitters(ThemedReactContext reactContext, RCanvas view) {
         //super.addEventEmitters(reactContext, view);
     }
 
     @Override
-    public void receiveCommand(SketchCanvas view, int commandType, @Nullable ReadableArray args) {
+    public void receiveCommand(RCanvas view, int commandType, @Nullable ReadableArray args) {
         switch (commandType) {
             case COMMAND_ADD_POINT: {
                 view.addPoint(PixelUtil.toPixelFromDIP(args.getDouble(0)), PixelUtil.toPixelFromDIP(args.getDouble(1)));
                 return;
             }
-            case COMMAND_NEW_PATH: {
+            case COMMAND_START_PATH: {
                 view.newPath(args.getString(0), args.getInt(1), PixelUtil.toPixelFromDIP(args.getDouble(2)));
                 return;
             }
@@ -204,13 +206,13 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-                .put(EventHandler.STROKE_START, MapBuilder.of("registrationName", EventHandler.STROKE_START))
-                .put(EventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", EventHandler.STROKE_CHANGED))
-                .put(EventHandler.STROKE_END, MapBuilder.of("registrationName", EventHandler.STROKE_END))
-                .put(EventHandler.ON_PRESS, MapBuilder.of("registrationName", EventHandler.ON_PRESS))
-                .put(EventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", EventHandler.ON_LONG_PRESS))
-                .put(EventHandler.PATHS_UPDATE, MapBuilder.of("registrationName", EventHandler.PATHS_UPDATE))
-                .put(EventHandler.ON_SKETCH_SAVED, MapBuilder.of("registrationName", EventHandler.ON_SKETCH_SAVED))
+                .put(RCanvasEventHandler.STROKE_START, MapBuilder.of("registrationName", RCanvasEventHandler.STROKE_START))
+                .put(RCanvasEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", RCanvasEventHandler.STROKE_CHANGED))
+                .put(RCanvasEventHandler.STROKE_END, MapBuilder.of("registrationName", RCanvasEventHandler.STROKE_END))
+                .put(RCanvasEventHandler.ON_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_PRESS))
+                .put(RCanvasEventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_LONG_PRESS))
+                .put(RCanvasEventHandler.PATHS_UPDATE, MapBuilder.of("registrationName", RCanvasEventHandler.PATHS_UPDATE))
+                .put(RCanvasEventHandler.ON_SKETCH_SAVED, MapBuilder.of("registrationName", RCanvasEventHandler.ON_SKETCH_SAVED))
                 .build();
     }
 }

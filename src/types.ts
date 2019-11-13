@@ -10,7 +10,7 @@ declare module 'react-native-sketch-canvas' {
 
 export enum Commands {
   addPoint = 1,
-  newPath,
+  startPath,
   clear,
   addPaths,
   deletePaths,
@@ -151,6 +151,9 @@ export type SketchCanvasRef = {
   deletePath(id: string): void
   deletePaths(pathIds: string[]): void
 
+  dispatchCommand(command: Commands, data: any[]): void
+  setTouchRadius(radius: number): void
+
   /**
    * @param imageType "png" or "jpg"
    * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
@@ -175,7 +178,7 @@ export type SketchCanvasRef = {
  * @param callback If omitted the method returns a Promise
  */
   isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-  //isPointOnPath(x: number, y: number, callback: (error: any, result?: Array<number>) => void): void
+  isPointOnPath(x: number, y: number, pathId: never, callback: (error: any, result?: string[]) => void): void
   isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
   isPointOnPath(x: number, y: number): Promise<string[]>
 

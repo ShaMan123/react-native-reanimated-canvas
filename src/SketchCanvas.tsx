@@ -4,11 +4,10 @@ import * as _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { findNodeHandle, LayoutChangeEvent, NativeSyntheticEvent, processColor, requireNativeComponent, UIManager } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-import { useModule } from './SketchCanvasModule';
+import { useModule, VIEW_MANAGER } from './SketchCanvasModule';
 import { CanvasText, Commands, Path, PathData, SketchCanvasProperties, SketchCanvasRef } from './types';
 
-const RNSketchCanvas = requireNativeComponent('RNSketchCanvas');
-//const { Commands } = UIManager.getViewManagerConfig('RNSketchCanvas');
+const RCanvasBase = requireNativeComponent(VIEW_MANAGER);
 
 export function generatePathId() {
   return _.uniqueId('SketchCanvasPath');
@@ -33,7 +32,7 @@ function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (curre
   return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
 }
 
-function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRef>) {
+function RCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRef>) {
   const {
     onLayout: onLayoutP,
     onPathsChange,
@@ -60,12 +59,8 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   const [_path, path] = useRefGetter({} as PathData);
   const [_pathsToProcess, pathsToProcess] = useRefGetter<PathData[]>([]);
 
-  const dispatchCommand = useCallback((command: Commands, data: any[] = []) =>
-    UIManager.dispatchViewManagerCommand(handle(), command, data),
-    [handle]
-  );
-
   const module = useModule(handle());
+  const { dispatchCommand } = module;
 
   const findPath = useCallback((pathId: string) =>
     _.find(paths(), (p) => _.isEqual(p.id, pathId)),
@@ -126,7 +121,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
       //points: []
     };
 
-    dispatchCommand(Commands.newPath, _.values(state));
+    dispatchCommand(Commands.startPath, _.values(state));
     //props.onStrokeStart && props.onStrokeStart(path());
     /*
     _path.current = {
@@ -224,7 +219,6 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   useImperativeHandle(forwardedRef, () =>
     ({
       ...module,
-      dispatchCommand,
       addPath,
       addPaths,
       deletePath,
@@ -241,7 +235,6 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
     }),
     [
       module,
-      dispatchCommand,
       addPath,
       addPaths,
       deletePath,
@@ -259,7 +252,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   );
 
   return (
-    <RNSketchCanvas
+    <RCanvasBase
       {...props}
       ref={_ref}
       onLayout={onLayout}
@@ -270,7 +263,7 @@ function SketchCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCan
   )
 }
 
-const ForwardedSketchCanvas = forwardRef(SketchCanvas);
+const ForwardedSketchCanvas = forwardRef(RCanvas);
 ForwardedSketchCanvas.defaultProps = {
   strokeColor: '#000000',
   strokeWidth: 3,

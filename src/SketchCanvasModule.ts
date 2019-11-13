@@ -2,14 +2,20 @@
 
 import _ from 'lodash';
 import { useMemo } from 'react';
-import { NativeModules, Platform, UIManager } from 'react-native';
-import { ImageType } from '../index';
-import { Commands } from './types';
+import { NativeModules, Platform, UIManager, requireNativeComponent } from 'react-native';
+import { Commands, ImageType, SketchCanvasRef } from './types';
+
+export const VIEW_MANAGER = 'ReanimatedCanvasManager';
+export const MODULE = 'ReanimatedCanvasModule';
 
 const NativeModuleManager = Platform.select({
   ios: NativeModules.RNSketchCanvasManager,
   default: NativeModules.SketchCanvasModule
 });
+
+export function dispatchCommand(tag: number, command: Commands, data: any[]) {
+  UIManager.dispatchViewManagerCommand(tag, command, data);
+}
 
 /**
    * @param imageType "png" or "jpg"
@@ -104,9 +110,9 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
   }
 }
 
-export function useModule(handle?: number | null) {
+export function useModule(handle?: number | null): Pick<SketchCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
   return useMemo(() => {
-    const methods = { save, getBase64, isPointOnPath, setTouchRadius };
+    const methods = { dispatchCommand, save, getBase64, isPointOnPath, setTouchRadius };
     if (_.isNil(handle)) {
       const stub = () => { };
       return _.mapValues(methods, () => stub);

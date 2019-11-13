@@ -1,11 +1,7 @@
-package com.terrylinla.rnsketchcanvas;
-
-import android.util.Log;
+package com.autodidact.reanimatedcanvas;
 
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.ReadableType;
-
-import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
 
 public class TouchState {
     public static final int DRAW = 0;

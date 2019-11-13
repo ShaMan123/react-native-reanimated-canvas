@@ -1,36 +1,23 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
-import android.annotation.TargetApi;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Region;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
-import java.util.ArrayList;
-import java.util.Map;
-
-public class SketchCanvasPoint {
+public class RCanvasPoint {
     public final int x;
     public final int y;
     public final int color;
 
-    public SketchCanvasPoint(int x, int y, int color){
+    public RCanvasPoint(int x, int y, int color){
         this.x = x;
         this.y = y;
         this.color = color;
     }
 
     public boolean isTransparent(){
-        return SketchCanvasPoint.isTransparent(color);
+        return RCanvasPoint.isTransparent(color);
     }
 
     public int red(){
@@ -62,7 +49,7 @@ public class SketchCanvasPoint {
         return color == Color.TRANSPARENT;
     }
 
-    public static double getHypot(SketchCanvasPoint a, SketchCanvasPoint b){
+    public static double getHypot(RCanvasPoint a, RCanvasPoint b){
         double dx = (double)(a.x - b.x);
         double dy = (double)(a.y - b.y);
         return Math.hypot(dx, dy);

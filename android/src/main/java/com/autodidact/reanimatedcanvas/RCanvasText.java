@@ -1,10 +1,10 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.Rect;
 
-public class CanvasText {
+public class RCanvasText {
     public String text;
     public Paint paint;
     public PointF anchor, position, drawPosition, lineOffset;

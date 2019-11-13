@@ -1,4 +1,4 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
 import android.graphics.Canvas;
@@ -11,19 +11,15 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
-import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.util.ArrayList;
 
-import static com.terrylinla.rnsketchcanvas.SketchCanvas.TAG;
-
-public class SketchData {
+public class RCanvasPath {
     public final ArrayList<PointF> points = new ArrayList<PointF>();
     public final String id;
     public int strokeColor;
@@ -62,7 +58,7 @@ public class SketchData {
         return path;
     }
 
-    public SketchData(String id, int strokeColor, float strokeWidth) {
+    public RCanvasPath(String id, int strokeColor, float strokeWidth) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
@@ -70,7 +66,7 @@ public class SketchData {
         mPath = this.isTranslucent ? new Path() : null;
     }
 
-    public SketchData(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    public RCanvasPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         this.id = id;
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;

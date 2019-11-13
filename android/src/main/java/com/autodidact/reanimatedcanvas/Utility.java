@@ -1,6 +1,5 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
-import android.util.Log;
 import android.graphics.RectF;
 
 public final class Utility {

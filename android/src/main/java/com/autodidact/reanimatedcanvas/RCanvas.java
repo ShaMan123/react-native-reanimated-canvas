@@ -1,4 +1,4 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
 import android.graphics.Picture;
@@ -36,11 +36,11 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class SketchCanvas extends View {
+public class RCanvas extends View {
     public final static String TAG = "RNSketchCanvas";
 
-    private ArrayList<SketchData> mPaths = new ArrayList<SketchData>();
-    private SketchData mCurrentPath = null;
+    private ArrayList<RCanvasPath> mPaths = new ArrayList<RCanvasPath>();
+    private RCanvasPath mCurrentPath = null;
 
     private ThemedReactContext mContext;
     private boolean mDisableHardwareAccelerated = false;
@@ -49,23 +49,23 @@ public class SketchCanvas extends View {
     private Picture mBackgroundImage;
     private String mContentMode;
 
-    private ArrayList<CanvasText> mArrCanvasText = new ArrayList<CanvasText>();
-    private ArrayList<CanvasText> mArrTextOnSketch = new ArrayList<CanvasText>();
-    private ArrayList<CanvasText> mArrSketchOnText = new ArrayList<CanvasText>();
+    private ArrayList<RCanvasText> mArrCanvasText = new ArrayList<RCanvasText>();
+    private ArrayList<RCanvasText> mArrTextOnSketch = new ArrayList<RCanvasText>();
+    private ArrayList<RCanvasText> mArrSketchOnText = new ArrayList<RCanvasText>();
 
     private float mTouchRadius = 0;
     private int mStrokeColor;
     private int mStrokeWidth;
     private TouchState mTouchState;
-    private EventHandler eventHandler;
+    private RCanvasEventHandler eventHandler;
 
-    public SketchCanvas(ThemedReactContext context) {
+    public RCanvas(ThemedReactContext context) {
         super(context);
         mContext = context;
-        eventHandler = new EventHandler(this);
+        eventHandler = new RCanvasEventHandler(this);
     }
 
-    public EventHandler getEventHandler(){
+    public RCanvasEventHandler getEventHandler(){
         return eventHandler;
     }
 
@@ -107,12 +107,12 @@ public class SketchCanvas extends View {
         }
     }
 
-    @Nullable public SketchData getCurrentPath(){
+    @Nullable public RCanvasPath getCurrentPath(){
         return mCurrentPath;
     }
 
-    public SketchData getPath(String id){
-        for (SketchData path: mPaths) {
+    public RCanvasPath getPath(String id){
+        for (RCanvasPath path: mPaths) {
             if (path.id.equals(id)) {
                 return path;
             }
@@ -126,7 +126,7 @@ public class SketchCanvas extends View {
     }
 
     public void setAttributes(String id, ReadableMap attributes) {
-        SketchData path = getPath(id);
+        RCanvasPath path = getPath(id);
         if (attributes.hasKey("color")) {
             path.strokeColor = attributes.getInt("color");
         }
@@ -178,10 +178,10 @@ public class SketchCanvas extends View {
                     String alignment = property.hasKey("alignment") ? property.getString("alignment") : "Left";
                     int lineOffset = 0, maxTextWidth = 0;
                     String[] lines = property.getString("text").split("\n");
-                    ArrayList<CanvasText> textSet = new ArrayList<CanvasText>(lines.length);
+                    ArrayList<RCanvasText> textSet = new ArrayList<RCanvasText>(lines.length);
                     for (String line: lines) {
-                        ArrayList<CanvasText> arr = property.hasKey("overlay") && "TextOnSketch".equals(property.getString("overlay")) ? mArrTextOnSketch : mArrSketchOnText;
-                        CanvasText text = new CanvasText();
+                        ArrayList<RCanvasText> arr = property.hasKey("overlay") && "TextOnSketch".equals(property.getString("overlay")) ? mArrTextOnSketch : mArrSketchOnText;
+                        RCanvasText text = new RCanvasText();
                         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
                         p.setTextAlign(Paint.Align.LEFT);
                         text.text = line;
@@ -211,7 +211,7 @@ public class SketchCanvas extends View {
                         mArrCanvasText.add(text);
                         textSet.add(text);
                     }
-                    for(CanvasText text: textSet) {
+                    for(RCanvasText text: textSet) {
                         text.height = lineOffset;
                         if (text.textBounds.width() < maxTextWidth) {
                             float diff = maxTextWidth - text.textBounds.width();
@@ -220,7 +220,7 @@ public class SketchCanvas extends View {
                         }
                     }
                     if (getWidth() > 0 && getHeight() > 0) {
-                        for(CanvasText text: textSet) {
+                        for(RCanvasText text: textSet) {
                             text.height = lineOffset;
                             PointF position = new PointF(text.position.x, text.position.y);
                             if (!text.isAbsoluteCoordinate) {
@@ -235,7 +235,7 @@ public class SketchCanvas extends View {
                         }
                     }
                     if (lines.length > 1) {
-                        for(CanvasText text: textSet) {
+                        for(RCanvasText text: textSet) {
                             switch(alignment) {
                                 case "Left":
                                 default:
@@ -267,7 +267,7 @@ public class SketchCanvas extends View {
     }
 
     public void newPath(String id, int strokeColor, float strokeWidth) {
-        mCurrentPath = new SketchData(id, strokeColor, strokeWidth);
+        mCurrentPath = new RCanvasPath(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
         if (isErase && mDisableHardwareAccelerated == false) {
@@ -306,7 +306,7 @@ public class SketchCanvas extends View {
 
     private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
-        for(SketchData data: mPaths) {
+        for(RCanvasPath data: mPaths) {
             if (data.id == id) {
                 exist = true;
                 break;
@@ -314,7 +314,7 @@ public class SketchCanvas extends View {
         }
 
         if (!exist) {
-            SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
+            RCanvasPath newPath = new RCanvasPath(id, strokeColor, strokeWidth, points);
             mPaths.add(newPath);
             boolean isErase = strokeColor == Color.TRANSPARENT;
             if (isErase && mDisableHardwareAccelerated == false) {
@@ -351,7 +351,7 @@ public class SketchCanvas extends View {
         WritableMap event = Arguments.createMap();
         event.putBoolean("success", success);
         event.putString("path", path);
-        eventHandler.emit(EventHandler.ON_SKETCH_SAVED, event);
+        eventHandler.emit(RCanvasEventHandler.ON_SKETCH_SAVED, event);
     }
 
     public void save(final String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
@@ -387,7 +387,7 @@ public class SketchCanvas extends View {
                 }
             }).start();
         } else {
-            Log.e(SketchCanvas.TAG, "SketchCanvas: Failed to create folder!");
+            Log.e(RCanvas.TAG, "SketchCanvas: Failed to create folder!");
             onSaved(false, null);
         }
     }
@@ -418,7 +418,7 @@ public class SketchCanvas extends View {
     protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (getWidth() > 0 && getHeight() > 0 && (w != oldw || h != oldh)) {
-            for(CanvasText text: mArrCanvasText) {
+            for(RCanvasText text: mArrCanvasText) {
                 PointF position = new PointF(text.position.x, text.position.y);
                 if (!text.isAbsoluteCoordinate) {
                     position.x *= getWidth();
@@ -452,15 +452,15 @@ public class SketchCanvas extends View {
             canvas.drawPicture(mBackgroundImage, dstRect);
         }
 
-        for(CanvasText text: mArrSketchOnText) {
+        for(RCanvasText text: mArrSketchOnText) {
             canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
-        for(SketchData path: mPaths) {
+        for(RCanvasPath path: mPaths) {
             path.draw(canvas);
         }
 
-        for(CanvasText text: mArrTextOnSketch) {
+        for(RCanvasText text: mArrTextOnSketch) {
             canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
         }
 
@@ -471,7 +471,7 @@ public class SketchCanvas extends View {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
             event.putInt("pathsUpdate", mPaths.size());
-            eventHandler.emit(EventHandler.PATHS_UPDATE, event);
+            eventHandler.emit(RCanvasEventHandler.PATHS_UPDATE, event);
         }
         invalidate();
     }
@@ -499,17 +499,17 @@ public class SketchCanvas extends View {
         }
 
         if (includeText) {
-            for(CanvasText text: mArrSketchOnText) {
+            for(RCanvasText text: mArrSketchOnText) {
                 canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
             }
         }
 
-        for(SketchData path: mPaths) {
+        for(RCanvasPath path: mPaths) {
             path.draw(canvas);
         }
 
         if (includeText) {
-            for(CanvasText text: mArrTextOnSketch) {
+            for(RCanvasText text: mArrTextOnSketch) {
                 canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
             }
         }
@@ -549,7 +549,7 @@ public class SketchCanvas extends View {
     public boolean isPointUnderTransparentPath(float x, float y, String pathId){
         int beginAt = Math.min(getPathIndex(pathId) + 1, mPaths.size() - 1);
         for (int i = getPathIndex(pathId); i < mPaths.size(); i++){
-            SketchData mPath = mPaths.get(i);
+            RCanvasPath mPath = mPaths.get(i);
             if(mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion()) && mPath.strokeColor == Color.TRANSPARENT) {
                 return true;
             }
@@ -563,7 +563,7 @@ public class SketchCanvas extends View {
             return false;
         }
         else {
-            SketchData mPath = mPaths.get(getPathIndex(pathId));
+            RCanvasPath mPath = mPaths.get(getPathIndex(pathId));
             return mPath.isPointOnPath(x, y, getTouchRadius(mPath.strokeWidth), getRegion());
         }
     }
@@ -574,7 +574,7 @@ public class SketchCanvas extends View {
         Region mRegion = getRegion();
         float r;
 
-        for(SketchData mPath: mPaths) {
+        for(RCanvasPath mPath: mPaths) {
             r = getTouchRadius(mPath.strokeWidth);
             if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
                 array.pushString(mPath.id);

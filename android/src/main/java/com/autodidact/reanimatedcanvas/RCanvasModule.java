@@ -1,4 +1,4 @@
-package com.terrylinla.rnsketchcanvas;
+package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
 
@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.UIBlock;
@@ -13,14 +14,17 @@ import com.facebook.react.uimanager.UIManagerModule;
 
 import javax.annotation.Nullable;
 
-public class SketchCanvasModule extends ReactContextBaseJavaModule {
-    SketchCanvasModule(ReactApplicationContext reactContext) {
+@ReactModule(name = RCanvasModule.NAME)
+public class RCanvasModule extends ReactContextBaseJavaModule {
+    public static final String NAME = "ReanimatedCanvasModule";
+
+    RCanvasModule(ReactApplicationContext reactContext) {
         super(reactContext);
     }
 
     @Override
     public String getName() {
-        return "SketchCanvasModule";
+        return NAME;
     }
 
     @ReactMethod
@@ -31,7 +35,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
-                    SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
+                    RCanvas view = (RCanvas) nvhm.resolveView(tag);
                     view.getBase64(type, transparent, includeImage, includeText, cropToImageSize, callback);
                 }
             });
@@ -48,7 +52,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
-                    SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
+                    RCanvas view = (RCanvas) nvhm.resolveView(tag);
                     float nativeX = PixelUtil.toPixelFromDIP(x);
                     float nativeY = PixelUtil.toPixelFromDIP(y);
                     callback.invoke(null, pathId == null ? view.isPointOnPath(nativeX, nativeY): view.isPointOnPath(nativeX, nativeY, pathId));
@@ -66,7 +70,7 @@ public class SketchCanvasModule extends ReactContextBaseJavaModule {
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
-                    SketchCanvas view = (SketchCanvas) nvhm.resolveView(tag);
+                    RCanvas view = (RCanvas) nvhm.resolveView(tag);
                     view.setTouchRadius(PixelUtil.toPixelFromDIP(r));
                     callback.invoke(null, true);
                 }
