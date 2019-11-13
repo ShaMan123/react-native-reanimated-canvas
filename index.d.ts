@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleProp, ViewProperties, ViewProps, ViewStyle } from "react-native";
+import { StyleProp, ViewProperties, ViewProps, ViewStyle, NativeSyntheticEvent } from "react-native";
 import { GestureHandlerProperties, PanGestureHandlerProperties } from 'react-native-gesture-handler';
 
 /*
@@ -39,7 +39,7 @@ type CanvasText = {
   text: string
   font?: string
   fontSize?: number
-  fontColor?: string
+  fontColor?: string | number
   overlay?: 'TextOnSketch' | 'SketchOnText'
   anchor: { x: number, y: number }
   position: { x: number, y: number }
@@ -85,11 +85,11 @@ export interface NativeSketchEvent {
 interface NativeTouchProps {
   useNativeDriver?: boolean
   /** fires only if `useNativeDriver` is set to `true` */
-  onPress?: (e: NativeSketchEvent) => void
+  onPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
   /** fires only if `useNativeDriver` is set to `true` */
-  onLongPress?: (e: NativeSketchEvent) => void
+  onLongPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
 
-  gestureHandler?: React.RefObject<any>
+  gestureHandler?: React.MutableRefObject<any>
 }
 
 export interface SketchCanvasProps extends NativeTouchProps {
@@ -124,14 +124,14 @@ export interface SketchCanvasProps extends NativeTouchProps {
    */
   hardwareAccelerated?: boolean
 
-  onStrokeStart?: (pathData: Path['path']) => void
-  onStrokeChanged?: (e: NativeSketchEvent) => void
-  onStrokeEnd?: (pathData: Path['path']) => void
+  onStrokeStart?: (e: NativeSyntheticEvent<any>) => void
+  onStrokeChanged?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
+  onStrokeEnd?: (e: NativeSyntheticEvent<any>) => void
   onSketchSaved?: (result: boolean, path: string) => void
   onPathsChange?: (pathsCount: number) => void,
 }
 
-type SketchCanvasProperties = SketchCanvasProps & ViewProps & GestureHandlerProperties & PanGestureHandlerProperties;
+export type SketchCanvasProperties = SketchCanvasProps & ViewProps;
 
 export class SketchCanvas extends React.Component<SketchCanvasProperties> {
   clear(): void
