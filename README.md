@@ -1,36 +1,21 @@
-react-native-sketch-canvas
+# react-native-reanimated-canvas
 ===================
-
+This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
+The android code has been heavily refactored to boost performance.
+Some features have been added and a lot of javascript has been removed making it more light weight and low-level, befitting `react-native-reanimated`.
 A React Native component for drawing by touching on both iOS and Android.
+
 
 <img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
 <br/>
 <img src="https://i.imgur.com/lc5WlGz.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
 
-Features
--------------
-* Support iOS and Android
-* Stroke thickness and color are changable while drawing.
-* Can undo strokes one by one.
-* Can serialize path data to JSON. So it can sync other devices or someone else and continue to edit.
-* Save drawing to a non-transparent image (png or jpg) or a transparent image (png only)
-* Use vector concept. So sketches won't be cropped in different sizes of canvas.
-* Support translucent colors and eraser.
-* Support drawing on an image (Thanks to diego-caceres-galvan)
-* High performance (See [below](#Performance). Thanks to jeanregisser)
-* Can draw multiple canvases in the same screen.
-* Can draw multiple multiline text on canvas.
-
 
 ## Installation
 -------------
-Install from `npm` (only support RN >= 0.40)
+Install from `npm` (only support RN >= 0.60)
 ```bash
-npm install @terrylinla/react-native-sketch-canvas --save
-```
-Link native code
-```bash
-react-native link @terrylinla/react-native-sketch-canvas
+npm install react-native-reanimated-canvas --save
 ```
 
 #### Update `metro.config.js`
@@ -49,24 +34,6 @@ const config = { ...your project's config }
 ```
 
 
-**Fix android linking:**
-
-settings.gradle
-```
-include ':react-native-sketch-canvas'
-project(':react-native-sketch-canvas').projectDir = new File(rootProject.projectDir, '../node_modules/@terrylinla/react-native-sketch-canvas/android')
-
-```
-
-app/build.gradle
-```
-dependencies {
-    ...
-    implementation project(':react-native-sketch-canvas')
-    ...
-}
-```
-
 ## Usage
 -------------
 <img src="https://i.imgur.com/4qpiX8m.png" height="400" />
@@ -80,7 +47,7 @@ import {
   View,
 } from 'react-native';
 
-import { SketchCanvas } from '@terrylinla/react-native-sketch-canvas';
+import { SketchCanvas } from 'react-native-reanimated-canvas';
 
 export default class example extends Component {
   render() {
@@ -139,6 +106,7 @@ AppRegistry.registerComponent('example', () => example);
 | getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 | isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise.
 
+
 #### Constants
 -------------
 | Constant | Description |
@@ -147,223 +115,8 @@ AppRegistry.registerComponent('example', () => example);
 | DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
 | LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
 | CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
-
-### ● Touchable Sketch Canvas (responding to path selection)
-```javascript
-import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  View,
-  Alert,
-  TouchableOpacity,
-  Button
-} from 'react-native';
-
-import { SketchCanvas, TouchableSketchCanvas } from '@terrylinla/react-native-sketch-canvas';
-
-export default class example extends Component {
-  state = { touchState: 'draw', color: 'black'  }
-  render() {
-    const touchableComponent =  <TouchableOpacity
-      onPress={(evt) => {
-          const { locationX, locationY } = evt.nativeEvent;
-          this.canvas.isPointOnPath(locationX, locationY)
-              .then((pathArr) => Alert.alert('TouchableSketchCanvas',
-                  pathArr.length === 0 ? `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is NOT contained by any path` :
-                  `The point (${Math.round(locationX)}, ${Math.round(locationY)}) is contained by the following paths:\n\n${pathArr.join('\n')}`))
-      }}
-  />;
-                
-    return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <TouchableSketchCanvas
-            style={{ flex: 1, width: Dimensions.get('window').width }}
-            strokeWidth={24}
-            strokeColor={this.state.color}
-            ref={ref => this.canvas = ref}
-            touchEnabled={this.state.touchState}
-            touchableComponent={touchableComponent}
-            onStrokeEnd={() => this.setState({ touchState: 'touch' })}
-        />
-        {
-            this.state.touchState === 'touch' &&
-            <Button title='Press to draw' onPress={() => this.setState({ touchState: 'draw', color: `rgba(${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, ${Math.round(Math.random() * 255)}, 0.3)}` })} />
-        }
-        {
-            this.state.touchState === 'touch' &&
-            <Button title='Press to erase' onPress={() => this.setState({ touchState: 'draw', color: '#00000000' })} />
-        }
-        </View>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
-  },
-});
-
-AppRegistry.registerComponent('example', () => example);
-```
-
-**NOTICE**: `TouchableSketchCanvas` can be considered to be *extending* `SketchCanvas`. This means that `TouchableSketchCanvas` inherits all the **props** and **methods** of `SketchCanvas`.
-The best way to use this component is by passing `onPressIn` or `onLongPress` to `touchableComponent` and test for touches with `isPointOnPath(evt.nativeEvent.locationX, evt.nativeEvent.locationY)`
-
-#### Properties
--------------
-| Prop  | Type | Description |
-| :------------ |:---------------:| :---------------| 
-| touchEnabled | `string` or `bool` | `draw`, `touch` and `none`. `true` and `false` are provided for backward-compatibility and are equal to `draw` and `none`.  |
-| touchableComponent | `element` | The touchable element instance.  |
-| containerStyle | `object` | Styles to be applied on container |
-
-#### Methods
--------------
-| Method | Description |
-| :------------ |:---------------|
-| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise. |
-
-#### Constants
--------------
-| Constant | Description |
-| :------------ |:---------------|
 | TOUCH_STATES | `true`, `false`, `draw`, `touch`, `none` |
 
-
-### ● Using with build-in UI components
-<img src="https://i.imgur.com/O0vVdD6.png" height="400" />
-
-```javascript
-import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Alert,
-} from 'react-native';
-
-import RNSketchCanvas from '@terrylinla/react-native-sketch-canvas';
-
-export default class example extends Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <RNSketchCanvas
-            containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
-            canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-            defaultStrokeIndex={0}
-            defaultStrokeWidth={5}
-            closeComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Close</Text></View>}
-            undoComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Undo</Text></View>}
-            clearComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Clear</Text></View>}
-            eraseComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Eraser</Text></View>}
-            strokeComponent={color => (
-              <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
-            )}
-            strokeSelectedComponent={(color, index, changed) => {
-              return (
-                <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
-              )
-            }}
-            strokeWidthComponent={(w) => {
-              return (<View style={styles.strokeWidthButton}>
-                <View  style={{
-                  backgroundColor: 'white', marginHorizontal: 2.5,
-                  width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
-                }} />
-              </View>
-            )}}
-            saveComponent={<View style={styles.functionButton}><Text style={{color: 'white'}}>Save</Text></View>}
-            savePreference={() => {
-              return {
-                folder: 'RNSketchCanvas',
-                filename: String(Math.ceil(Math.random() * 100000000)),
-                transparent: false,
-                imageType: 'png'
-              }
-            }}
-          />
-        </View>
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5FCFF',
-  },
-  strokeColorButton: {
-    marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
-  },
-  strokeWidthButton: {
-    marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
-    justifyContent: 'center', alignItems: 'center', backgroundColor: '#39579A'
-  },
-  functionButton: {
-    marginHorizontal: 2.5, marginVertical: 8, height: 30, width: 60,
-    backgroundColor: '#39579A', justifyContent: 'center', alignItems: 'center', borderRadius: 5,
-  }
-});
-
-AppRegistry.registerComponent('example', () => example);
-```
-
-#### Properties
--------------
-| Prop  | Type | Description |
-| :------------ |:---------------:| :---------------| 
-| containerStyle | `object` | Styles to be applied on container |
-| canvasStyle | `object` | Styles to be applied on canvas component |
-| onStrokeStart | `function` | See [above](#properties) |
-| onStrokeChanged | `function` | See [above](#properties) |
-| onStrokeEnd | `function` | See [above](#properties) |
-| onPathsChange | `function` | See [above](#properties) |
-| onClosePressed | `function` | An optional function called when user taps closeComponent |
-| onUndoPressed | `function` | An optional function that accepts a argument `id` (the deleted id of path) and is called when user taps "undo" |
-| onClearPressed | `function` | An optional function called when user taps clearComponent |
-| user | `string` | See [above](#properties) |
-| closeComponent | `component` | An optional component for closing |
-| eraseComponent | `component` | An optional component for eraser |
-| undoComponent | `component` | An optional component for undoing |
-| clearComponent | `component` | An optional component for clearing |
-| saveComponent | `component` | An optional component for saving |
-| strokeComponent | `function` | An optional function which accpets 1 argument `color` and should return a component. |
-| strokeSelectedComponent | `function` | An optional function which accpets 3 arguments `color`, `selectedIndex`, `isColorChanged` and should return a component. `isColorChanged` is useful for animating when changing color. Because rerendering also calls this function, we need `isColorChanged` to determine whether the component is rerendering or the selected color is changed. |
-| strokeWidthComponent | `function` | An optional function which accpets 1 argument `width` and should return a component. |
-| strokeColors | `array` | An array of colors. Example: `[{ color: '#000000' }, {color: '#FF0000'}]` |
-| defaultStrokeIndex | `numbber` | The default index of selected stroke color |
-| defaultStrokeWidth | `number` | The default thickness of stroke |
-| minStrokeWidth | `number` | The minimum value of thickness |
-| maxStrokeWidth | `number` | The maximum value of thickness |
-| strokeWidthStep | `number` | The step value of thickness when tapping `strokeWidthComponent`. |
-| savePreference | `function` | A function which is called when saving image and should return an object (see [below](#objects)). |
-| onSketchSaved | `function` | See [above](#properties) |
-
-#### Methods
--------------
-| Method | Description |
-| :------------ |:---------------|
-| clear() | See [above](#methods) |
-| undo() | See [above](#methods) |
-| addPath(path) | See [above](#methods) |
-| deletePath(id) | See [above](#methods) |
-| save() |  |
-
-#### Constants
--------------
-| Constant | Description |
-| :------------ |:---------------|
-| MAIN_BUNDLE | See [above](#constants) |
-| DOCUMENT | See [above](#constants) |
-| LIBRARY | See [above](#constants) |
-| CACHES | See [above](#constants) |
 
 ## Background Image
 -------------
@@ -484,17 +237,16 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
 ## Performance
 -------------
 1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
-2. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
+1. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
 * Android (https://youtu.be/gXdCEN6Enmk)<br/>
 <img src="https://i.imgur.com/YQ2wVMc.jpg" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/CuIar4h.jpg" height="400" />
 * iOS (https://youtu.be/_jO4ky400Eo)<br/>
 <img src="https://i.imgur.com/AwkFu94.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/UDcaiaz.png" height="400" />
+1. All touches are now handled in native
 
 ## Example
 -------------
-The source code includes 3 examples, using build-in UI components, using with only canvas, and sync between two canvases.
-
-Check full example app in the [example](./example) folder 
+Check full example app in the [Example](./SketchExample) folder 
 
 ## Troubleshooting
 -------------
