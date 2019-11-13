@@ -3,9 +3,9 @@ package com.terrylinla.rnsketchcanvas;
 import android.util.Log;
 
 import com.facebook.react.bridge.Dynamic;
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
@@ -25,6 +25,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     public static final int COMMAND_DELETE_PATHS = 5;
     public static final int COMMAND_SAVE = 6;
     public static final int COMMAND_END_PATH = 7;
+    public static final int COMMAND_CHANGE_PATH = 8;
+    public static final int COMMAND_SET_PATH_ATTRIBUTES = 9;
 
     private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
     private static final String PROPS_TEXT = "text";
@@ -95,26 +97,38 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
 
     @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = false)
     public void shouldHandleTouches(SketchCanvas viewContainer, boolean handle) {
-        viewContainer.getTouchHandler().setShouldHandleTouches(handle);
+        viewContainer.getEventHandler().setShouldHandleTouches(handle);
     }
 
     @ReactProp(name = PROPS_ON_STROKE, defaultBoolean = false)
     public void shouldFireOnStrokeEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
-        viewContainer.getTouchHandler().setShouldFireOnStrokeChangedEvent(callback != null);
+        viewContainer.getEventHandler().setShouldFireOnStrokeChangedEvent(callback != null);
     }
 
     @ReactProp(name = PROPS_ON_PRESS, defaultBoolean = false)
     public void shouldFireOnPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
-        viewContainer.getTouchHandler().setShouldFireOnPressEvent(callback != null);
+        viewContainer.getEventHandler().setShouldFireOnPressEvent(callback != null);
     }
 
     @ReactProp(name = PROPS_ON_LONG_PRESS, defaultBoolean = false)
     public void shouldFireOnLongPressEvent(SketchCanvas viewContainer, @Nullable Dynamic callback) {
-        viewContainer.getTouchHandler().setShouldFireOnLongPressEvent(callback != null);
+        viewContainer.getEventHandler().setShouldFireOnLongPressEvent(callback != null);
     }
 
     @Override
-    public Map<String,Integer> getCommandsMap() {
+    public Map<String, Integer> getCommandsMap() {
+        /*
+        return MapBuilder.<String, Object>builder()
+                .put(COMMAND_ADD_POINT, COMMAND_ADD_POINT)
+                .put(COMMAND_NEW_PATH, COMMAND_NEW_PATH)
+                .put(COMMAND_CLEAR,COMMAND_CLEAR)
+                .put(COMMAND_ADD_PATHS,COMMAND_ADD_PATHS)
+                .put(COMMAND_DELETE_PATHS,COMMAND_DELETE_PATHS)
+                .put(COMMAND_SAVE,COMMAND_SAVE)
+                .put(COMMAND_END_PATH,COMMAND_END_PATH)
+                .build();
+
+         */
         Map<String, Integer> map = new HashMap<>();
 
         map.put("addPoint", COMMAND_ADD_POINT);
@@ -124,6 +138,8 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
         map.put("deletePaths", COMMAND_DELETE_PATHS);
         map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
+        map.put("changePath", COMMAND_CHANGE_PATH);
+        map.put("setPathAttributes", COMMAND_SET_PATH_ATTRIBUTES);
 
 
         return map;
@@ -168,8 +184,16 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
                 view.end();
                 return;
             }
+            case COMMAND_CHANGE_PATH: {
+                view.setCurrentPath(args.getString(0));
+                return;
+            }
+            case COMMAND_SET_PATH_ATTRIBUTES: {
+                view.setAttributes(args.getString(0), args.getMap(1));
+                return;
+            }
             default:
-                throw new IllegalArgumentException(String.format(
+                throw new JSApplicationIllegalArgumentException(String.format(
                         "Unsupported command %d received by %s.",
                         commandType,
                         getClass().getSimpleName()));
@@ -180,11 +204,13 @@ public class SketchCanvasManager extends SimpleViewManager<SketchCanvas> {
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
         return MapBuilder.<String, Object>builder()
-                .put(TouchEventHandler.STROKE_START, MapBuilder.of("registrationName", TouchEventHandler.STROKE_START))
-                .put(TouchEventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", TouchEventHandler.STROKE_CHANGED))
-                .put(TouchEventHandler.STROKE_END, MapBuilder.of("registrationName", TouchEventHandler.STROKE_END))
-                .put(TouchEventHandler.ON_PRESS, MapBuilder.of("registrationName", TouchEventHandler.ON_PRESS))
-                .put(TouchEventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", TouchEventHandler.ON_LONG_PRESS))
+                .put(EventHandler.STROKE_START, MapBuilder.of("registrationName", EventHandler.STROKE_START))
+                .put(EventHandler.STROKE_CHANGED, MapBuilder.of("registrationName", EventHandler.STROKE_CHANGED))
+                .put(EventHandler.STROKE_END, MapBuilder.of("registrationName", EventHandler.STROKE_END))
+                .put(EventHandler.ON_PRESS, MapBuilder.of("registrationName", EventHandler.ON_PRESS))
+                .put(EventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", EventHandler.ON_LONG_PRESS))
+                .put(EventHandler.PATHS_UPDATE, MapBuilder.of("registrationName", EventHandler.PATHS_UPDATE))
+                .put(EventHandler.ON_SKETCH_SAVED, MapBuilder.of("registrationName", EventHandler.ON_SKETCH_SAVED))
                 .build();
     }
 }
