@@ -2,11 +2,14 @@
   "name": "react-native-reanimated-canvas",
   "repository": {
     "type": "git",
-    "url": "https://github.com/terrylinla/react-native-sketch-canvas"
+    "url": "https://github.com/ShaMan123/react-native-reanimated-canvas"
   },
   "version": "1.0.0",
-  "description": "react-native-sketch-canvas allows you to draw / sketch on both iOS and Android devices and sync the drawing data between users. Of course you can save as image.",
+  "description": "a light-weight low-level responsive sketching component",
   "author": "Terry Lin",
+  "contributors": [
+    "ShaMan123 (https://github.com/ShaMan123)"
+  ],
   "main": "src/index.ts",
   "keywords": [
     "react-native",
@@ -51,5 +54,6 @@
     "/android",
     "/ios"
   ],
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "homepage": "https://shaman123.github.io/react-native-reanimated-canvas/"
 }
