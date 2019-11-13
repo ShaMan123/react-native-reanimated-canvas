@@ -14,6 +14,7 @@ import { RNCamera } from 'react-native-camera';
 import SketchCanvas from 'react-native-reanimated-canvas';
 import RNSketchCanvas from '../App/RNSketchCanvas';
 import Example8 from './Example8';
+import Animated from 'react-native-reanimated';
 
 
 export default class example extends Component {
@@ -95,6 +96,7 @@ export default class example extends Component {
   render() {
     return (
       <View style={styles.container}>
+        
         {this.renderImageModal()}
         {
           this.state.example === 0 &&
@@ -324,7 +326,7 @@ export default class example extends Component {
               }}
               onSketchSaved={this.onSketchSaved}
               onStrokeEnd={(e) => {
-                console.log(e)
+                console.log(e.nativeEvent.color)
                 this.canvas2.addPath(e.nativeEvent)
               }}
             />
