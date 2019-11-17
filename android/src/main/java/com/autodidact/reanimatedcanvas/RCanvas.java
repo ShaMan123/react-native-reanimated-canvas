@@ -262,11 +262,11 @@ public class RCanvas extends View {
         invalidateCanvas(true);
     }
 
-    public void newPath() {
-        newPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
+    public void startPath() {
+        startPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
     }
 
-    public void newPath(String id, int strokeColor, float strokeWidth) {
+    public void startPath(String id, int strokeColor, float strokeWidth) {
         mCurrentPath = new RCanvasPath(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
@@ -470,7 +470,11 @@ public class RCanvas extends View {
     private void invalidateCanvas(boolean shouldDispatchEvent) {
         if (shouldDispatchEvent) {
             WritableMap event = Arguments.createMap();
-            event.putInt("pathsUpdate", mPaths.size());
+            WritableArray paths = Arguments.createArray();
+            for (RCanvasPath path: mPaths) {
+                paths.pushString(path.id);
+            }
+            event.putArray("paths", paths);
             eventHandler.emit(RCanvasEventHandler.PATHS_UPDATE, event);
         }
         invalidate();

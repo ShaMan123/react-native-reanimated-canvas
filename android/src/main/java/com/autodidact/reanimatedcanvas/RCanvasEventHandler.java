@@ -26,7 +26,7 @@ public class RCanvasEventHandler {
     private boolean mShouldFireOnStrokeChangedEvent = false;
     private boolean mShouldFireOnPressEvent = false;
     private boolean mShouldFireOnLongPressEvent = false;
-    private boolean mShouldHandleTouches = true;
+    private boolean mShouldHandleTouches = false;
 
     private GestureDetector detector;
     private EventDispatcher mEventDispatcher;
@@ -51,15 +51,15 @@ public class RCanvasEventHandler {
     }
 
     public void setShouldFireOnPressEvent(boolean shouldFireEvent) {
-        this.mShouldFireOnPressEvent = shouldFireEvent;
+        mShouldFireOnPressEvent = shouldFireEvent;
     }
 
     public void setShouldFireOnLongPressEvent(boolean shouldFireEvent) {
-        this.mShouldFireOnLongPressEvent = shouldFireEvent;
+        mShouldFireOnLongPressEvent = shouldFireEvent;
     }
 
     public void setShouldHandleTouches(boolean shouldHandleTouches) {
-        this.mShouldHandleTouches = shouldHandleTouches;
+        mShouldHandleTouches = shouldHandleTouches;
     }
 
     public boolean onTouchEvent(MotionEvent ev){
@@ -99,7 +99,7 @@ public class RCanvasEventHandler {
             PointF point = new PointF(event.getX(), event.getY());
 
             if(prevTouchAction == MotionEvent.ACTION_DOWN){
-                mView.newPath();
+                mView.startPath();
                 emitOnStrokeStart();
             }
 

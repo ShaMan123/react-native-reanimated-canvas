@@ -134,7 +134,7 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
         Map<String, Integer> map = new HashMap<>();
 
         map.put("addPoint", COMMAND_ADD_POINT);
-        map.put("newPath", COMMAND_START_PATH);
+        map.put("startPath", COMMAND_START_PATH);
         map.put("clear", COMMAND_CLEAR);
         map.put("addPaths", COMMAND_ADD_PATHS);
         map.put("deletePaths", COMMAND_DELETE_PATHS);
@@ -160,7 +160,7 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
                 return;
             }
             case COMMAND_START_PATH: {
-                view.newPath(args.getString(0), args.getInt(1), PixelUtil.toPixelFromDIP(args.getDouble(2)));
+                view.startPath(args.getString(0), args.getInt(1), PixelUtil.toPixelFromDIP(args.getDouble(2)));
                 return;
             }
             case COMMAND_CLEAR: {
