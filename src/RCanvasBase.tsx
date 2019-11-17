@@ -2,12 +2,12 @@
 
 import * as _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import { findNodeHandle, LayoutChangeEvent, NativeSyntheticEvent, processColor, requireNativeComponent, UIManager } from 'react-native';
+import { findNodeHandle, LayoutChangeEvent, NativeSyntheticEvent, processColor, requireNativeComponent } from 'react-native';
 import { requestPermissions } from './handlePermissions';
-import { useModule, VIEW_MANAGER } from './SketchCanvasModule';
-import { CanvasText, Commands, Path, PathData, SketchCanvasProperties, SketchCanvasRef } from './types';
+import { useModule, VIEW_MANAGER } from './RCanvasModule';
+import { CanvasText, Commands, PathData, RCanvasProperties, RCanvasRef } from './types';
 
-const RCanvasBase = requireNativeComponent(VIEW_MANAGER);
+const RNativeCanvas = requireNativeComponent(VIEW_MANAGER);
 
 export function generatePathId() {
   return _.uniqueId('SketchCanvasPath');
@@ -32,7 +32,7 @@ function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (curre
   return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
 }
 
-function RCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRef>) {
+function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const {
     onLayout: onLayoutP,
     onPathsChange,
@@ -74,7 +74,7 @@ function RCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRe
         const scaler = 1;    //size().width / data.size.width;
         return [
           d.id,
-          typeof d.color === 'number'?d.color:processColor(d.color),
+          typeof d.color === 'number' ? d.color : processColor(d.color),
           d.width,
           _.map(d.points, (p) => {
             return _.mapValues(p, (val) => val * scaler);
@@ -208,7 +208,7 @@ function RCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRe
       onSketchSaved(e);
     }
   }, [onPathsChange, onSketchSaved, isInitialized]);
-  
+
   useEffect(() => {
     requestPermissions(
       permissionDialogTitle,
@@ -251,30 +251,35 @@ function RCanvas(props: SketchCanvasProperties, forwardedRef: Ref<SketchCanvasRe
     ]
   );
 
+  const onStrokeEnd = useCallback((e) => {
+    console.log('hello!', e.nativeEvent);
+  }, [])
+
   return (
-    <RCanvasBase
+    <RNativeCanvas
       {...props}
       ref={_ref}
       onLayout={onLayout}
       onChange={onChange}
+      onSketchEnd={[props.onStrokeEnd, onStrokeEnd]}
       text={text}
       strokeColor={strokeColor}
     />
   )
 }
 
-const ForwardedSketchCanvas = forwardRef(RCanvas);
-ForwardedSketchCanvas.defaultProps = {
+const ForwardedRCanvasBase = forwardRef(RCanvasBase);
+ForwardedRCanvasBase.defaultProps = {
   strokeColor: '#000000',
   strokeWidth: 3,
   touchEnabled: true,
-  
+
   permissionDialogTitle: '',
   permissionDialogMessage: '',
 
   hardwareAccelerated: false,
   //useNativeDriver: false
-} as SketchCanvasProperties;
-ForwardedSketchCanvas.displayName = '() => SketchCanvas'
+} as RCanvasProperties;
+ForwardedRCanvasBase.displayName = '() => RCanvasBase'
 
-export default ForwardedSketchCanvas;
+export default ForwardedRCanvasBase;

@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import { useMemo } from 'react';
 import { NativeModules, Platform, UIManager, requireNativeComponent } from 'react-native';
-import { Commands, ImageType, SketchCanvasRef } from './types';
+import { Commands, ImageType, RCanvasRef } from './types';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
 export const MODULE = 'ReanimatedCanvasModule';
@@ -13,9 +13,15 @@ const NativeModuleManager = Platform.select({
   default: NativeModules.SketchCanvasModule
 });
 
-export function dispatchCommand(tag: number, command: Commands, data: any[]) {
+export function dispatchCommand(tag: number, command: Commands, data: any[] = []) {
   UIManager.dispatchViewManagerCommand(tag, command, data);
 }
+
+const { Constants } = UIManager.getViewManagerConfig(VIEW_MANAGER) as any;
+export const MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
+export const DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
+export const LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
+export const CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
 
 /**
    * @param imageType "png" or "jpg"
@@ -50,14 +56,14 @@ export function getBase64(
   includeText: boolean,
   cropToImageSize: boolean,
   callback: (error: any, result?: string) => void
-  ) {
+) {
   return NativeModuleManager.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
 }
 
 export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>, C extends (error: any, result?: R) => void> (
+export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>, C extends (error: any, result?: R) => void>(
   handle: number,
   x: number,
   y: number,
@@ -110,7 +116,7 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
   }
 }
 
-export function useModule(handle?: number | null): Pick<SketchCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
+export function useModule(handle?: number | null): Pick<RCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
   return useMemo(() => {
     const methods = { dispatchCommand, save, getBase64, isPointOnPath, setTouchRadius };
     if (_.isNil(handle)) {

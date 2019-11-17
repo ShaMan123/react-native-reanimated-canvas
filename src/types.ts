@@ -139,10 +139,10 @@ export interface SketchCanvasProps extends NativeTouchProps {
   onPathsChange?: (e: NativeSyntheticEvent<{ pathsCount: number }>) => void,
 }
 
-export type SketchCanvasProperties = SketchCanvasProps & ViewProps;
+export type RCanvasProperties = SketchCanvasProps & ViewProps;
 
 
-export type SketchCanvasRef = {
+export type RCanvasRef = {
   clear(): void
   undo(): null | string
   getPaths(): Path[]
@@ -151,7 +151,7 @@ export type SketchCanvasRef = {
   deletePath(id: string): void
   deletePaths(pathIds: string[]): void
 
-  dispatchCommand(command: Commands, data: any[]): void
+  dispatchCommand(command: Commands, data?: any[]): void
   setTouchRadius(radius: number): void
 
   /**
@@ -161,7 +161,7 @@ export type SketchCanvasRef = {
    * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
    */
   save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
-  
+
 
   /**
    * @param imageType "png" or "jpg"
@@ -210,9 +210,9 @@ export type SketchCanvasRef = {
    * */
   endPath(): void
 
-  getNode(): React.ComponentElement<SketchCanvasProperties, SketchCanvas>
+  getNode(): React.ComponentElement<RCanvasProperties, SketchCanvas>
 
   handle(): number | null
 
-  setNativeProps(props: SketchCanvasProperties): void
+  setNativeProps(props: RCanvasProperties): void
 }
