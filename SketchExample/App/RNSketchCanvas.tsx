@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import SketchCanvas from 'react-native-reanimated-canvas';
+import { RectButton } from 'react-native-gesture-handler';
 
-export default class RNSketchCanvas extends Component {
+class RNSketchCanvas extends Component {
 
   static defaultProps = {
     containerStyle: null,
@@ -78,29 +79,13 @@ export default class RNSketchCanvas extends Component {
     this._alphaStep = -1
   }
 
-  clear() {
-    this._sketchCanvas.clear()
-  }
-
-  undo() {
-    return this._sketchCanvas.undo()
-  }
-
-  addPath(data) {
-    this._sketchCanvas.addPath(data)
-  }
-
-  deletePath(id) {
-    this._sketchCanvas.deletePath(id)
-  }
-
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
       this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', false, '', 
+      this._sketchCanvas.save('png', false, '',
         date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
         true, true, false)
     }
@@ -137,7 +122,7 @@ export default class RNSketchCanvas extends Component {
   componentDidUpdate() {
     this._colorChanged = false
   }
-  
+
 
   render() {
     return (
@@ -184,9 +169,7 @@ export default class RNSketchCanvas extends Component {
         </View>
         <SketchCanvas
           {...this.props}
-          ref={ref => {
-            this._sketchCanvas = ref;
-          }}
+          ref={this.props.forwardedRef}
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
           strokeWidth={this.state.strokeWidth}
@@ -206,3 +189,5 @@ export default class RNSketchCanvas extends Component {
     );
   }
 };
+
+export default React.forwardRef((props, ref) => <RNSketchCanvas {...props} forwardedRef={ref} />);

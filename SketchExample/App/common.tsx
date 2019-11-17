@@ -4,7 +4,7 @@
  * @flow
  */
 
-import React, { Component, useCallback, useState, useRef, useReducer, useContext } from 'react';
+import React, { Component, useCallback, useState, useRef, useReducer, useContext, Dispatch, MutableRefObject, useMemo, PropsWithChildren } from 'react';
 import {
   Alert, AppRegistry, Button, Image, Modal, Platform,
   //TouchableOpacity,
@@ -15,43 +15,56 @@ import RCanvas from 'react-native-reanimated-canvas';
 import RNSketchCanvas from '../App/RNSketchCanvas';
 import Example8 from './Example8';
 import Animated from 'react-native-reanimated';
+import { RCanvasRef } from '../../src/types';
 
 
-export function useCamera(camera: any, onSuccess: (uri: string) => void) {
-  const takePictureAsync = useCallback(async () => {
-    if (camera) {
-      const options = { quality: 0.5, base64: true };
-      const data = await camera.takePictureAsync(options);
-      onSuccess(data.uri.replace('file://', ''));
-    } else {
-      throw new Error('no camera');
-    }
-  }, [])
-
-  return takePictureAsync;
+export async function takePicture(camera: MutableRefObject<any>, onSuccess: (uri: string) => void) {
+  if (camera) {
+    const options = { quality: 0.5, base64: true };
+    const data = await camera.current.takePictureAsync(options);
+    onSuccess(data.uri.replace('file://', ''));
+  } else {
+    throw new Error('no camera');
+  }
 };
 
-export function useSaveCanvas(setURI: (uri: string) => void) {
-  const cb = useCallback((e) => {
+export function saveCanvasEventBuilder(setURI: (uri: string) => void) {
+  const cb = (e) => {
     console.log(e.nativeEvent)
     const { success, path } = e.nativeEvent;
     Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
     if (success) {
       setURI(path);
     }
-  }, []);
+  };
 
   return cb;
 }
 
-export function ImageModal(props: { uri: string, visible: boolean, onClose: () => void }) {
-  const uri = `file://${props.uri}`;
+export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
+  const ref = useRef(initialValue);
+  const getter = useCallback(() =>
+    action(ref.current as T),
+    [ref, action]
+  );
+  const defaultGetter = useCallback(() =>
+    ref.current,
+    [ref]
+  );
+
+  return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
+}
+
+export function ImageModal() {
+  const context = useCanvasContext();
+  const close = useCallback(() => context.dispatch({ modalVisible: false }), [context]);
+  const uri = `file://${context.state.uri}`;
   return (
     <Modal
       animationType="slide"
       transparent={false}
-      visible={props.visible}
-      onRequestClose={props.onClose}
+      visible={context.state.modalVisible}
+      onRequestClose={close}
     >
       <View style={{ marginTop: 22 }}>
         <Text>Displaying image: {uri}</Text>
@@ -61,7 +74,7 @@ export function ImageModal(props: { uri: string, visible: boolean, onClose: () =
         />
         <Button
           title="close"
-          onPress={props.onClose}
+          onPress={close}
         />
       </View>
     </Modal>
@@ -81,31 +94,59 @@ const initialState = {
 }
 
 export function useCanvasReducer() {
-  const [reducer, dispatch] = useReducer((nextState, action) => nextState, initialState);
-
+  return useReducer((nextState, action) => nextState, initialState);
 }
 
 const Context = React.createContext({
   state: initialState,
-  dispatch: (updates: Partial<typeof initialState>) => { }
+  dispatch: (updates: Partial<typeof initialState>) => { },
+  get _canvas() {
+    const ref = this.canvas.ref.current;
+    if (!ref) throw new Error('no canvas');
+    return ref;
+  },
+  canvas: {
+    ref: React.createRef<RCanvasRef>(),
+    onSketchSaved: () => { }
+  },
+  camera: {
+    ref: React.createRef(),
+    takePicture: () => { }
+  }
 });
 
-export default function CommonExample(props) {
-  const { state, dispatch } = useContext(Context);
-  const onSave = useSaveCanvas((uri) => dispatch({ uri }));
-  const camera = useRef();
-  const takePicture = useCamera(camera, (uri) => dispatch({ photoPath: uri }));
+export function useCanvasContext() {
+  return useContext(Context);
+}
 
+function useCanvasContextFactory() {
+  const canvas = useRef();
+  const camera = useRef();
+  const [state, dispatch] = useCanvasReducer();
+  return useMemo(() => ({
+    state,
+    dispatch,
+    canvas: {
+      ref: canvas,
+      onSketchSaved: saveCanvasEventBuilder((uri) => dispatch({ uri })),
+    },
+    camera: {
+      ref: camera,
+      takePicture: () => {
+        takePicture(camera, (uri) => dispatch({ photoPath: uri }))
+      }
+    }
+  }), []);
+
+}
+
+export default function CommonExample({ children }: PropsWithChildren<any>) {
+  const context = useCanvasContextFactory();
   return (
-    <>
-      <
-      <ImageModal
-        uri={state.uri}
-        visible={state.modalVisible}
-        onClose={() => dispatch({ modalVisible: false })}
-      />
-      {props.children}
-    </>
+    <Context.Provider value={context}>
+      <ImageModal />
+      {children}
+    </Context.Provider>
   )
 }
 

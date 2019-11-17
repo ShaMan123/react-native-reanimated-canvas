@@ -7,6 +7,7 @@ module.exports = {
       {
         alias: {
           'react-native-reanimated': './node_modules/react-native-reanimated',
+          'react-native-gesture-handler': './node_modules/react-native-gesture-handler',
           react: './node_modules/react',
           'react-native': './node_modules/react-native',
           '@babel': './node_modules/@babel',

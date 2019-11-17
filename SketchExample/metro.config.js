@@ -15,11 +15,10 @@ const _ = require('lodash');
 const config = {
   resolver: {
     blacklistRE: blacklist([
-      path.resolve(__dirname, '../node_modules/react-native-gesture-handler'),
-      path.resolve(__dirname, '..', 'example'),
+      //path.resolve(__dirname, '../node_modules/react-native-gesture-handler'),
     ]),
     //providesModuleNodeModules: _.keys(pkg.dependencies),
-    extraNodeModules: _.mapValues(pkg.dependencies, (n) => path.resolve(__dirname, 'node_modules', n))
+    //extraNodeModules: _.mapValues(pkg.dependencies, (n) => path.resolve(__dirname, 'node_modules', n))
   },
   watchFolders: [path.resolve(__dirname, '..')],
   transformer: {
