@@ -120,6 +120,8 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     <PanGestureHandler
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}
+      maxPointers={1}
+      shouldCancelWhenOutside={false}
     >
       <View style={styles.default}>
         <RCanvasBase
