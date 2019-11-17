@@ -2,9 +2,9 @@
 
 import React, { MutableRefObject, useCallback, useMemo } from 'react';
 import { PanResponder } from 'react-native';
-import { SketchCanvasProperties } from '../index';
+import { RCanvasProperties } from './types';
 
-export function useSketchCanvasResponder(props: SketchCanvasProperties, ref: MutableRefObject<any>) {
+export function useSketchCanvasResponder(props: RCanvasProperties, ref: MutableRefObject<any>) {
   const { touchEnabled } = props;
   const grant = useCallback((evt) =>
     touchEnabled ? evt.nativeEvent.touches.length === 1 : false,  //gestureState.numberActiveTouches === 1;
@@ -35,7 +35,7 @@ export function useSketchCanvasResponder(props: SketchCanvasProperties, ref: Mut
   return panResponder.panHandlers;
 }
 
-function useSketchCanvasHandler(props: SketchCanvasProperties, ref: MutableRefObject<any>) {
+function useSketchCanvasHandler(props: RCanvasProperties, ref: MutableRefObject<any>) {
   const { touchEnabled } = props;
   /*
   const onHandlerStateChange = useCallback((e: PanGestureHandlerStateChangeEvent) => {
@@ -49,7 +49,7 @@ function useSketchCanvasHandler(props: SketchCanvasProperties, ref: MutableRefOb
   }
   */
 
- 
+
   return useMemo(() => {
 
     return {
