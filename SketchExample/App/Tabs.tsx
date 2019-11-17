@@ -11,7 +11,7 @@ import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
 
 import SketchCanvas from 'react-native-reanimated-canvas';
-import Example8 from './Example8';
+import Example8 from './E8';
 
 const GHSC = createNativeWrapper(SketchCanvas, {
   disallowInterruption: true,
