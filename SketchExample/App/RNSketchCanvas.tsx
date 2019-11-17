@@ -1,6 +1,6 @@
 import React, { Component, forwardRef } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
-import { RControlledCanvas } from 'react-native-reanimated-canvas';
+import RCanvas from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
 
 class RNSketchCanvas extends Component {
@@ -165,7 +165,7 @@ class RNSketchCanvas extends Component {
             }
           </View>
         </View>
-        <RControlledCanvas
+        <RCanvas
           {...this.props}
           ref={this.props.forwardedRef}
           style={this.props.canvasStyle}

@@ -15,15 +15,18 @@ export default function Example() {
         <RNCamera
           ref={context.camera.ref}
           style={styles.preview}
-          type={RNCamera.Constants.Type.back}
-          flashMode={RNCamera.Constants.FlashMode.on}
-          permissionDialogTitle={'Permission to use camera'}
-          permissionDialogMessage={'We need your permission to use your camera phone'}
+          type="back"
+          flashMode="auto"
+          androidCameraPermissionOptions={{
+            title: 'Permission to use camera',
+            message: 'We need your permission to use your camera phone',
+          }}
           captureAudio={false}
+          trackingEnabled
         />
         <View style={{ flex: 0, flexDirection: 'row', justifyContent: 'center', }}>
           <TouchableOpacity
-            onPress={context.camera.takePicture}
+            onPress={() => context.camera.takePicture()}
             style={styles.capture}
           >
             <Text style={{ fontSize: 14 }}> SNAP </Text>

@@ -191,15 +191,15 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     ref() && ref().setNativeProps(props),
     [ref]
   );
-
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    _size.current = { width, height }
-    _initialized.current = true;
-    pathsToProcess().length > 0 && addPaths(pathsToProcess());
-    onLayoutP && onLayoutP(e);
-  }, [_size, _initialized, pathsToProcess, onLayoutP]);
-
+  /*
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+      const { width, height } = e.nativeEvent.layout;
+      _size.current = { width, height }
+      _initialized.current = true;
+      pathsToProcess().length > 0 && addPaths(pathsToProcess());
+      onLayoutP && onLayoutP(e);
+    }, [_size, _initialized, pathsToProcess, onLayoutP]);
+  */
   const onChange = useCallback((e: NativeSyntheticEvent<any>) => {
     if (!isInitialized()) return;
     if (e.nativeEvent.hasOwnProperty('pathsUpdate') && onPathsChange) {
@@ -217,7 +217,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   }, []);
 
   useImperativeHandle(forwardedRef, () =>
-    ({
+    _.assign(_ref.current, {
       ...module,
       addPath,
       addPaths,
@@ -259,7 +259,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     <RNativeCanvas
       {...props}
       ref={_ref}
-      onLayout={onLayout}
+      //onLayout={onLayout}
       onChange={onChange}
       onSketchEnd={[props.onStrokeEnd, onStrokeEnd]}
       text={text}

@@ -4,6 +4,7 @@ import { FlatList, Platform, StyleSheet, Text, View, YellowBox, TabBarIOS } from
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
+import _ from 'lodash';
 /*
 YellowBox.ignoreWarnings([
   'Warning: isMounted(...) is deprecated',
@@ -34,6 +35,8 @@ const SCREENS = {
   E8: { screen: E8, title: 'R' },
   E9: { screen: Tabs, title: 'Tabs' }
 };
+
+_.map(SCREENS, ({ screen, title }) => _.set(screen, 'navigationOptions.title', title));
 
 function MainScreen(props) {
   const data = Object.keys(SCREENS).map(key => ({ key }));
