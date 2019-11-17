@@ -1,21 +1,16 @@
 
-import React, { useRef } from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
-import RNSketchCanvas from '../App/RNSketchCanvas';
-import CommonExample from './common';
-import RCanvas, { RCanvasModule } from 'react-native-reanimated-canvas';
-import { useCanvasContext, styles, useRefGetter } from './common';
-import { RCanvasRef } from '../../src/types';
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { RNCamera } from 'react-native-camera';
+import RNSketchCanvas from '../App/RNSketchCanvas';
+import { styles, useCanvasContext } from './common';
 
 
 export default function Example() {
   const context = useCanvasContext();
-  const [_a, a] = useRefGetter<RCanvasRef>();
-  const [_b, b] = useRefGetter<RCanvasRef>();
 
   return (
-    context.state.photoPath === null ?
+    context.state.photoPath === "" ?
       <View style={styles.cameraContainer}>
         <RNCamera
           ref={context.camera.ref}
@@ -38,6 +33,7 @@ export default function Example() {
       :
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <RNSketchCanvas
+          {...context.canvas}
           localSourceImage={{ filename: context.state.photoPath, directory: null, mode: 'AspectFit' }}
           containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
           canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
@@ -84,7 +80,6 @@ export default function Example() {
               cropToImageSize: false,
             }
           }}
-          onSketchSaved={this.onSketchSaved}
           onPathsChange={(pathsCount) => {
             console.log('pathsCount', pathsCount)
           }}

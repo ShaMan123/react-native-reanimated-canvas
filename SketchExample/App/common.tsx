@@ -1,25 +1,11 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
 
-import React, { Component, useCallback, useState, useRef, useReducer, useContext, Dispatch, MutableRefObject, useMemo, PropsWithChildren } from 'react';
-import {
-  Alert, AppRegistry, Button, Image, Modal, Platform,
-  //TouchableOpacity,
-  ScrollView, StyleSheet, Text, TouchableOpacity, View
-} from 'react-native';
-import { RNCamera } from 'react-native-camera';
-import RCanvas from 'react-native-reanimated-canvas';
-import RNSketchCanvas from '../App/RNSketchCanvas';
-import Example8 from './Example8';
-import Animated from 'react-native-reanimated';
+import React, { MutableRefObject, PropsWithChildren, useCallback, useContext, useMemo, useReducer, useRef } from 'react';
+import { Alert, Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import { RCanvasRef } from '../../src/types';
 
 
 export async function takePicture(camera: MutableRefObject<any>, onSuccess: (uri: string) => void) {
-  if (camera) {
+  if (camera.current) {
     const options = { quality: 0.5, base64: true };
     const data = await camera.current.takePictureAsync(options);
     onSuccess(data.uri.replace('file://', ''));

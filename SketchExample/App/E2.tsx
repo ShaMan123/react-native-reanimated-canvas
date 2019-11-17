@@ -14,11 +14,6 @@ export default function Example() {
     <View style={{ flex: 1, flexDirection: 'row' }}>
       <View style={{ flex: 1, flexDirection: 'column' }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity style={styles.functionButton} onPress={() => {
-            context.dispatch({ example: 0 })
-          }}>
-            <Text style={{ color: 'white' }}>Close</Text>
-          </TouchableOpacity>
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity style={styles.functionButton} onPress={() => {
               context.dispatch({ thickness: 10 })
@@ -37,8 +32,8 @@ export default function Example() {
           localSourceImage={{ filename: 'whale.png', directory: RCanvasModule.MAIN_BUNDLE, mode: 'AspectFit' }}
           // localSourceImage={{ filename: 'bulb.png', directory: RNSketchCanvas.MAIN_BUNDLE }}
           style={{ flex: 1 }}
-          strokeColor={this.state.color}
-          strokeWidth={this.state.thickness}
+          strokeColor={context.state.color}
+          strokeWidth={context.state.thickness}
           onStrokeStart={(ev) => {
             context.dispatch({ message: 'Start' })
           }}
@@ -62,7 +57,7 @@ export default function Example() {
               <Text style={{ color: 'white' }}>Black</Text>
             </TouchableOpacity>
           </View>
-          <Text style={{ marginRight: 8, fontSize: 20 }}>{this.state.message}</Text>
+          <Text style={{ marginRight: 8, fontSize: 20 }}>{context.state.message}</Text>
           <TouchableOpacity style={[styles.functionButton, { backgroundColor: 'black', width: 90 }]} onPress={() => {
             console.log(context._canvas.getPaths())
             //Alert.alert(JSON.stringify(this.canvas.getPaths()))

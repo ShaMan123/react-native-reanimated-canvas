@@ -16,6 +16,7 @@ export default function Example() {
   return (
     <View style={{ flex: 1, flexDirection: 'column' }}>
       <RNSketchCanvas
+        {...context.canvas}
         ref={_a}
         user={'user1'}
         containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
@@ -58,13 +59,13 @@ export default function Example() {
             imageType: 'jpg'
           }
         }}
-        onSketchSaved={this.onSketchSaved}
         onStrokeEnd={(e) => {
           console.log(e.nativeEvent.color)
           b().addPath(e.nativeEvent)
         }}
       />
       <RNSketchCanvas
+        {...context.canvas}
         ref={_b}
         user={'user2'}
         containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
@@ -106,7 +107,6 @@ export default function Example() {
             imageType: 'jpg'
           }
         }}
-        onSketchSaved={this.onSketchSaved}
         onStrokeEnd={(e) => {
           a().addPath(e.nativeEvent)
         }}

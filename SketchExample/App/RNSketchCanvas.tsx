@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, forwardRef } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
-import SketchCanvas from 'react-native-reanimated-canvas';
+import { RControlledCanvas } from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
 
 class RNSketchCanvas extends Component {
@@ -79,13 +79,17 @@ class RNSketchCanvas extends Component {
     this._alphaStep = -1
   }
 
+  ref() {
+    return this.props.forwardedRef.current;
+  }
+
   save() {
     if (this.props.savePreference) {
       const p = this.props.savePreference()
-      this._sketchCanvas.save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
+      this.ref().save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
     } else {
       const date = new Date()
-      this._sketchCanvas.save('png', false, '',
+      this.ref().save('png', false, '',
         date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
         true, true, false)
     }
@@ -129,12 +133,6 @@ class RNSketchCanvas extends Component {
       <View style={this.props.containerStyle}>
         <View style={{ flexDirection: 'row' }}>
           <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-start' }}>
-            {this.props.closeComponent && (
-              <TouchableOpacity onPress={() => { this.props.onClosePressed() }}>
-                {this.props.closeComponent}
-              </TouchableOpacity>)
-            }
-
             {this.props.eraseComponent && (
               <TouchableOpacity onPress={() => { this.setState({ color: '#00000000' }) }}>
                 {this.props.eraseComponent}
@@ -149,13 +147,13 @@ class RNSketchCanvas extends Component {
             }
 
             {this.props.undoComponent && (
-              <TouchableOpacity onPress={() => { this.props.onUndoPressed(this.undo()) }}>
+              <TouchableOpacity onPress={() => { this.props.onUndoPressed(this.ref().undo()) }}>
                 {this.props.undoComponent}
               </TouchableOpacity>)
             }
 
             {this.props.clearComponent && (
-              <TouchableOpacity onPress={() => { this.clear(); this.props.onClearPressed() }}>
+              <TouchableOpacity onPress={() => { this.ref().clear(); this.props.onClearPressed() }}>
                 {this.props.clearComponent}
               </TouchableOpacity>)
             }
@@ -167,7 +165,7 @@ class RNSketchCanvas extends Component {
             }
           </View>
         </View>
-        <SketchCanvas
+        <RControlledCanvas
           {...this.props}
           ref={this.props.forwardedRef}
           style={this.props.canvasStyle}
