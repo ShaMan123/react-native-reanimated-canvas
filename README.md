@@ -1,21 +1,22 @@
 # react-native-reanimated-canvas
 
+### A light-weight low-level responsive sketching component
+
 This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
 The android code has been heavily refactored to boost performance.
 Some features have been added and a lot of javascript has been removed making it more light weight and low-level, befitting `react-native-reanimated`.
-A React Native component for drawing by touching on both iOS and Android.
 
 
-<img src="https://media.giphy.com/media/3ov9kbuQg8ayvoYG8E/giphy.gif" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://media.giphy.com/media/3ov9jNZooUPTbWWbh6/giphy.gif" height="400" />
-<br/>
-<img src="https://i.imgur.com/lc5WlGz.png" height="400" />&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/NBZvKtp.png" height="400" />
+## WIP V2 - BREAKING CHANGES
 
 
 ## Installation
 -------------
-Install from `npm` (only support RN >= 0.60)
+Install from `npm` or `yarn` (RN >= 0.60)
 ```bash
 npm install react-native-reanimated-canvas --save
+//  OR
+yarn add react-native-reanimated-canvas
 ```
 
 ## Usage
