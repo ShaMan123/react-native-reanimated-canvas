@@ -29,7 +29,7 @@
   },
   "optionalDependencies": {
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-working-branch"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",

@@ -12,6 +12,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -20,7 +22,7 @@ import com.facebook.react.uimanager.PixelUtil;
 import java.util.ArrayList;
 
 public class RCanvasPath {
-    public final ArrayList<PointF> points = new ArrayList<PointF>();
+    public final ArrayList<PointF> points = new ArrayList<>();
     public final String id;
     public int strokeColor;
     public float strokeWidth;
@@ -30,15 +32,37 @@ public class RCanvasPath {
     private Path mPath;
     private RectF mDirty = null;
 
+    public RCanvasPath(String id, int strokeColor, float strokeWidth) {
+        this(id, strokeColor, strokeWidth, null);
+    }
+
+    public RCanvasPath(String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
+        this.id = id;
+        this.strokeColor = strokeColor;
+        this.isTranslucent = isTranslucent(strokeColor);
+        this.strokeWidth = strokeWidth;
+
+        if (points != null) {
+            this.points.addAll(points);
+            mPath = this.isTranslucent ? evaluatePath() : null;
+        } else {
+            mPath = this.isTranslucent ? new Path() : null;
+        }
+    }
+
+    private static Boolean isTranslucent(int strokeColor) {
+        return ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
+    }
+
     public static PointF midPoint(PointF p1, PointF p2) {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
     }
 
-    public WritableMap getMap() {
-        return getMap(true);
+    public WritableMap toWritableMap() {
+        return toWritableMap(true);
     }
 
-    public WritableMap getMap(Boolean includePoints){
+    public WritableMap toWritableMap(Boolean includePoints){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
         path.putString("id", id);
@@ -47,32 +71,12 @@ public class RCanvasPath {
 
         if (includePoints) {
             for(PointF point: points){
-                WritableMap p = Arguments.createMap();
-                p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
-                p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
-                arr.pushMap(p);
+                arr.pushMap(Utility.toWritablePoint(point));
             }
             path.putArray("points", arr);
         }
 
         return path;
-    }
-
-    public RCanvasPath(String id, int strokeColor, float strokeWidth) {
-        this.id = id;
-        this.strokeColor = strokeColor;
-        this.strokeWidth = strokeWidth;
-        this.isTranslucent = ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
-        mPath = this.isTranslucent ? new Path() : null;
-    }
-
-    public RCanvasPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
-        this.id = id;
-        this.strokeColor = strokeColor;
-        this.strokeWidth = strokeWidth;
-        this.points.addAll(points);
-        this.isTranslucent = ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
-        mPath = this.isTranslucent ? evaluatePath() : null;
     }
 
     public Rect addPoint(PointF p) {

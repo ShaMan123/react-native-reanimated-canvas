@@ -36,7 +36,7 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
-                    view.getBase64(type, transparent, includeImage, includeText, cropToImageSize, callback);
+                    view.getImageHelper().getBase64(type, transparent, includeImage, includeText, cropToImageSize, callback);
                 }
             });
         } catch (Exception e) {
@@ -53,9 +53,13 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
+                    PathIntersectionHelper intersectionHelper = view.getIntersectionHelper();
                     float nativeX = PixelUtil.toPixelFromDIP(x);
                     float nativeY = PixelUtil.toPixelFromDIP(y);
-                    callback.invoke(null, pathId == null ? view.isPointOnPath(nativeX, nativeY): view.isPointOnPath(nativeX, nativeY, pathId));
+                    callback.invoke(null, pathId == null ?
+                            intersectionHelper.isPointOnPath(nativeX, nativeY):
+                            intersectionHelper.isPointOnPath(nativeX, nativeY, pathId)
+                    );
                 }
             });
         } catch (Exception e) {
@@ -71,7 +75,7 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
-                    view.setTouchRadius(PixelUtil.toPixelFromDIP(r));
+                    view.getIntersectionHelper().setTouchRadius(PixelUtil.toPixelFromDIP(r));
                     callback.invoke(null, true);
                 }
             });

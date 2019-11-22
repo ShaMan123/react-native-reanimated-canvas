@@ -1,16 +1,19 @@
 'use strict';
 
 import * as _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import { findNodeHandle, LayoutChangeEvent, NativeSyntheticEvent, processColor, requireNativeComponent } from 'react-native';
+import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, MutableRefObject } from 'react';
+import { findNodeHandle, NativeSyntheticEvent, processColor, requireNativeComponent, LayoutChangeEvent } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { requestPermissions } from './handlePermissions';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
 import { CanvasText, Commands, PathData, RCanvasProperties, RCanvasRef } from './types';
 
-const RNativeCanvas = requireNativeComponent(VIEW_MANAGER);
+const { createAnimatedComponent } = Animated;
+
+const RNativeCanvas = createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
 
 export function generatePathId() {
-  return _.uniqueId('SketchCanvasPath');
+  return _.uniqueId('RCanvasPath');
 }
 
 function processText(text: CanvasText[] | null) {
@@ -20,16 +23,15 @@ function processText(text: CanvasText[] | null) {
 
 function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);
-  const getter = useCallback(() =>
-    action(ref.current as T),
-    [ref, action]
-  );
-  const defaultGetter = useCallback(() =>
-    ref.current,
+  return useMemo(() =>
+    ({
+      ref,
+      set: (value?: T) => (ref.current = value),
+      value: () => action(ref.current as T),
+      current: () => ref.current
+    }),
     [ref]
   );
-
-  return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
 }
 
 function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
@@ -51,26 +53,30 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     [textP]
   );
 
-  const [_initialized, isInitialized] = useRefGetter(false);
-  const [_size, size] = useRefGetter({ width: 0, height: 0 });
-  const [_ref, handle, ref] = useRefGetter(null as any, (current) => findNodeHandle(current));
-  const [_currentPath, currentPath] = useRefGetter<string>();
-  const [_paths, paths] = useRefGetter([] as PathData[]);
-  const [_path, path] = useRefGetter({} as PathData);
-  const [_pathsToProcess, pathsToProcess] = useRefGetter<PathData[]>([]);
+  const initialized = useRefGetter(false);
+  const size = useRefGetter({ width: 0, height: 0 });
+  const node = useRefGetter(null as any, (current) => findNodeHandle(current));
+  const currentPathId = useRefGetter<string>();
+  const paths = useRefGetter([] as PathData[]);
+  const pathsToProcess = useRefGetter<PathData[]>([]);
 
-  const module = useModule(handle());
+  const module = useModule(node.value());
   const { dispatchCommand } = module;
 
   const findPath = useCallback((pathId: string) =>
-    _.find(paths(), (p) => _.isEqual(p.id, pathId)),
+    _.find(paths.value(), (p) => p.id === pathId),
     [paths]
   );
 
+  const currentPath = useCallback(() =>
+    findPath(currentPathId.value()),
+    [findPath, currentPathId]
+  );
+
   const addPaths = useCallback((data: PathData[]) => {
-    if (isInitialized()) {
+    if (initialized.value()) {
       const parsedPaths = data.map((d) => {
-        if (_.isNil(findPath(d.id))) paths().push(d);
+        if (_.isNil(findPath(d.id))) paths.set(_.concat(paths.value(), d));
         const scaler = 1;    //size().width / data.size.width;
         return [
           d.id,
@@ -81,14 +87,15 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
           })
         ];
       });
-      //console.log(parsedPaths)
+
       dispatchCommand(Commands.addPaths, parsedPaths);
     }
     else {
-      data.map((data) => pathsToProcess().filter(p => p.id === data.id).length === 0 && pathsToProcess().push(data));
+      const addPaths = _.differenceBy(data, pathsToProcess.value(), 'id');
+      pathsToProcess.set(_.concat(pathsToProcess.value(), addPaths));
     }
   },
-    [isInitialized, dispatchCommand, findPath, paths, pathsToProcess, size]
+    [initialized, dispatchCommand, findPath, paths, pathsToProcess, size]
   );
 
   const addPath = useCallback((data: PathData) =>
@@ -97,10 +104,9 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   const deletePaths = useCallback((pathIds: string[]) => {
-    _paths.current = paths()
-      .filter(p => pathIds.findIndex(id => p.id === id) === -1);
+    paths.set(_.differenceWith(paths.value(), pathIds, (a, b) => a.id === b));
     dispatchCommand(Commands.deletePaths, pathIds);
-  }, [_paths, paths, dispatchCommand]);
+  }, [paths, paths, dispatchCommand]);
 
   const deletePath = useCallback((id: string) =>
     deletePaths([id]),
@@ -108,130 +114,97 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   const getPaths = useCallback(() =>
-    _.cloneDeep(paths()),
+    _.cloneDeep(paths.value()),
     [paths]
   );
 
   const startPath = useCallback((x: number, y: number) => {
-    _currentPath.current = generatePathId();
+    const id = generatePathId();
+    currentPathId.set(id);
     const state = {
-      id: currentPath(),
+      id,
       color: strokeColor,
       width: strokeWidth,
-      //points: []
+      points: [{ x, y }]
     };
 
     dispatchCommand(Commands.startPath, _.values(state));
-    //props.onStrokeStart && props.onStrokeStart(path());
-    /*
-    _path.current = {
-      id: generatePathId(),
-      color: strokeColor,
-      width: strokeWidth,
-      points: []
-    };
-
-    const data = [
-      path().id,
-      processColor(path().color),
-      path().width
-    ]
-
-    dispatchCommand(commands.newPath, data);
-    props.onStrokeStart && props.onStrokeStart(path());
-    */
   },
-    [_path, path, strokeColor, strokeWidth]
+    [strokeColor, strokeWidth]
   );
 
-  const addPoint = useCallback((x: number, y: number) => {
-    if (currentPath()) {
-      dispatchCommand(Commands.addPoint, [x, y]); //parseFloat(x.toFixed(2))
-      //this._path.points.push({ x: pointX, y: pointY });
-      //this.props.onStrokeChanged && this.props.onStrokeChanged({ x: pointX, y: pointY, id: this._path.id });
-    }
-  },
-    [currentPath, dispatchCommand]
+  const addPoint = useCallback((x: number, y: number) =>
+    currentPathId.value() && dispatchCommand(Commands.addPoint, [x, y]),
+    [currentPathId, dispatchCommand]
   );
 
-  const endPath = useCallback(() => {
-    if (currentPath()) {
-      dispatchCommand(Commands.endPath);
-      _currentPath.current = undefined;
-      /*
-      const o = {
-        path: this._path,
-        size: this._size,
-        drawer: this.props.user
-      };
-      this._paths.push(o);
-      this.props.onStrokeEnd && this.props.onStrokeEnd(this._path);
-      this._path = null;
-      */
-    }
-  },
-    [_currentPath, currentPath, dispatchCommand]
+  const endPath = useCallback(() =>
+    currentPathId.value() && dispatchCommand(Commands.endPath),
+    [currentPathId, dispatchCommand]
   );
 
   const clear = useCallback(() => {
-    _paths.current = [];
-    _path.current = null;
-    _currentPath.current = undefined;
+    paths.set([]);
+    currentPathId.set();
     dispatchCommand(Commands.clear);
-  }, [_paths, _path, _currentPath]);
+  }, [paths, currentPathId]);
 
   const undo = useCallback(() => {
+    throw new Error('undo not implemented');
+    /*
     let lastId: string | null = null;
-    paths().forEach(d => lastId = d.drawer === user ? d.path.id : lastId);
+    paths.value().forEach(d => lastId = d.drawer === user ? d.path.id : lastId);
     if (lastId !== null) deletePath(lastId);
     return lastId;
+    */
   }, [paths, user, deletePath]);
 
   const setNativeProps = useCallback((props) =>
-    ref() && ref().setNativeProps(props),
-    [ref]
+    node.current() && node.current().setNativeProps(props),
+    [node]
   );
-  /*
-    const onLayout = useCallback((e: LayoutChangeEvent) => {
-      const { width, height } = e.nativeEvent.layout;
-      _size.current = { width, height }
-      _initialized.current = true;
-      pathsToProcess().length > 0 && addPaths(pathsToProcess());
-      onLayoutP && onLayoutP(e);
-    }, [_size, _initialized, pathsToProcess, onLayoutP]);
-  */
+
+  const onLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    size.set({ width, height })
+    initialized.set(true);
+    addPaths(pathsToProcess.value());
+    onLayoutP && onLayoutP(e);
+  }, [size, initialized, pathsToProcess, onLayoutP]);
+
   const onChange = useCallback((e: NativeSyntheticEvent<any>) => {
-    if (!isInitialized()) return;
+    if (!initialized.value()) return;
     if (e.nativeEvent.hasOwnProperty('pathsUpdate') && onPathsChange) {
       //onPathsChange(e);
     } else if (e.nativeEvent.hasOwnProperty('success') && onSketchSaved) {
       onSketchSaved(e);
     }
-  }, [onPathsChange, onSketchSaved, isInitialized]);
+  }, [onPathsChange, onSketchSaved, initialized]);
 
   useEffect(() => {
     requestPermissions(
       permissionDialogTitle,
       permissionDialogMessage,
-    ).then((isStoragePermissionAuthorized) => isStoragePermissionAuthorized);
+    );
   }, []);
 
   useImperativeHandle(forwardedRef, () =>
-    _.assign(_ref.current, {
+    _.assign(_.has(node.current(), 'getNode') ? node.current().getNode() : node.current(), {
       ...module,
       addPath,
       addPaths,
       deletePath,
       deletePaths,
       getPaths,
+      currentPath,
       startPath,
       addPoint,
       endPath,
       clear,
       undo,
       setNativeProps,
-      getNode: ref,
-      handle
+      getNode: node.ref,
+      handle: node.value()
     }),
     [
       module,
@@ -240,28 +213,34 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       deletePath,
       deletePaths,
       getPaths,
+      currentPath,
       startPath,
       addPoint,
       endPath,
       clear,
       undo,
       setNativeProps,
-      ref,
-      handle
+      node
     ]
   );
 
+  const onStrokeStart = useCallback((e) => {
+    currentPathId.set(e.nativeEvent.id);
+  }, [currentPathId]);
+
   const onStrokeEnd = useCallback((e) => {
-    console.log('hello!', e.nativeEvent);
-  }, [])
+    paths.set(_.concat(paths.value(), e.nativeEvent));
+    currentPathId.set();
+  }, [paths, currentPathId]);
 
   return (
     <RNativeCanvas
       {...props}
-      ref={_ref}
-      //onLayout={onLayout}
+      ref={node.ref}
+      onLayout={onLayout}
       onChange={onChange}
-      onSketchEnd={[props.onStrokeEnd, onStrokeEnd]}
+      onStrokeStart={[onStrokeStart, props.onStrokeStart]}
+      onStrokeEnd={[onStrokeEnd, props.onStrokeEnd]}
       text={text}
       strokeColor={strokeColor}
     />
@@ -270,7 +249,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
 const ForwardedRCanvasBase = forwardRef(RCanvasBase);
 ForwardedRCanvasBase.defaultProps = {
-  strokeColor: '#000000',
+  strokeColor: 'transparent',
   strokeWidth: 3,
   touchEnabled: true,
 
@@ -278,7 +257,7 @@ ForwardedRCanvasBase.defaultProps = {
   permissionDialogMessage: '',
 
   hardwareAccelerated: false,
-  //useNativeDriver: false
+  useNativeDriver: false
 } as RCanvasProperties;
 ForwardedRCanvasBase.displayName = '() => RCanvasBase'
 

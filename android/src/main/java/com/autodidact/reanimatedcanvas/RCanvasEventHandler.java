@@ -3,11 +3,12 @@ package com.autodidact.reanimatedcanvas;
 import android.graphics.PointF;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
@@ -22,6 +23,7 @@ public class RCanvasEventHandler {
     public final static String ON_SKETCH_SAVED = "onSketchSaved";
 
     private RCanvas mView;
+    private TouchState mTouchState;
     private int prevTouchAction = -1;
     private boolean mShouldFireOnStrokeChangedEvent = false;
     private boolean mShouldFireOnPressEvent = false;
@@ -38,12 +40,27 @@ public class RCanvasEventHandler {
             @Override
             public boolean onTouchEvent(MotionEvent ev) {
                 if(ev.getAction() == MotionEvent.ACTION_UP && mView.getCurrentPath() != null) {
-                    emitOnStrokeEnd();
                     mView.end();
                 }
                 return super.onTouchEvent(ev);
             }
         };
+    }
+
+    public TouchState getTouchState(){
+        return mTouchState;
+    }
+
+    public void setTouchState(TouchState touchState){
+        mTouchState = touchState;
+        ViewParent parent = mView.getParent();
+        if(parent != null) {
+            if (mTouchState.getState() == TouchState.NONE) {
+                parent.requestDisallowInterceptTouchEvent(false);
+            } else {
+                parent.requestDisallowInterceptTouchEvent(true);
+            }
+        }
     }
 
     public void setShouldFireOnStrokeChangedEvent(boolean fire){
@@ -63,7 +80,7 @@ public class RCanvasEventHandler {
     }
 
     public boolean onTouchEvent(MotionEvent ev){
-        return mShouldHandleTouches && mView.getTouchState().enabled() && detector.onTouchEvent(ev);
+        return mShouldHandleTouches && mTouchState.enabled() && detector.onTouchEvent(ev);
     }
 
     private class GestureListener implements GestureDetector.OnGestureListener {
@@ -100,7 +117,7 @@ public class RCanvasEventHandler {
 
             if(prevTouchAction == MotionEvent.ACTION_DOWN){
                 mView.startPath();
-                emitOnStrokeStart();
+                emitStrokeStart();
             }
 
             RCanvasPath mCurrentPath = mView.getCurrentPath();
@@ -114,7 +131,7 @@ public class RCanvasEventHandler {
 
             if(mCurrentPath != null){
                 mView.addPoint(point);
-                if(mShouldFireOnStrokeChangedEvent) emitOnStrokeChanged(point);
+                if(mShouldFireOnStrokeChangedEvent) emitStrokeChanged(point);
             }
 
             prevTouchAction = action;
@@ -140,43 +157,51 @@ public class RCanvasEventHandler {
         mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
     }
 
-    public void emitOnStrokeStart(){
-        emit(STROKE_START, mView.getCurrentPath().getMap(false));
+    public void emitStrokeStart(){
+        emit(STROKE_START, mView.getCurrentPath().toWritableMap(false));
     }
 
-    public void emitOnStrokeChanged(PointF p){
-        emitOnStrokeChanged(p.x, p.y);
+    public void emitStrokeChanged(PointF p){
+        emitStrokeChanged(p.x, p.y);
     }
 
-    public void emitOnStrokeChanged(float x, float y){
+    public void emitStrokeChanged(float x, float y){
         WritableMap e = Arguments.createMap();
         e.putDouble("x", PixelUtil.toDIPFromPixel(x));
         e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        e.merge(mView.getCurrentPath().getMap(false));
+        e.merge(mView.getCurrentPath().toWritableMap(false));
         emit(STROKE_CHANGED, e);
     }
 
-    public void emitOnStrokeEnd(){
-        emit(STROKE_END, mView.getCurrentPath().getMap());
+    public void emitStrokeEnd(){
+        emit(STROKE_END, mView.getCurrentPath().toWritableMap());
+    }
+
+    public void emitPathsChange(){
+        WritableMap event = Arguments.createMap();
+        WritableArray paths = Arguments.createArray();
+        for (RCanvasPath path: mView.getPaths()) {
+            paths.pushString(path.id);
+        }
+        event.putArray("paths", paths);
+        emit(RCanvasEventHandler.PATHS_UPDATE, event);
+    }
+
+    public void emitSaveCanvas(boolean success, String path) {
+        WritableMap event = Arguments.createMap();
+        event.putBoolean("success", success);
+        event.putString("path", path);
+        emit(RCanvasEventHandler.ON_SKETCH_SAVED, event);
     }
 
     public void emitPress(float x, float y, String eventName){
         WritableMap e = Arguments.createMap();
-        e.putArray("paths", mView.isPointOnPath(x, y));
+        PathIntersectionHelper intersectionHelper = mView.getIntersectionHelper();
+        e.putArray("paths", intersectionHelper.isPointOnPath(x, y));
         e.putDouble("x", PixelUtil.toDIPFromPixel(x));
         e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        if(mView.getTouchRadius() > 0) e.putDouble("radius", PixelUtil.toDIPFromPixel(mView.getTouchRadius()));
+        if(intersectionHelper.getTouchRadius() > 0) e.putDouble("radius", PixelUtil.toDIPFromPixel(intersectionHelper.getTouchRadius()));
         emit(eventName, e);
     }
 
-    public static String getEventName(MotionEvent event){
-        switch (event.getAction()){
-            case MotionEvent.ACTION_DOWN: return STROKE_START;
-            default: return STROKE_CHANGED;
-        }
-    }
-
-    public static float getDeviceScale(){
-        return DisplayMetricsHolder.getScreenDisplayMetrics().density;
-    }
 }

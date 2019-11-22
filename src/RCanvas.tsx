@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useMemo } from 'react';
-import { findNodeHandle } from 'react-native';
+import { findNodeHandle, processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 import RCanvasBase from './RCanvasBase';
@@ -12,33 +12,41 @@ const { and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, di
 
 
 const stringId = proc((id) => concat('rPath', id));
-const flatPoint = proc((x, y) => map([x, y]));
-//const args = proc((id, color, width, x, y) => map([[id, color, width, [x, y]]]));
-
 const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
 
 const startPath = proc((tag, id, color, width, x, y) => {
-  //const args = proc((id, color, width, x, y) => map([id, color, width, [x, y]]));
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, stringId(id), color, width));
 });
 
 const addPoint = proc((tag, id, x, y) => {
-  const args = proc((x, y) => map([x, y]));
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y));
 });
 
 const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
 
+function useValue(value: number | (() => number)) {
+  return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
+}
+
+//function 
+
 
 function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
-  const tag = new Value(0);
-  const n = new Value(0);
-  const x = new Value(0);
-  const y = new Value(0);
-  const isActive = new Value(0);
-  const pathColor = new Value(0);
-  const state = new Value(State.UNDETERMINED);
-  const oldState = new Value(State.UNDETERMINED);
+  const tag = useValue(0);
+  const n = useValue(0);
+  const x = useValue(0);
+  const y = useValue(0);
+  const isActive = useValue(0);
+  const strokeColor = useValue(() => {
+    const color = props.strokeColor;
+    return color instanceof Animated.Node ? 0 : processColor(color || 'black');
+  });
+  const strokeWidth = useValue(() => {
+    const width = props.strokeWidth;
+    return width instanceof Animated.Node ? 0 : (width || 5);
+  });
+  const state = useValue(State.UNDETERMINED);
+  const oldState = useValue(State.UNDETERMINED);
 
   const onGestureEvent = useMemo(() =>
     event<PanGestureHandlerGestureEvent>([{
@@ -68,8 +76,8 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   useCode(() =>
-    set(pathColor, color(255, 0, 0, 1)),
-    []
+    set(strokeColor, color(255, 0, 0, 1)),
+    [props.strokeColor]
   );
 
   useCode(() =>
@@ -78,7 +86,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         eq(state, State.BEGAN),
         [
           set(n, add(n, 1)),
-          startPath(tag, n, pathColor, 5, x, y),
+          startPath(tag, n, strokeColor, 5, x, y),
           set(isActive, 1)
 
         ]
@@ -104,17 +112,10 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     [tag, state, oldState, x, y, isActive]
   )
 
-  const refHandler = useCallback((ref: RCanvasRef) => {
-    if (_.has(forwardedRef, 'current')) {
-      forwardedRef.current = ref;
-    } else if (typeof forwardedRef === 'function') {
-      forwardedRef(ref);
-    } else {
-      forwardedRef = ref;
-    }
-
-    tag.setValue(findNodeHandle(ref) || 0);
-  }, [tag, forwardedRef])
+  const onLayout = useCallback((e) => {
+    tag.setValue(e.nativeEvent.target);
+    props.onLayout && props.onLayout(e);
+  }, [tag, props.onLayout]);
 
   return (
     <PanGestureHandler
@@ -127,7 +128,9 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         <RCanvasBase
           {...props}
           touchEnabled={false}
-          ref={refHandler}
+          ref={forwardedRef}
+          onLayout={onLayout}
+          onStrokeEnd={(e) => console.log('yoe!')}
         />
       </View>
 

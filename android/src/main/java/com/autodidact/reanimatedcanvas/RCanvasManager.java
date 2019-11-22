@@ -2,11 +2,15 @@ package com.autodidact.reanimatedcanvas;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -14,8 +18,6 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import androidx.annotation.Nullable;
 
 public class RCanvasManager extends SimpleViewManager<RCanvas> {
     public static final String NAME = "ReanimatedCanvasManager";
@@ -46,25 +48,27 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
     }
 
     @Override
+    @NonNull
     public String getName() {
         return NAME;
     }
 
     @Override
-    protected RCanvas createViewInstance(ThemedReactContext context) {
+    @NonNull
+    protected RCanvas createViewInstance(@NonNull ThemedReactContext context) {
         return new RCanvas(context);
     }
 
     @Override
-    public void onDropViewInstance(RCanvas view) {
-        if (BuildConfig.DEBUG) Log.i(getName(), "Tearing down SketchCanvas " +  view.toString());
+    public void onDropViewInstance(@NonNull RCanvas view) {
+        if (BuildConfig.DEBUG) Log.i(ReactConstants.TAG, "Tearing down RCanvas " +  view.toString());
         view.tearDown();
     }
 
     @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
     public void setLocalSourceImage(RCanvas viewContainer, ReadableMap localSourceImage) {
         if (localSourceImage != null && localSourceImage.getString("filename") != null) {
-            viewContainer.openImageFile(
+            viewContainer.getImageHelper().openImageFile(
                     localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
                     localSourceImage.hasKey("directory") ? localSourceImage.getString("directory") : "",
                     localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
@@ -74,10 +78,10 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
 
     @ReactProp(name = PROPS_TEXT)
     public void setText(RCanvas viewContainer, ReadableArray text) {
-        viewContainer.setCanvasText(text);
+        viewContainer.getTextHelper().setText(text);
     }
 
-    @ReactProp(name = PROPS_HARDWARE_ACCELERATED, defaultBoolean = false)
+    @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAccelerated(useAcceleration);
     }
@@ -94,25 +98,25 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
 
     @ReactProp(name = PROPS_TOUCH_ENABLED, defaultBoolean = true)
     public void setTouchState(RCanvas viewContainer, Dynamic propValue) {
-        viewContainer.setTouchState(new TouchState(propValue));
+        viewContainer.getEventHandler().setTouchState(new TouchState(propValue));
     }
 
-    @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE, defaultBoolean = false)
+    @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE)
     public void shouldHandleTouches(RCanvas viewContainer, boolean handle) {
         viewContainer.getEventHandler().setShouldHandleTouches(handle);
     }
 
-    @ReactProp(name = PROPS_ON_STROKE, defaultBoolean = false)
+    @ReactProp(name = PROPS_ON_STROKE)
     public void shouldFireOnStrokeEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnStrokeChangedEvent(callback != null);
     }
 
-    @ReactProp(name = PROPS_ON_PRESS, defaultBoolean = false)
+    @ReactProp(name = PROPS_ON_PRESS)
     public void shouldFireOnPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnPressEvent(callback != null);
     }
 
-    @ReactProp(name = PROPS_ON_LONG_PRESS, defaultBoolean = false)
+    @ReactProp(name = PROPS_ON_LONG_PRESS)
     public void shouldFireOnLongPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnLongPressEvent(callback != null);
     }
@@ -153,7 +157,7 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
     }
 
     @Override
-    public void receiveCommand(RCanvas view, int commandType, @Nullable ReadableArray args) {
+    public void receiveCommand(@NonNull RCanvas view, int commandType, @Nullable ReadableArray args) {
         switch (commandType) {
             case COMMAND_ADD_POINT: {
                 view.addPoint(PixelUtil.toPixelFromDIP(args.getDouble(0)), PixelUtil.toPixelFromDIP(args.getDouble(1)));
@@ -179,7 +183,16 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
                 return;
             }
             case COMMAND_SAVE: {
-                view.save(args.getString(0), args.getString(1), args.getString(2), args.getBoolean(3), args.getBoolean(4), args.getBoolean(5), args.getBoolean(6));
+                view.getImageHelper()
+                        .save(
+                                args.getString(0),
+                                args.getString(1),
+                                args.getString(2),
+                                args.getBoolean(3),
+                                args.getBoolean(4),
+                                args.getBoolean(5),
+                                args.getBoolean(6)
+                        );
                 return;
             }
             case COMMAND_END_PATH: {

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View } from "react-native";
 import SketchCanvas from './SketchCanvas';
+import Animated from 'react-native-reanimated';
 
 /*
 declare module 'react-native-sketch-canvas' {
@@ -93,6 +94,7 @@ export interface NativeSketchEvent {
 }
 
 interface NativeTouchProps {
+  /** set to true to handle touches with the native driver */
   useNativeDriver?: boolean
   /** fires only if `useNativeDriver` is set to `true` */
   onPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
@@ -100,10 +102,10 @@ interface NativeTouchProps {
   onLongPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
 }
 
-export interface SketchCanvasProps extends NativeTouchProps {
+export interface RCanvasProps extends NativeTouchProps {
   style?: StyleProp<ViewStyle>
-  strokeColor?: string
-  strokeWidth?: number
+  strokeColor?: string | number | Animated.Adaptable<number>
+  strokeWidth?: number | Animated.Adaptable<number>
   user?: string
   paths?: Path[]
   text?: CanvasText[]
@@ -136,16 +138,18 @@ export interface SketchCanvasProps extends NativeTouchProps {
   onStrokeChanged?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
   onStrokeEnd?: (e: NativeSyntheticEvent<any>) => void
   onSketchSaved?: (e: NativeSyntheticEvent<{ result: boolean, path: string }>) => void
-  onPathsChange?: (e: NativeSyntheticEvent<{ pathsCount: number }>) => void,
+  onPathsChange?: (e: NativeSyntheticEvent<{ paths: string[] }>) => void,
 }
 
-export type RCanvasProperties = SketchCanvasProps & ViewProps;
+export type RCanvasProperties = RCanvasProps & ViewProps;
 
 
 export type RCanvasRef = {
   clear(): void
   undo(): null | string
+
   getPaths(): Path[]
+  currentPath(): Path
   addPath(data: Path): void
   addPaths(paths: Path[]): void
   deletePath(id: string): void

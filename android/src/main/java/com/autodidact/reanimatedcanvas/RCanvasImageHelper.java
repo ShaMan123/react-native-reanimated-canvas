@@ -12,6 +12,8 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.JSApplicationCausedNativeException;
+import com.facebook.react.bridge.ReactContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,6 +23,29 @@ public class RCanvasImageHelper {
     private int mOriginalWidth, mOriginalHeight;
     private Picture mBackgroundImage;
     private String mContentMode;
+    private final RCanvas mView;
+    private final ReactContext mContext;
+
+    public RCanvasImageHelper(RCanvas view) {
+        mView = view;
+        mContext = ((ReactContext) view.getContext());
+    }
+
+    private void post(Runnable action) {
+        mView.post(action);
+    }
+
+    private int getWidth(){
+        return mView.getWidth();
+    }
+
+    private int getHeight(){
+        return mView.getHeight();
+    }
+
+    private void emitSaveCanvas(boolean success, String path){
+        mView.getEventHandler().emitSaveCanvas(success, path);
+    }
 
     public boolean openImageFile(String filename, String directory, String mode) {
         if(filename != null) {
@@ -44,8 +69,7 @@ public class RCanvasImageHelper {
                 mContentMode = mode;
                 bitmap.recycle();
 
-                invalidate();
-                eventHandler.emitPathsChange();
+                mView.invalidate();
 
                 return true;
             }
@@ -75,28 +99,14 @@ public class RCanvasImageHelper {
 
         }
 
-        if (includeText) {
-            for(RCanvasText text: mArrSketchOnText) {
-                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            }
-        }
-
-        for(RCanvasPath path: mPaths) {
-            path.draw(canvas);
-        }
-
-        if (includeText) {
-            for(RCanvasText text: mArrTextOnSketch) {
-                canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            }
-        }
+        mView.drawOnCanvas(canvas, false, includeText);
 
         return bitmap;
     }
 
     public void save(final String format, String folder, String filename, boolean transparent, boolean includeImage, boolean includeText, boolean cropToImageSize) {
         File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-        boolean success = f.exists() ? true : f.mkdirs();
+        boolean success = f.exists() || f.mkdirs();
         if (success) {
             final Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
 
@@ -113,22 +123,22 @@ public class RCanvasImageHelper {
                         bitmap.recycle();
                         post(new Runnable() {
                             public void run() {
-                                eventHandler.emitSaveCanvas(true, file.getPath());
+                                emitSaveCanvas(true, file.getPath());
                             }
                         });
                     } catch (Exception e) {
                         e.printStackTrace();
                         post(new Runnable() {
                             public void run() {
-                                eventHandler.emitSaveCanvas(false, null);
+                                emitSaveCanvas(false, null);
                             }
                         });
                     }
                 }
             }).start();
         } else {
-            Log.e(RCanvas.TAG, "SketchCanvas: Failed to create folder!");
-            eventHandler.emitSaveCanvas(false, null);
+            Log.e(RCanvas.TAG, "RCanvas: Failed to create folder!");
+            emitSaveCanvas(false, null);
         }
     }
 

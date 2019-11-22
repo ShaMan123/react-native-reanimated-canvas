@@ -1,6 +1,19 @@
 package com.autodidact.reanimatedcanvas;
 
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.RectF;
+
+import com.facebook.jni.HybridData;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.DisplayMetricsHolder;
+import com.facebook.react.uimanager.PixelUtil;
+
+import java.util.ArrayList;
 
 public final class Utility {
     public static RectF fillImage(float imgWidth, float imgHeight, float targetWidth, float targetHeight, String mode) {
@@ -29,6 +42,32 @@ public final class Utility {
     private static int i = 0;
     public static String generateId(){
         i++;
-        return "aSketchCanvasPath" + String.valueOf(i);
+        return new StringBuilder("aSketchCanvasPath").append(i).toString();
+    }
+
+    public static ArrayList<PointF> processPointArray(ReadableArray points){
+        ArrayList<PointF> pointPath;
+        pointPath = new ArrayList<>(points.size());
+        for (int i=0; i < points.size(); i++) {
+            ReadableMap p = points.getMap(i);
+            pointPath.add(
+                    new PointF(
+                            PixelUtil.toPixelFromDIP(p.getDouble("x")),
+                            PixelUtil.toPixelFromDIP(p.getDouble("y"))
+                    )
+            );
+        }
+        return pointPath;
+    }
+
+    public static WritableMap toWritablePoint(PointF point) {
+        WritableMap p = Arguments.createMap();
+        p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
+        p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
+        return p;
+    }
+
+    public static float getDeviceScale(){
+        return DisplayMetricsHolder.getScreenDisplayMetrics().density;
     }
 }
