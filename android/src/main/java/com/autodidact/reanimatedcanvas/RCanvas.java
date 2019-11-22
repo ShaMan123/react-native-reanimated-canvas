@@ -148,8 +148,8 @@ public class RCanvas extends View {
     }
 
     public void addPoint(PointF point) {
-        Rect updateRect = mCurrentPath.addPoint(point);
-        invalidate(updateRect);
+        mCurrentPath.addPoint(point);
+        invalidate();
     }
 
     public void end() {
