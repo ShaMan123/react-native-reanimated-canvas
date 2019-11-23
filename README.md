@@ -85,41 +85,6 @@ export default function(props) {
 | getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
 | isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise.
 
-
-#### Constants
--------------
-| Constant | Description |
-| :------------ |:---------------|
-| MAIN_BUNDLE | Android: empty string, '' <br/>iOS: equivalent to [[NSBundle mainBundle] bundlePath] |
-| DOCUMENT | Android: empty string, '' <br/>iOS: equivalent to NSDocumentDirectory |
-| LIBRARY | Android: empty string, '' <br/>iOS: equivalent to NSLibraryDirectory |
-| CACHES | Android: empty string, '' <br/>iOS: equivalent to NSCachesDirectory |
-| TOUCH_STATES | `true`, `false`, `draw`, `touch`, `none` |
-
-
--------------
-### SavePreference object
-```javascript
-{
-  folder: 'RNSketchCanvas',
-  filename: 'image',
-  transparent: true,
-  imageType: 'jpg',
-  includeImage: true,
-  includeText: false,
-  cropToImageSize: true
-}
-```
-| Property | Type | Description |
-| :------------ |:---------------|:---------------|
-| folder? | string | Android: the folder name in `Pictures` directory<br/>iOS: if `filename` is not null, image will save to temporary directory with folder and filename, otherwise, it will save to camera roll |
-| filename? | string | the file name of image<br/>iOS: Set to `null` to save image to camera roll. |
-| transparent | boolean | save canvas with transparent background, ignored if imageType is `jpg` |
-| imageType | string  | image file format<br/>Options: `png`, `jpg` |
-| includeImage? | boolean | Set to `true` to include the image loaded from `LocalSourceImage`. (Default is `true`) |
-| includeImage? | boolean | Set to `true` to include the text drawn from `Text`. (Default is `true`) |
-| cropToImageSize? | boolean | Set to `true` to crop output image to the image loaded from `LocalSourceImage`. (Default is `false`) |
-
 ### Path object
 ```javascript
 {
@@ -140,34 +105,6 @@ export default function(props) {
   }
 }
 ```
-
-### CanvasText object
-```javascript
-{
-  text: 'TEXT',
-  font: '',
-  fontSize: 20,
-  fontColor: 'red',
-  overlay: 'TextOnSketch',
-  anchor: { x: 0, y: 1 },
-  position: { x: 100, y: 200 },
-  coordinate: 'Absolute',
-  alignment: 'Center',
-  lineHeightMultiple: 1.2
-}
-```
-| Property | Type | Description | Default |
-| :------------ |:---------------|:---------------|:---------------| 
-| text | string | the text to display (can be multiline by `\n`) | |
-| font? | string | Android: You can set `font` to `fonts/[filename].ttf` to load font in `android/app/src/main/assets/fonts/` in your Android project<br/>iOS: Set `font` that included with iOS | |
-| fontSize? | number | font size | 12 |
-| fontColor? | string | text color | black |
-| overlay? | string | Set to `TextOnSketch` to overlay drawing with text, otherwise the text will be overlaid with drawing.<br/>Options: `TextOnSketch`, `SketchOnText` | SketchOnText |
-| anchor? | object | Set the origin point of the image. (0, 0) to (1, 1). (0, 0) and (1, 1) indicate the top-left and bottom-right point of the image respectively. | { x: 0, y: 0 } |
-| position | object | Set the position of the image on canvas. If `coordinate` is `Ratio`, (0, 0) and (1, 1) indicate the top-left and bottom-right point of the canvas respectively. | { x: 0, y: 0 } |
-| coordinate? | string | Set to `Absolute` and `Ratio` to treat `position` as absolute position (in point) and proportion respectively.<br/>Options: `Absolute`, `Ratio` | Absolute |
-| alignment? | string | Specify how the text aligns inside container. Only work when `text` is multiline text. | Left |
-| lineHeightMultiple? | number | Multiply line height by this factor. Only work when `text` is multiline text. | 1.0 |
 
 ## Performance
 -------------
