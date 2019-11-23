@@ -83,26 +83,14 @@ export function useCanvasReducer() {
   return useReducer((nextState, action) => nextState, initialState);
 }
 
-const Context = React.createContext({
-  state: initialState,
-  dispatch: (updates: Partial<typeof initialState>) => { },
-  get _canvas() {
-    const ref = this.canvas.ref.current;
-    if (!ref) throw new Error('no canvas');
-    return ref;
-  },
-  canvas: {
-    ref: React.createRef<RCanvasRef>(),
-    onSketchSaved: () => { }
-  },
-  camera: {
-    ref: React.createRef(),
-    takePicture: () => { }
-  }
-});
+const Context = React.createContext(null);
 
 export function useCanvasContext() {
-  return useContext(Context);
+  const context = useContext(Context);
+  if (context === null) {
+    throw new Error('Failed to initialize App Context');
+  }
+  return context;
 }
 
 function useCanvasContextFactory() {
@@ -112,6 +100,9 @@ function useCanvasContextFactory() {
   return useMemo(() => ({
     state,
     dispatch,
+    get _canvas() {
+      return this.canvas.ref.current;
+    },
     canvas: {
       ref: canvas,
       onSketchSaved: saveCanvasEventBuilder((uri) => dispatch({ uri })),
@@ -122,8 +113,7 @@ function useCanvasContextFactory() {
         takePicture(camera, (uri) => dispatch({ photoPath: uri }))
       }
     }
-  }), []);
-
+  }), [state]);
 }
 
 export default function CommonExample({ children }: PropsWithChildren<any>) {

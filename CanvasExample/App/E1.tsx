@@ -46,12 +46,12 @@ export default function Example() {
         return {
           folder: "RNSketchCanvas",
           filename: String(Math.ceil(Math.random() * 100000000)),
-          transparent: false,
+          transparent: true,
           imageType: "png"
         }
       }}
-      onPathsChange={({ nativeEvent: { pathsCount } }) => {
-        console.log('pathsCount', pathsCount)
+      onPathsChange={({ nativeEvent }) => {
+        console.log('pathsCount', nativeEvent)
       }}
     />
   )

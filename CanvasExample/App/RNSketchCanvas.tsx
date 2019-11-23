@@ -129,6 +129,7 @@ class RNSketchCanvas extends Component {
 
 
   render() {
+    console.log(this.props.onSketchSaved)
     return (
       <View style={this.props.containerStyle}>
         <View style={{ flexDirection: 'row' }}>
@@ -171,7 +172,6 @@ class RNSketchCanvas extends Component {
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
           strokeWidth={this.state.strokeWidth}
-          onSketchSaved={({ nativeEvent: { success, path } }) => { this.props.onSketchSaved(success, path) }}
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList

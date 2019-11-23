@@ -1,13 +1,9 @@
 
 
-import React, { useRef } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import RNSketchCanvas from '../App/RNSketchCanvas';
-import CommonExample from './common';
+import React from 'react';
+import { Platform, ScrollView, View } from 'react-native';
 import RCanvas, { RCanvasModule } from 'react-native-reanimated-canvas';
-import { useCanvasContext, styles, useRefGetter } from './common';
-import { RCanvasRef } from '../../src/types';
-import { RNCamera } from 'react-native-camera';
+import { styles, useCanvasContext } from './common';
 
 export default function Example() {
   const context = useCanvasContext();

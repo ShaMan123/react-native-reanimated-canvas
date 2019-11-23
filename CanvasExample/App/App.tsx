@@ -23,6 +23,7 @@ import E6 from './E6';
 import E7 from './E7';
 import E8 from './E8';
 import Tabs from './Tabs';
+import CommonExample from './common';
 
 const SCREENS = {
   E1: { screen: E1, title: 'D' },
@@ -71,7 +72,10 @@ function MainScreenItem(props) {
 const ExampleApp = createStackNavigator(
   {
     Main: { screen: MainScreen },
-    ...SCREENS,
+    ..._.mapValues(SCREENS, ({ screen: Screen, title }) => ({
+      screen: (props: any) => <CommonExample><Screen {...props} /></CommonExample>,
+      title
+    }))
   },
   {
     initialRouteName: 'Main',

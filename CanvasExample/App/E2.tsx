@@ -1,10 +1,8 @@
 
 import React from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
-import RNSketchCanvas from '../App/RNSketchCanvas';
-import CommonExample from './common';
+import { Text, TouchableOpacity, View } from 'react-native';
 import RCanvas, { RCanvasModule } from 'react-native-reanimated-canvas';
-import { useCanvasContext, styles } from './common';
+import { styles, useCanvasContext } from './common';
 
 
 export default function Example() {
