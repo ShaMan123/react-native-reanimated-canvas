@@ -84,15 +84,7 @@ class RNSketchCanvas extends Component {
   }
 
   save() {
-    if (this.props.savePreference) {
-      const p = this.props.savePreference()
-      this.ref().save(p.imageType, p.transparent, p.folder ? p.folder : '', p.filename, p.includeImage !== false, p.includeText !== false, p.cropToImageSize || false)
-    } else {
-      const date = new Date()
-      this.ref().save('png', false, '',
-        date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + ('0' + date.getDate()).slice(-2) + ' ' + ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-' + ('0' + date.getSeconds()).slice(-2),
-        true, true, false)
-    }
+
   }
 
   nextStrokeWidth() {
@@ -129,7 +121,6 @@ class RNSketchCanvas extends Component {
 
 
   render() {
-    console.log(this.props.onSketchSaved)
     return (
       <View style={this.props.containerStyle}>
         <View style={{ flexDirection: 'row' }}>
@@ -147,23 +138,12 @@ class RNSketchCanvas extends Component {
               </TouchableOpacity>)
             }
 
-            {this.props.undoComponent && (
-              <TouchableOpacity onPress={() => { this.props.onUndoPressed(this.ref().undo()) }}>
-                {this.props.undoComponent}
-              </TouchableOpacity>)
-            }
-
             {this.props.clearComponent && (
               <TouchableOpacity onPress={() => { this.ref().clear(); this.props.onClearPressed() }}>
                 {this.props.clearComponent}
               </TouchableOpacity>)
             }
 
-            {this.props.saveComponent && (
-              <TouchableOpacity onPress={() => { this.save() }}>
-                {this.props.saveComponent}
-              </TouchableOpacity>)
-            }
           </View>
         </View>
         <RCanvas

@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -13,13 +13,13 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableNativeArray;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
 
-public class RCanvas extends View {
+public class RCanvas extends ReactViewGroup {
     public final static String TAG = "RNReanimatedCanvas";
 
     private ArrayList<RCanvasPath> mPaths = new ArrayList<RCanvasPath>();
@@ -30,26 +30,16 @@ public class RCanvas extends View {
     private int mStrokeWidth;
 
     private final RCanvasEventHandler eventHandler;
-    private final RCanvasTextHelper mTextHelper;
-    private final RCanvasImageHelper mImageHelper;
     private final PathIntersectionHelper mIntersectionHelper;
 
     public RCanvas(ThemedReactContext context) {
         super(context);
         eventHandler = new RCanvasEventHandler(this);
-        mTextHelper = new RCanvasTextHelper(this);
-        mImageHelper = new RCanvasImageHelper(this);
         mIntersectionHelper = new PathIntersectionHelper(this);
     }
 
     public RCanvasEventHandler getEventHandler(){
         return eventHandler;
-    }
-    public RCanvasTextHelper getTextHelper(){
-        return mTextHelper;
-    }
-    public RCanvasImageHelper getImageHelper(){
-        return mImageHelper;
     }
     public PathIntersectionHelper getIntersectionHelper(){
         return mIntersectionHelper;
@@ -162,6 +152,7 @@ public class RCanvas extends View {
     public void addPoint(PointF point) {
         mCurrentPath.addPoint(point);
         invalidate();
+        Log.d("RCanvas", "addPoint: " + point);
     }
 
     public void end() {
@@ -233,36 +224,22 @@ public class RCanvas extends View {
     }
 
     @Override
-    protected void onSizeChanged(final int w, final int h, final int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if (getWidth() > 0 && getHeight() > 0 && (w != oldw || h != oldh)) {
-            mTextHelper.position();
-        }
+    protected void onDraw(Canvas canvas) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+        super.onDraw(canvas);
+        drawPaths(canvas);
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawOnCanvas(canvas);
-    }
-
-    protected void drawOnCanvas(Canvas canvas) {
-        drawOnCanvas(canvas, true, true);
-    }
-
-    protected void drawOnCanvas(Canvas canvas, Boolean drawBackgroundImage, Boolean drawText){
+    protected void dispatchDraw(Canvas canvas) {
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-        if (drawBackgroundImage) {
-            mImageHelper.draw(canvas);
-        }
-        if (drawText) {
-            mTextHelper.drawBackground(canvas);
-        }
+        super.dispatchDraw(canvas);
+        drawPaths(canvas);
+    }
+
+    protected void drawPaths(Canvas canvas){
         for(RCanvasPath path: mPaths) {
             path.draw(canvas);
-        }
-        if (drawText) {
-            mTextHelper.drawForeground(canvas);
         }
     }
 

@@ -6,7 +6,7 @@ import RNSketchCanvas from '../App/RNSketchCanvas';
 import { styles, useCanvasContext, useRefGetter } from './common';
 
 
-export default function Example() {
+export default function SyncedCanvases() {
   const context = useCanvasContext();
   const [_a, a] = useRefGetter<RCanvasRef>();
   const [_b, b] = useRefGetter<RCanvasRef>();

@@ -105,7 +105,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
           set(isActive, 0)
         ]
       ),
-      //call([tag, n, x, y, state, isActive], console.log)
+      call([tag, n, x, y, state, isActive], console.log)
     ]),
     [tag, state, oldState, x, y, isActive, /*strokeColor, strokeWidth*/]
   )
@@ -117,6 +117,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   return (
     <PanGestureHandler
+      {..._.omit(props, 'style')}
       enabled={!props.useNativeDriver}
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}

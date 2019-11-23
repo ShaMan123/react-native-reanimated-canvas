@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.PixelUtil;
@@ -25,23 +26,6 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return NAME;
-    }
-
-    @ReactMethod
-    public void transferToBase64(final int tag, final String type, final boolean transparent, 
-        final boolean includeImage, final boolean includeText, final boolean cropToImageSize, final Callback callback){
-        try {
-            final ReactApplicationContext context = getReactApplicationContext();
-            UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
-            uiManager.addUIBlock(new UIBlock() {
-                public void execute(NativeViewHierarchyManager nvhm) {
-                    RCanvas view = (RCanvas) nvhm.resolveView(tag);
-                    view.getImageHelper().getBase64(type, transparent, includeImage, includeText, cropToImageSize, callback);
-                }
-            });
-        } catch (Exception e) {
-            callback.invoke(e.getMessage(), null);
-        }
     }
 
     @ReactMethod

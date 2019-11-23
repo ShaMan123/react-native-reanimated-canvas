@@ -104,8 +104,7 @@ function useCanvasContextFactory() {
       return this.canvas.ref.current;
     },
     canvas: {
-      ref: canvas,
-      onSketchSaved: saveCanvasEventBuilder((uri) => dispatch({ uri })),
+      ref: canvas
     },
     camera: {
       ref: camera,
@@ -187,5 +186,14 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.75,
     shadowRadius: 2
+  },
+  text: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'darkblue'
+  },
+  abs100: {
+    ...StyleSheet.absoluteFillObject,
+    top: 100
   }
 });

@@ -2,11 +2,12 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import RNSketchCanvas from '../App/RNSketchCanvas';
-import { useCanvasContext, styles } from './common';
+import { styles, useCanvasContext } from './common';
 
 
-export default function Example() {
+export default function Basic() {
   const context = useCanvasContext();
+
   return (
     <RNSketchCanvas
       {...context.canvas}
@@ -41,18 +42,12 @@ export default function Example() {
       }}
       defaultStrokeIndex={0}
       defaultStrokeWidth={5}
-      saveComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Save</Text></View>}
-      savePreference={() => {
-        return {
-          folder: "RNSketchCanvas",
-          filename: String(Math.ceil(Math.random() * 100000000)),
-          transparent: true,
-          imageType: "png"
-        }
-      }}
       onPathsChange={({ nativeEvent }) => {
         console.log('pathsCount', nativeEvent)
       }}
-    />
+
+    >
+
+    </RNSketchCanvas>
   )
 }

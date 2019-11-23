@@ -17,50 +17,6 @@ export function dispatchCommand(tag: number, command: Commands, data: any[] = []
   UIManager.dispatchViewManagerCommand(tag, command, data);
 }
 
-const { Constants } = UIManager.getViewManagerConfig(VIEW_MANAGER) as any;
-export const MAIN_BUNDLE = Platform.OS === 'ios' ? Constants.MainBundlePath : '';
-export const DOCUMENT = Platform.OS === 'ios' ? Constants.NSDocumentDirectory : '';
-export const LIBRARY = Platform.OS === 'ios' ? Constants.NSLibraryDirectory : '';
-export const CACHES = Platform.OS === 'ios' ? Constants.NSCachesDirectory : '';
-
-/**
-   * @param imageType "png" or "jpg"
-   * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-   * @param includeText Set to `true` to include the text drawn from `Text`.
-   * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
-   */
-export function save(
-  handle: number,
-  imageType: ImageType,
-  transparent: boolean,
-  folder: string,
-  filename: string,
-  includeImage: boolean,
-  includeText: boolean,
-  cropToImageSize: boolean
-) {
-  UIManager.dispatchViewManagerCommand(handle, Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize]);
-}
-
-/**
- * @param imageType "png" or "jpg"
- * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
- * @param includeText Set to `true` to include the text drawn from `Text`.
- * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
- */
-export function getBase64(
-  handle: number,
-  imageType: ImageType,
-  transparent: boolean,
-  includeImage: boolean,
-  includeText: boolean,
-  cropToImageSize: boolean,
-  callback: (error: any, result?: string) => void
-) {
-  console.log(NativeModuleManager)
-  return NativeModuleManager.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
-}
-
 export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
@@ -117,9 +73,9 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
   }
 }
 
-export function useModule(ref: MutableRefObject<RCanvasRef>): Pick<RCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
+export function useModule(ref: MutableRefObject<RCanvasRef>): Pick<RCanvasRef, 'dispatchCommand' | 'isPointOnPath' | 'setTouchRadius'> {
   return useMemo(() => {
-    const methods = { dispatchCommand, save, getBase64, isPointOnPath, setTouchRadius };
+    const methods = { dispatchCommand, isPointOnPath, setTouchRadius };
     //@ts-ignore
     return _.mapValues(methods, (m) => (...args: any[]) => m(findNodeHandle(ref.current), ...args));
   }, [ref]);

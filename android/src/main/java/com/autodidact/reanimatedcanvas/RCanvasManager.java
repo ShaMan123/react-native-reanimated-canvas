@@ -1,6 +1,7 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,18 +10,19 @@ import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableNativeMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.modal.ReactModalHostView;
+import com.facebook.react.views.view.ReactViewGroup;
+import com.facebook.react.views.view.ReactViewManager;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class RCanvasManager extends SimpleViewManager<RCanvas> {
+public class RCanvasManager extends ReactViewManager {
     public static final String NAME = "ReanimatedCanvasManager";
 
     /*
@@ -37,18 +39,15 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
 
      */
 
-    public static final int COMMAND_ADD_POINT = 1;
-    public static final int COMMAND_START_PATH = 2;
-    public static final int COMMAND_CLEAR = 3;
-    public static final int COMMAND_ADD_PATHS = 4;
-    public static final int COMMAND_DELETE_PATHS = 5;
-    public static final int COMMAND_SAVE = 6;
-    public static final int COMMAND_END_PATH = 7;
-    public static final int COMMAND_CHANGE_PATH = 8;
-    public static final int COMMAND_SET_PATH_ATTRIBUTES = 9;
+    public static final int COMMAND_START_PATH = 1;
+    public static final int COMMAND_ADD_POINT = 2;
+    public static final int COMMAND_END_PATH = 3;
+    public static final int COMMAND_CLEAR = 4;
+    public static final int COMMAND_ADD_PATHS = 5;
+    public static final int COMMAND_DELETE_PATHS = 6;
+    public static final int COMMAND_CHANGE_PATH = 7;
+    public static final int COMMAND_SET_PATH_ATTRIBUTES = 8;
 
-    private static final String PROPS_LOCAL_SOURCE_IMAGE = "localSourceImage";
-    private static final String PROPS_TEXT = "text";
     private static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
     private static final String PROPS_STROKE_COLOR = "strokeColor";
     private static final String PROPS_STROKE_WIDTH = "strokeWidth";
@@ -70,30 +69,14 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
 
     @Override
     @NonNull
-    protected RCanvas createViewInstance(@NonNull ThemedReactContext context) {
+    public RCanvas createViewInstance(@NonNull ThemedReactContext context) {
         return new RCanvas(context);
     }
 
     @Override
-    public void onDropViewInstance(@NonNull RCanvas view) {
+    public void onDropViewInstance(@NonNull ReactViewGroup view) {
         if (BuildConfig.DEBUG) Log.i(ReactConstants.TAG, "Tearing down RCanvas " +  view.toString());
-        view.tearDown();
-    }
-
-    @ReactProp(name = PROPS_LOCAL_SOURCE_IMAGE)
-    public void setLocalSourceImage(RCanvas viewContainer, ReadableMap localSourceImage) {
-        if (localSourceImage != null && localSourceImage.getString("filename") != null) {
-            viewContainer.getImageHelper().openImageFile(
-                    localSourceImage.hasKey("filename") ? localSourceImage.getString("filename") : null,
-                    localSourceImage.hasKey("directory") ? localSourceImage.getString("directory") : "",
-                    localSourceImage.hasKey("mode") ? localSourceImage.getString("mode") : ""
-            );
-        }
-    }
-
-    @ReactProp(name = PROPS_TEXT)
-    public void setText(RCanvas viewContainer, ReadableArray text) {
-        viewContainer.getTextHelper().setText(text);
+        ((RCanvas) view).tearDown();
     }
 
     @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
@@ -135,15 +118,15 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
     public void shouldFireOnLongPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnLongPressEvent(callback != null);
     }
-
+/*
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, RCanvas view) {
         //super.addEventEmitters(reactContext, view);
     }
-
+*/
     @Override
-    public void receiveCommand(@NonNull RCanvas view, int command, @Nullable ReadableArray args) {
-        Log.d("RCanvas", "receiveCommand: " + getCommandsMap().containsValue(command) + " " + command);
+    public void receiveCommand(@NonNull ReactViewGroup root, int command, @Nullable ReadableArray args) {
+        RCanvas view = ((RCanvas) root);
         switch (command) {
             case COMMAND_ADD_POINT: {
                 float x = PixelUtil.toPixelFromDIP(args.getDouble(0));
@@ -169,19 +152,6 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
             }
             case COMMAND_DELETE_PATHS: {
                 view.deletePaths(args);
-                return;
-            }
-            case COMMAND_SAVE: {
-                view.getImageHelper()
-                        .save(
-                                args.getString(0),
-                                args.getString(1),
-                                args.getString(2),
-                                args.getBoolean(3),
-                                args.getBoolean(4),
-                                args.getBoolean(5),
-                                args.getBoolean(6)
-                        );
                 return;
             }
             case COMMAND_END_PATH: {
@@ -229,7 +199,6 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
         map.put("clear", COMMAND_CLEAR);
         map.put("addPaths", COMMAND_ADD_PATHS);
         map.put("deletePaths", COMMAND_DELETE_PATHS);
-        map.put("save", COMMAND_SAVE);
         map.put("endPath", COMMAND_END_PATH);
         map.put("changePath", COMMAND_CHANGE_PATH);
         map.put("setPathAttributes", COMMAND_SET_PATH_ATTRIBUTES);
@@ -248,7 +217,6 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
                 .put(RCanvasEventHandler.ON_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_PRESS))
                 .put(RCanvasEventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_LONG_PRESS))
                 .put(RCanvasEventHandler.ON_PATHS_CHANGE, MapBuilder.of("registrationName", RCanvasEventHandler.ON_PATHS_CHANGE))
-                .put(RCanvasEventHandler.ON_SKETCH_SAVED, MapBuilder.of("registrationName", RCanvasEventHandler.ON_SKETCH_SAVED))
                 .build();
     }
 }

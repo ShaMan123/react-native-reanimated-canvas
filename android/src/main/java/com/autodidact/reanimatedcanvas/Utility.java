@@ -67,6 +67,15 @@ public final class Utility {
         return p;
     }
 
+    public static RectF toRect(ReadableMap rect) {
+        return new RectF(
+                ((float) rect.getDouble("left")),
+                ((float) rect.getDouble("top")),
+                ((float) rect.getDouble("right")),
+                ((float) rect.getDouble("bottom"))
+        );
+    }
+
     public static float getDeviceScale(){
         return DisplayMetricsHolder.getScreenDisplayMetrics().density;
     }

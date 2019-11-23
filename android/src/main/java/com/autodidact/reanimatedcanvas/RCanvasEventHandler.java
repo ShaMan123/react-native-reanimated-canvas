@@ -20,7 +20,6 @@ public class RCanvasEventHandler {
     public final static String ON_PRESS = "onPress";
     public final static String ON_LONG_PRESS = "onLongPress";
     public final static String ON_PATHS_CHANGE = "onPathsChange";
-    public final static String ON_SKETCH_SAVED = "onSketchSaved";
 
     private RCanvas mView;
     private TouchState mTouchState;
@@ -185,13 +184,6 @@ public class RCanvasEventHandler {
         }
         event.putArray("paths", paths);
         emit(RCanvasEventHandler.ON_PATHS_CHANGE, event);
-    }
-
-    public void emitSaveCanvas(boolean success, String path) {
-        WritableMap event = Arguments.createMap();
-        event.putBoolean("success", success);
-        event.putString("path", path);
-        emit(RCanvasEventHandler.ON_SKETCH_SAVED, event);
     }
 
     public void emitPress(float x, float y, String eventName){

@@ -1,8 +1,8 @@
 'use strict';
 
 import * as _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, MutableRefObject } from 'react';
-import { findNodeHandle, NativeSyntheticEvent, processColor, requireNativeComponent, LayoutChangeEvent } from 'react-native';
+import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, MutableRefObject, Children } from 'react';
+import { findNodeHandle, NativeSyntheticEvent, processColor, requireNativeComponent, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { requestPermissions } from './handlePermissions';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
@@ -54,18 +54,10 @@ function useEventProp<TArgs extends any[], T extends (...args: TArgs) => (any | 
 function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const {
     strokeColor: strokeColorP,
-    strokeWidth,
-    text: textP,
-    user
+    strokeWidth
   } = props;
 
-  console.log('BASE', props.onSketchSaved)
-
   const strokeColor = useMemo(() => processColorProp(strokeColorP), [strokeColorP]);
-  const text = useMemo(() =>
-    processText(textP ? textP.map(t => Object.assign({}, t)) : null),
-    [textP]
-  );
 
   const initialized = useRefGetter(false);
   const size = useRefGetter({ width: 0, height: 0 });
@@ -160,17 +152,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     dispatchCommand(Commands.clear);
   }, []);
 
-  const undo = useCallback(() => {
-    //_.findLast(paths.value(), (value) => value.) 
-    throw new Error('undo not implemented');
-    /*
-    let lastId: string | null = null;
-    paths.value().forEach(d => lastId = d.drawer === user ? d.path.id : lastId);
-    if (lastId !== null) deletePath(lastId);
-    return lastId;
-    */
-  }, [paths, user, deletePath]);
-
   const setNativeProps = useCallback((props) =>
     node.current() && node.current().setNativeProps(props),
     [node]
@@ -196,7 +177,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       addPoint,
       endPath,
       clear,
-      undo,
       setNativeProps,
       getNode: node.ref,
       handle: node.value()
@@ -213,7 +193,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       addPoint,
       endPath,
       clear,
-      undo,
       setNativeProps,
       node
     ]
@@ -254,9 +233,12 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       onStrokeStart={useEventProp(onStrokeStart, props.onStrokeStart)}
       onStrokeEnd={useEventProp(onStrokeEnd, props.onStrokeEnd)}
       onPathsChange={useEventProp(onPathsChange, props.onPathsChange)}
-      text={text}
       strokeColor={strokeColor}
-    />
+    >
+      <View style={StyleSheet.absoluteFill}>
+        {props.children}
+      </View>
+    </RNativeCanvas>
   )
 }
 

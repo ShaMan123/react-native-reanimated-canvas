@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View } from "react-native";
-import SketchCanvas from './SketchCanvas';
 import Animated from 'react-native-reanimated';
 
 /*
@@ -10,16 +9,15 @@ declare module 'react-native-sketch-canvas' {
 */
 
 export enum Commands {
-  addPoint = 1,
-  startPath,
+  startPath = 1,
+  addPoint,
+  endPath,
   clear,
   addPaths,
   deletePaths,
-  save,
-  endPath
+  changePath,
+  setAttributes
 }
-
-export type ImageType = 'png' | 'jpg'
 
 export type Size = {
   width: number
@@ -45,41 +43,6 @@ export type Path = {
 }
 
 export type TouchStates = 'draw' | 'touch' | 'none';
-
-export type CanvasText = {
-  text: string
-  font?: string
-  fontSize?: number
-  fontColor?: string | number
-  overlay?: 'TextOnSketch' | 'SketchOnText'
-  anchor: { x: number, y: number }
-  position: { x: number, y: number }
-  coordinate?: 'Absolute' | 'Ratio'
-  /**
-   * If your text is multiline, `alignment` can align shorter lines with left/center/right.
-   */
-  alignment?: 'Left' | 'Center' | 'Right'
-  /**
-   * If your text is multiline, `lineHeightMultiple` can adjust the space between lines.
-   */
-  lineHeightMultiple?: number
-}
-
-export interface SavePreference {
-  folder: string
-  filename: string
-  transparent: boolean
-  imageType: ImageType
-  includeImage?: boolean
-  includeText?: boolean
-  cropToImageSize?: boolean
-}
-
-export interface LocalSourceImage {
-  path: string
-  directory?: string
-  mode?: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
-}
 
 export interface NativeTouchEvent {
   x: number,
@@ -108,15 +71,6 @@ export interface RCanvasProps extends NativeTouchProps {
   strokeWidth?: Animated.Adaptable<number>
   user?: string
   paths?: Path[]
-  text?: CanvasText[]
-  /**
-     * {
-     *    path: string, 
-     *    directory: string, 
-     *    mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
-     * }
-     */
-  localSourceImage?: LocalSourceImage
   touchEnabled?: boolean
 
   /**
@@ -137,11 +91,10 @@ export interface RCanvasProps extends NativeTouchProps {
   onStrokeStart?: (e: NativeSyntheticEvent<any>) => void
   onStrokeChanged?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
   onStrokeEnd?: (e: NativeSyntheticEvent<any>) => void
-  onSketchSaved?: (e: NativeSyntheticEvent<{ result: boolean, path: string }>) => void
   onPathsChange?: (e: NativeSyntheticEvent<{ paths: string[] }>) => void,
 }
 
-export type RCanvasProperties = RCanvasProps & ViewProps;
+export type RCanvasProperties = React.PropsWithChildren<RCanvasProps & ViewProps>;
 
 
 export type RCanvasRef = {
@@ -157,23 +110,6 @@ export type RCanvasRef = {
 
   dispatchCommand(command: Commands, data?: any[]): void
   setTouchRadius(radius: number): void
-
-  /**
-   * @param imageType "png" or "jpg"
-   * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-   * @param includeText Set to `true` to include the text drawn from `Text`.
-   * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
-   */
-  save(imageType: ImageType, transparent: boolean, folder: string, filename: string, includeImage: boolean, includeText: boolean, cropToImageSize: boolean): void
-
-
-  /**
-   * @param imageType "png" or "jpg"
-   * @param includeImage Set to `true` to include the image loaded from `LocalSourceImage`
-   * @param includeText Set to `true` to include the text drawn from `Text`.
-   * @param cropToImageSize Set to `true` to crop output image to the image loaded from `LocalSourceImage`
-   */
-  getBase64(imageType: ImageType, transparent: boolean, includeImage: boolean, includeText: boolean, cropToImageSize: boolean, callback: (error: any, result?: string) => void): void
 
   /**
  * @param x Set it to `evt.nativeEvent.locationX`
@@ -214,7 +150,7 @@ export type RCanvasRef = {
    * */
   endPath(): void
 
-  getNode(): React.ComponentElement<RCanvasProperties, SketchCanvas>
+  getNode(): RCanvasRef
 
   handle(): number | null
 
