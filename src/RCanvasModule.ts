@@ -1,8 +1,8 @@
 'use strict';
 
 import _ from 'lodash';
-import { useMemo } from 'react';
-import { NativeModules, Platform, UIManager, requireNativeComponent } from 'react-native';
+import { useMemo, MutableRefObject } from 'react';
+import { NativeModules, Platform, UIManager, requireNativeComponent, findNodeHandle } from 'react-native';
 import { Commands, ImageType, RCanvasRef } from './types';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
@@ -116,14 +116,10 @@ export function setTouchRadius(handle: number, radius: number, callback: (error:
   }
 }
 
-export function useModule(handle?: number | null): Pick<RCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
+export function useModule(ref: MutableRefObject<RCanvasRef>): Pick<RCanvasRef, 'dispatchCommand' | 'save' | 'getBase64' | 'isPointOnPath' | 'setTouchRadius'> {
   return useMemo(() => {
     const methods = { dispatchCommand, save, getBase64, isPointOnPath, setTouchRadius };
-    if (_.isNil(handle)) {
-      const stub = () => { };
-      return _.mapValues(methods, () => stub);
-    } else {
-      return _.mapValues(methods, (m) => m.bind({}, handle));
-    }
-  }, [handle]);
+    //@ts-ignore
+    return _.mapValues(methods, (m) => (...args: any[]) => m(findNodeHandle(ref.current), ...args));
+  }, [ref]);
 }
