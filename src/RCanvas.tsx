@@ -4,14 +4,14 @@ import React, { forwardRef, Ref, useCallback, useMemo } from 'react';
 import { findNodeHandle, processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import RCanvasBase from './RCanvasBase';
+import RCanvasBase, { processColorProp } from './RCanvasBase';
 import { VIEW_MANAGER } from './RCanvasModule';
 import { Commands, RCanvasProperties, RCanvasRef } from './types';
 
 const { and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call } = Animated;
 
 
-const stringId = proc((id) => concat('rPath', id));
+const stringId = proc((id) => concat('RPath', id));
 const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
 
 const startPath = proc((tag, id, color, width, x, y) => {
@@ -27,9 +27,6 @@ const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Comma
 function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
 }
-
-//function 
-
 
 function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const tag = useValue(0);
@@ -76,8 +73,13 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   useCode(() =>
-    set(strokeColor, color(255, 0, 0, 1)),
+    set(strokeColor, processColorProp(props.strokeColor)),
     [props.strokeColor]
+  );
+
+  useCode(() =>
+    set(strokeWidth, props.strokeWidth as Animated.Adaptable<number>),
+    [props.strokeWidth]
   );
 
   useCode(() =>
@@ -86,18 +88,14 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         eq(state, State.BEGAN),
         [
           set(n, add(n, 1)),
-          startPath(tag, n, strokeColor, 5, x, y),
+          startPath(tag, n, strokeColor, strokeWidth, x, y),
           set(isActive, 1)
-
         ]
       ),
       cond(
         and(eq(state, State.ACTIVE), isActive),
         [
-
           addPoint(tag, n, x, y),
-          //endPath()
-
         ]
       ),
       cond(
@@ -107,9 +105,9 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
           set(isActive, 0)
         ]
       ),
-      call([tag, n, x, y, state, isActive], console.log)
+      //call([tag, n, x, y, state, isActive], console.log)
     ]),
-    [tag, state, oldState, x, y, isActive]
+    [tag, state, oldState, x, y, isActive, /*strokeColor, strokeWidth*/]
   )
 
   const onLayout = useCallback((e) => {
@@ -119,6 +117,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   return (
     <PanGestureHandler
+      enabled={!props.useNativeDriver}
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}
       maxPointers={1}
@@ -127,13 +126,10 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       <View style={styles.default}>
         <RCanvasBase
           {...props}
-          touchEnabled={false}
           ref={forwardedRef}
           onLayout={onLayout}
-          onStrokeEnd={(e) => console.log('yoe!')}
         />
       </View>
-
     </PanGestureHandler>
   );
 }
@@ -145,4 +141,7 @@ const styles = {
 };
 
 const ForwardedRCanvas = forwardRef(RCanvas);
+ForwardedRCanvas.defaultProps = {
+  useNativeDriver: false
+} as RCanvasProperties;
 export default ForwardedRCanvas;

@@ -9,8 +9,8 @@ export const VIEW_MANAGER = 'ReanimatedCanvasManager';
 export const MODULE = 'ReanimatedCanvasModule';
 
 const NativeModuleManager = Platform.select({
-  ios: NativeModules.RNSketchCanvasManager,
-  default: NativeModules.SketchCanvasModule
+  ios: NativeModules[VIEW_MANAGER],
+  default: NativeModules[MODULE]
 });
 
 export function dispatchCommand(tag: number, command: Commands, data: any[] = []) {
@@ -57,6 +57,7 @@ export function getBase64(
   cropToImageSize: boolean,
   callback: (error: any, result?: string) => void
 ) {
+  console.log(NativeModuleManager)
   return NativeModuleManager.transferToBase64(handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
 }
 

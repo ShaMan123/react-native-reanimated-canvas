@@ -104,8 +104,8 @@ interface NativeTouchProps {
 
 export interface RCanvasProps extends NativeTouchProps {
   style?: StyleProp<ViewStyle>
-  strokeColor?: string | number | Animated.Adaptable<number>
-  strokeWidth?: number | Animated.Adaptable<number>
+  strokeColor?: string | Animated.Adaptable<number>
+  strokeWidth?: Animated.Adaptable<number>
   user?: string
   paths?: Path[]
   text?: CanvasText[]
