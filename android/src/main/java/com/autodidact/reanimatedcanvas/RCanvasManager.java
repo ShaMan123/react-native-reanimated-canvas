@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeMap;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
@@ -21,6 +22,20 @@ import java.util.Map;
 
 public class RCanvasManager extends SimpleViewManager<RCanvas> {
     public static final String NAME = "ReanimatedCanvasManager";
+
+    /*
+    public static final String COMMAND_ADD_POINT = "addPoint";
+    public static final String COMMAND_START_PATH = "startPath";
+    public static final String COMMAND_CLEAR = "clear";
+    public static final String COMMAND_ADD_PATHS = "addPaths";
+    public static final String COMMAND_DELETE_PATHS = "deletePaths";
+    public static final String COMMAND_SAVE = "save";
+    public static final String COMMAND_END_PATH = "endPath";
+    public static final String COMMAND_CHANGE_PATH = "changePath";
+    public static final String COMMAND_SET_PATH_ATTRIBUTES = "setAttributes";
+
+
+     */
 
     public static final int COMMAND_ADD_POINT = 1;
     public static final int COMMAND_START_PATH = 2;
@@ -122,9 +137,81 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
     }
 
     @Override
+    protected void addEventEmitters(ThemedReactContext reactContext, RCanvas view) {
+        //super.addEventEmitters(reactContext, view);
+    }
+
+    @Override
+    public void receiveCommand(@NonNull RCanvas view, int command, @Nullable ReadableArray args) {
+        Log.d("RCanvas", "receiveCommand: " + getCommandsMap().containsValue(command) + " " + command);
+        switch (command) {
+            case COMMAND_ADD_POINT: {
+                float x = PixelUtil.toPixelFromDIP(args.getDouble(0));
+                float y = PixelUtil.toPixelFromDIP(args.getDouble(1));
+                @Nullable String id = args.size() == 3 ? args.getString(2) : null;
+                view.addPoint(x, y, id);
+                return;
+            }
+            case COMMAND_START_PATH: {
+                String id = args.getString(0);
+                int strokeColor = args.getInt(1);
+                float strokeWidth = PixelUtil.toPixelFromDIP(args.getDouble(2));
+                view.startPath(id, strokeColor, strokeWidth);
+                return;
+            }
+            case COMMAND_CLEAR: {
+                view.clear();
+                return;
+            }
+            case COMMAND_ADD_PATHS: {
+                view.addPaths(args);
+                return;
+            }
+            case COMMAND_DELETE_PATHS: {
+                view.deletePaths(args);
+                return;
+            }
+            case COMMAND_SAVE: {
+                view.getImageHelper()
+                        .save(
+                                args.getString(0),
+                                args.getString(1),
+                                args.getString(2),
+                                args.getBoolean(3),
+                                args.getBoolean(4),
+                                args.getBoolean(5),
+                                args.getBoolean(6)
+                        );
+                return;
+            }
+            case COMMAND_END_PATH: {
+                view.end();
+                return;
+            }
+            case COMMAND_CHANGE_PATH: {
+                String id = args.getString(0);
+                view.setCurrentPath(id);
+                return;
+            }
+            case COMMAND_SET_PATH_ATTRIBUTES: {
+                String id = args.getString(0);
+                ReadableMap attributes = args.getMap(1);
+                view.setAttributes(id, attributes);
+                return;
+            }
+            default:
+                throw new JSApplicationIllegalArgumentException(String.format(
+                        "Unsupported command %d received by %s.",
+                        command,
+                        getClass().getSimpleName()));
+        }
+    }
+
+    @Nullable
+    @Override
     public Map<String, Integer> getCommandsMap() {
         /*
-        return MapBuilder.<String, Object>builder()
+        return MapBuilder.<String, String>builder()
                 .put(COMMAND_ADD_POINT, COMMAND_ADD_POINT)
                 .put(COMMAND_START_PATH, COMMAND_START_PATH)
                 .put(COMMAND_CLEAR,COMMAND_CLEAR)
@@ -151,70 +238,6 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
         return map;
     }
 
-    @Override
-    protected void addEventEmitters(ThemedReactContext reactContext, RCanvas view) {
-        //super.addEventEmitters(reactContext, view);
-    }
-
-    @Override
-    public void receiveCommand(@NonNull RCanvas view, int commandType, @Nullable ReadableArray args) {
-        switch (commandType) {
-            case COMMAND_ADD_POINT: {
-                view.addPoint(PixelUtil.toPixelFromDIP(args.getDouble(0)), PixelUtil.toPixelFromDIP(args.getDouble(1)));
-                return;
-            }
-            case COMMAND_START_PATH: {
-                view.startPath(args.getString(0), args.getInt(1), PixelUtil.toPixelFromDIP(args.getDouble(2)));
-                return;
-            }
-            case COMMAND_CLEAR: {
-                view.clear();
-                return;
-            }
-
-            case COMMAND_ADD_PATHS: {
-                view.addPaths(args);
-                return;
-            }
-            case COMMAND_DELETE_PATHS: {
-                for (int k = 0; k < args.size(); k++) {
-                    view.deletePath(args.getString(k));
-                }
-                return;
-            }
-            case COMMAND_SAVE: {
-                view.getImageHelper()
-                        .save(
-                                args.getString(0),
-                                args.getString(1),
-                                args.getString(2),
-                                args.getBoolean(3),
-                                args.getBoolean(4),
-                                args.getBoolean(5),
-                                args.getBoolean(6)
-                        );
-                return;
-            }
-            case COMMAND_END_PATH: {
-                view.end();
-                return;
-            }
-            case COMMAND_CHANGE_PATH: {
-                view.setCurrentPath(args.getString(0));
-                return;
-            }
-            case COMMAND_SET_PATH_ATTRIBUTES: {
-                view.setAttributes(args.getString(0), args.getMap(1));
-                return;
-            }
-            default:
-                throw new JSApplicationIllegalArgumentException(String.format(
-                        "Unsupported command %d received by %s.",
-                        commandType,
-                        getClass().getSimpleName()));
-        }
-    }
-
     @Nullable
     @Override
     public Map<String, Object> getExportedCustomDirectEventTypeConstants() {
@@ -224,7 +247,7 @@ public class RCanvasManager extends SimpleViewManager<RCanvas> {
                 .put(RCanvasEventHandler.STROKE_END, MapBuilder.of("registrationName", RCanvasEventHandler.STROKE_END))
                 .put(RCanvasEventHandler.ON_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_PRESS))
                 .put(RCanvasEventHandler.ON_LONG_PRESS, MapBuilder.of("registrationName", RCanvasEventHandler.ON_LONG_PRESS))
-                .put(RCanvasEventHandler.PATHS_UPDATE, MapBuilder.of("registrationName", RCanvasEventHandler.PATHS_UPDATE))
+                .put(RCanvasEventHandler.ON_PATHS_CHANGE, MapBuilder.of("registrationName", RCanvasEventHandler.ON_PATHS_CHANGE))
                 .put(RCanvasEventHandler.ON_SKETCH_SAVED, MapBuilder.of("registrationName", RCanvasEventHandler.ON_SKETCH_SAVED))
                 .build();
     }

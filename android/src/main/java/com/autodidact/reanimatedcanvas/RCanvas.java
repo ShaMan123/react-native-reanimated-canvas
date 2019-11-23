@@ -8,15 +8,16 @@ import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeArray;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 public class RCanvas extends View {
     public final static String TAG = "RNReanimatedCanvas";
@@ -143,6 +144,17 @@ public class RCanvas extends View {
         eventHandler.emitStrokeStart();
     }
 
+    public void addPoint(float x, float y, @Nullable String pathId) {
+        @Nullable RCanvasPath current = mCurrentPath;
+        if (pathId == null || current.id.equals(pathId)) {
+            addPoint(x, y);
+        } else {
+            setCurrentPath(pathId);
+            addPoint(x, y);
+            mCurrentPath = current;
+        }
+    }
+
     public void addPoint(float x, float y) {
         addPoint(new PointF(x, y));
     }
@@ -194,20 +206,30 @@ public class RCanvas extends View {
         }
     }
 
-    public void deletePath(String id) {
-        int index = -1;
+    public void deletePaths(ReadableArray array) {
+        String[] arr = new String[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            arr[i] = array.getString(i);
+        }
+        deletePaths(arr);
+    }
 
-        for(int i = 0; i<mPaths.size(); i++) {
-            if (id.equals(mPaths.get(i).id)) {
-                index = i;
-                break;
+    public void deletePaths(String[] arr) {
+        String id;
+        for (int k = 0; k < arr.length; k++) {
+            id = arr[k];
+            for (RCanvasPath path: mPaths) {
+                if (id.equals(path.id)) {
+                    if (mCurrentPath.equals(path)){
+                        end();
+                    }
+                    mPaths.remove(path);
+                }
             }
         }
-        if (index > -1) {
-            mPaths.remove(index);
-            invalidate();
-            eventHandler.emitPathsChange();
-        }
+
+        invalidate();
+        eventHandler.emitPathsChange();
     }
 
     @Override
