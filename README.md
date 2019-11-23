@@ -67,7 +67,7 @@ export default function(props) {
 | onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
 | touchEnabled | `bool` | If false, disable touching. Default is true.  |
-| localSourceImage | `object` | Require an object (see [below](#objects)) which consists of `filename`, `directory`(optional) and `mode`(optional). If set, the image will be loaded and display as a background in canvas. (Thanks to diego-caceres-galvan))([Here](#background-image) for details) |
+| localSourceImage | `object` | `deprecated`, use `<Image />` |
 | hardwareAccelerated | `bool` | Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true |
 | permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
 | permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
@@ -97,36 +97,6 @@ export default function(props) {
 | TOUCH_STATES | `true`, `false`, `draw`, `touch`, `none` |
 
 
-## Background Image
--------------
-To use an image as background, `localSourceImage`(see [below](#background-image)) reqires an object, which consists of `filename`, `directory`(optional) and `mode`(optional). <br/>
-Note: Because native module cannot read the file in JS bundle, file path cannot be relative to JS side. For example, '../assets/image/image.png' will fail to load image.
-### Typical Usage
-* Load image from app native bundle
-<br/>
-  * Android: 
-    1. Put your images into android/app/src/main/res/drawable.
-    2. Set `filename` to the name of image files with or without file extension. 
-    3. Set `directory` to ''
-<br/>
-  * iOS:
-    1. Open Xcode and add images to project by right clicking `Add Files to [YOUR PROJECT NAME]`.
-    2. Set `filename` to the name of image files with file extension. 
-    3. Set `directory` to MAIN_BUNDLE (e.g. RNSketchCanvas.MAIN_BUNDLE or SketchCanvas.MAIN_BUNDLE)
-* Load image from camera
-  1. Retrive photo complete path (including file extension) after snapping.
-  2. Set `filename` to that path.
-  3. Set `directory` to ''
-
-### Content Mode
-* AspectFill<br/>
-<img src="https://i.imgur.com/vRydI60.png" height="200" />
-* AspectFit (default)<br/>
-<img src="https://i.imgur.com/r8DtgIN.png" height="200" />
-* ScaleToFill<br/>
-<img src="https://i.imgur.com/r9dRnAC.png" height="200" />
-
-## Objects
 -------------
 ### SavePreference object
 ```javascript
@@ -170,20 +140,6 @@ Note: Because native module cannot read the file in JS bundle, file path cannot 
   }
 }
 ```
-
-### LocalSourceImage object
-```javascript
-{
-  filename: 'image.png',  // e.g. 'image.png' or '/storage/sdcard0/Pictures/image.png'
-  directory: '', // e.g. SketchCanvas.MAIN_BUNDLE or '/storage/sdcard0/Pictures/'
-  mode: 'AspectFill'
-}
-```
-| Property | Type | Description | Default |
-| :------------ |:---------------|:---------------|:---------------|
-| filename | string | the fold name of the background image file (can be a full path) |  |
-| directory? | string | the directory of the background image file (usually used with [constants](#constants)) | '' |
-| mode? | boolean | Specify how the background image resizes itself to fit or fill the canvas.<br/>Options: `AspectFill`, `AspectFit`, `ScaleToFill` | `AspectFit` |
 
 ### CanvasText object
 ```javascript
