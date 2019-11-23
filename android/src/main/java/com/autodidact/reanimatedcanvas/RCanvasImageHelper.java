@@ -12,7 +12,6 @@ import android.util.Base64;
 import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.JSApplicationCausedNativeException;
 import com.facebook.react.bridge.ReactContext;
 
 import java.io.ByteArrayOutputStream;
