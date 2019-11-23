@@ -4,7 +4,7 @@
  * @flow
  */
 
-import SketchCanvas from 'react-native-reanimated-canvas';
+import RCanvas, { Commands } from 'react-native-reanimated-canvas';
 import React, { Component } from 'react';
 import { Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import { createNativeWrapper, LongPressGestureHandler, State, TapGestureHandler, PinchGestureHandler, RectButton, PanGestureHandler } from 'react-native-gesture-handler';
@@ -12,7 +12,7 @@ import Animated from 'react-native-reanimated';
 
 const { set, cond, add, block, eq, acc } = Animated;
 
-const GHSC = createNativeWrapper(SketchCanvas, { disallowInterruption: true, enabled: true, shouldActivateOnStart: true, shouldCancelWhenOutside: false });
+const GHSC = createNativeWrapper(RCanvas, { disallowInterruption: true, enabled: true, shouldActivateOnStart: true, shouldCancelWhenOutside: false });
 
 export default class Example8 extends Component {
   constructor(props) {
@@ -105,14 +105,14 @@ export default class Example8 extends Component {
 
   restorePath(path) {
     if (this.state.selectedPath) {
-      path.path.id = SketchCanvas.generatePathId();
+      path.path.id = RCanvas.generatePathId();
       path.path.color = 'red';
 
       const paths = this.ref.getPaths()
         .splice(this.ref.getPaths().findIndex((p) => p.path.id === path) + 1)
         .map((p) => {
           //
-          p.path.id = SketchCanvas.generatePathId();
+          p.path.id = RCanvas.generatePathId();
           return p;
         });
       paths.push(path);
@@ -206,7 +206,7 @@ export default class Example8 extends Component {
                       <Animated.View collapsable={false} style={{ flex: 1 }}>
                         {/* <Image source={require('./p.png')} style={{ width: 100, height: 100 }} />*/}
                         <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: this.scale }, { translateX: Animated.divide(this.panX, this.scale) }] }]}>
-                          <SketchCanvas
+                          <RCanvas
 
                             gestureHandler={this.panRef}
                             style={{ flex: 1 }}
@@ -219,7 +219,7 @@ export default class Example8 extends Component {
                               this.setState({ message: null });
                             }}
 
-                            onStrokeEnd={(e) => this._canvas.current.dispatchCommand(9,[e.nativeEvent.id, {width: 80}])}
+                            onStrokeEnd={(e) => this._canvas.current.dispatchCommand(Commands.setAttributes, [e.nativeEvent.id, { width: 80 }])}
 
                             onPress={(nativeEvent) => {
                               console.log('Press detected', nativeEvent)
