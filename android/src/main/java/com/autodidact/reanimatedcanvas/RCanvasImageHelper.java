@@ -98,7 +98,7 @@ public class RCanvasImageHelper {
 
         }
 
-        mView.drawOnCanvas(canvas, false, includeText);
+        mView.drawPaths(canvas, false, includeText);
 
         return bitmap;
     }
