@@ -19,6 +19,16 @@ npm install react-native-reanimated-canvas --save
 yarn add react-native-reanimated-canvas
 ```
 
+### android
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  ...>
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+  ...
+```
+
 ## Usage
 
 ```javascript
