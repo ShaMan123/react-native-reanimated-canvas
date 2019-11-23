@@ -19,7 +19,7 @@ public class RCanvasEventHandler {
     public final static String STROKE_END = "onStrokeEnd";
     public final static String ON_PRESS = "onPress";
     public final static String ON_LONG_PRESS = "onLongPress";
-    public final static String PATHS_UPDATE = "pathsUpdate";
+    public final static String ON_PATHS_CHANGE = "onPathsChange";
     public final static String ON_SKETCH_SAVED = "onSketchSaved";
 
     private RCanvas mView;
@@ -184,7 +184,7 @@ public class RCanvasEventHandler {
             paths.pushString(path.id);
         }
         event.putArray("paths", paths);
-        emit(RCanvasEventHandler.PATHS_UPDATE, event);
+        emit(RCanvasEventHandler.ON_PATHS_CHANGE, event);
     }
 
     public void emitSaveCanvas(boolean success, String path) {
