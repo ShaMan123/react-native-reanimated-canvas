@@ -1,9 +1,9 @@
 'use strict';
 
 import _ from 'lodash';
-import { useMemo, MutableRefObject } from 'react';
-import { NativeModules, Platform, UIManager, requireNativeComponent, findNodeHandle } from 'react-native';
-import { Commands, ImageType, RCanvasRef } from './types';
+import { MutableRefObject, useMemo } from 'react';
+import { findNodeHandle, NativeModules, Platform, UIManager } from 'react-native';
+import { Commands, RCanvasRef } from './types';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
 export const MODULE = 'ReanimatedCanvasModule';
