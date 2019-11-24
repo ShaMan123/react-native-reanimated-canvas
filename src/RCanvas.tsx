@@ -1,33 +1,37 @@
 
 import _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useMemo } from 'react';
-import { findNodeHandle, processColor } from 'react-native';
+import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
+import { processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import RCanvasBase, { processColorProp, useEventProp } from './RCanvasBase';
-import { VIEW_MANAGER } from './RCanvasModule';
+import RCanvasBase, { processColorProp } from './RCanvasBase';
+import { VIEW_MANAGER, MODULE } from './RCanvasModule';
 import { Commands, RCanvasProperties, RCanvasRef } from './types';
 
 const { createAnimatedComponent, and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call } = Animated;
 
-const stringId = proc((id) => concat('RPath', id));
-const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
+export const stringId = proc((id) => concat('RPath', id));
+export const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
 
-const startPath = proc((tag, id, color, width, x, y) => {
+export const startPath = proc((tag, id, color, width, x, y) => {
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, stringId(id), color, width));
 });
 
-const addPoint = proc((tag, id, x, y) => {
-  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y));
+export const addPoint = proc((tag, id, x, y) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y, stringId(id)));
 });
 
-const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
+export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
+
+export const isPointOnPath = proc((tag, x, y) => safeDispatch(tag, invoke(MODULE, 'isPointOnPath', tag, x, y)));
 
 function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
 }
 
 function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
+  const ref = useRef<RCanvasRef>();
+  const panRef = useRef<RCanvasRef>();
   const tag = useValue(0);
   const n = useValue(0);
   const x = useValue(0);
@@ -113,9 +117,12 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     props.onLayout && props.onLayout(e);
   }, [tag, props.onLayout]);
 
+  useImperativeHandle(forwardedRef, () => _.assign(panRef.current, ref.current ? ref.current.module() : {}));
+
   return (
     <PanGestureHandler
       {..._.omit(props, 'style')}
+      ref={panRef}
       enabled={!props.useNativeDriver}
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}
@@ -125,7 +132,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       <View style={styles.default}>
         <RCanvasBase
           {...props}
-          ref={forwardedRef}
+          ref={ref}
           onLayout={onLayout}
         />
       </View>
