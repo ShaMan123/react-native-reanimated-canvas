@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Image, ImageBackground, StyleSheet, ToastAndroid } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import Animated, { Easing } from 'react-native-reanimated';
-import RNSketchCanvas from '../App/RNSketchCanvas';
+import LegacyCanvas from './LegacyCanvas';
 import { styles } from './common';
 const { cond, eq, sub, add, divide, abs, call, set, Value, event, concat, timing, color, modulo, invoke, dispatch, diff, useCode, lessThan, greaterThan, or, Code, map, callback, round, neq, createAnimatedComponent, Text, View, ScrollView, and, proc, Clock, multiply, onChange, not, defined, clockRunning, block, startClock, stopClock, spring } = Animated;
 
@@ -124,7 +124,7 @@ export default function Variety() {
     <View style={styles.container}>
 
       <ImageBackground source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1 }}>
-        <RNSketchCanvas
+        <LegacyCanvas
           defaultStrokeWidth={25}
           strokeColor='#00000000'
           waitFor={ref}
@@ -146,7 +146,7 @@ export default function Variety() {
             }}>
             <Text style={{ color: 'white' }}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
           </RectButton>
-        </RNSketchCanvas>
+        </LegacyCanvas>
         <HelloSimpsons animate />
       </ImageBackground>
     </View>

@@ -1,19 +1,12 @@
 import * as React from 'react';
-import { StyleSheet, View } from 'react-native';
-import {
-  TabView,
-  TabBar,
-  SceneMap,
-  NavigationState,
-  SceneRendererProps,
-} from 'react-native-tab-view';
+import { StyleSheet } from 'react-native';
 import { createNativeWrapper } from 'react-native-gesture-handler';
-import * as _ from 'lodash';
-
-import SketchCanvas from 'react-native-reanimated-canvas';
+import RCanvas from 'react-native-reanimated-canvas';
+import { TabBar, TabView } from 'react-native-tab-view';
 import GCanva from './Gestures';
 
-const GHSC = createNativeWrapper(SketchCanvas, {
+
+const GHSC = createNativeWrapper(RCanvas, {
   disallowInterruption: true,
   enabled: true,
   shouldActivateOnStart: true,

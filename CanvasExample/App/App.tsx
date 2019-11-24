@@ -6,13 +6,11 @@ import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import Basic from './Basic';
-import E4 from './E4';
 import Gestures from './Gestures';
 import Scrollable from './Scrollable';
 import Synced from './Synced';
 import Tabs from './Tabs';
 import Variety from './Variety';
-
 
 const SCREENS = {
   Basic: { screen: Basic, title: 'Basic' },

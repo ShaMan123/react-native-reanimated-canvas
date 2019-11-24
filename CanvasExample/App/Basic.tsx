@@ -1,10 +1,10 @@
 
 import React from 'react';
-import RNSketchCanvas from '../App/RNSketchCanvas';
+import LegacyCanvas from './LegacyCanvas';
 
 
 export default function Basic() {
   return (
-    <RNSketchCanvas />
+    <LegacyCanvas />
   )
 }

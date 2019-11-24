@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { styles } from './common';
-import RNSketchCanvas from './RNSketchCanvas';
+import LegacyCanvas from './LegacyCanvas';
 
 export default function Example() {
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -16,7 +16,7 @@ export default function Example() {
   const renderItem = useCallback(({ item, index }: { item: React.RefObject<any>, index: number }) => {
     const useNativeDriver = index === 0;
     return (
-      <RNSketchCanvas
+      <LegacyCanvas
         containerStyle={styles.page}
         useNativeDriver={useNativeDriver}
         ref={item}
@@ -28,7 +28,7 @@ export default function Example() {
       >
         <Text>{`Page ${index + 1}`}</Text>
         {useNativeDriver && <Text>useNativeDrive = true</Text>}
-      </RNSketchCanvas>
+      </LegacyCanvas>
     );
   }, [onStrokeStart, onStrokeEnd, ref]);
 

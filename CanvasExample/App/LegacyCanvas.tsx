@@ -4,7 +4,7 @@ import RCanvas, { RCanvasProperties } from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
 import { styles } from './common';
 
-class SketchCanvas extends Component<RCanvasProperties> {
+class LegacyCanvasBase extends Component<RCanvasProperties> {
 
   static defaultProps = {
     containerStyle: null,
@@ -140,7 +140,10 @@ class SketchCanvas extends Component<RCanvasProperties> {
             }
 
             {this.props.clearComponent && (
-              <TouchableOpacity onPress={() => { this.ref().clear(); this.props.onClearPressed() }}>
+              <TouchableOpacity onPress={() => {
+                this.ref().clear();
+                this.props.onClearPressed()
+              }}>
                 {this.props.clearComponent}
               </TouchableOpacity>)
             }
@@ -170,8 +173,8 @@ class SketchCanvas extends Component<RCanvasProperties> {
   }
 };
 
-const RNSketchCanvas = React.forwardRef((props, ref) => <SketchCanvas {...props} forwardedRef={ref} />);
-RNSketchCanvas.defaultProps = {
+const LegacyCanvas = React.forwardRef((props, ref) => <LegacyCanvasBase {...props} forwardedRef={ref || React.createRef()} />);
+LegacyCanvas.defaultProps = {
   containerStyle: styles.default,
   canvasStyle: styles.default,
   closeComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View >,
@@ -197,8 +200,8 @@ RNSketchCanvas.defaultProps = {
   defaultStrokeIndex: 0,
   defaultStrokeWidth: 5,
   onPathsChange: ({ nativeEvent }) => {
-    console.log('paths', nativeEvent)
+    console.log('paths', nativeEvent.paths);
   }
-}
+} as RCanvasProperties;
 
-export default RNSketchCanvas;
+export default LegacyCanvas;
