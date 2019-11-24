@@ -5,13 +5,13 @@ import { RAnimatedCanvasModule, generatePathId, RCanvasRef, StrokeEndEvent, Stro
 import LegacyCanvas from './LegacyCanvas';
 import { styles, useRefGetter } from './common';
 import _ from 'lodash';
-const { cond, eq, sub, add, divide, abs, call, set, Value, event, concat, timing, color, modulo, invoke, dispatch, diff, useCode, lessThan, greaterThan, or, Code, map, callback, round, neq, createAnimatedComponent, Text, View, ScrollView, and, proc, Clock, multiply, onChange, not, defined, clockRunning, block, startClock, stopClock, spring } = Animated;
+const { Value, event, View } = Animated;
 
 
 export default function SyncedCanvases() {
   const tagB = useMemo(() => new Value(0), []);
   const [_a, a] = useRefGetter<RCanvasRef>();
-  const [_b, b] = useRefGetter<RCanvasRef>();
+  const [_b] = useRefGetter<RCanvasRef>();
 
   const onStrokeStartA = useMemo(() =>
     event<StrokeStartEvent>([{
@@ -46,7 +46,7 @@ export default function SyncedCanvases() {
         onLayout={(e) => tagB.setValue(e.nativeEvent.target)}
         ref={_b}
         onStrokeEnd={(e) => {
-          a().addPath(_.set(e.nativeEvent, 'id', generatePathId()));
+          e.nativeEvent.id.includes('RCanvasPath') && a().addPath(_.set(e.nativeEvent, 'id', generatePathId()));
         }}
       />
     </View>
