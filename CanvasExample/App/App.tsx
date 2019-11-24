@@ -6,7 +6,6 @@ import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import Basic from './Basic';
-import CommonExample from './common';
 import E4 from './E4';
 import Gestures from './Gestures';
 import Scrollable from './Scrollable';
@@ -59,10 +58,7 @@ function MainScreenItem(props) {
 const ExampleApp = createStackNavigator(
   {
     Main: { screen: MainScreen },
-    ..._.mapValues(SCREENS, ({ screen: Screen, title }) => ({
-      screen: (props: any) => <CommonExample><Screen {...props} /></CommonExample>,
-      title
-    }))
+    ...SCREENS
   },
   {
     initialRouteName: 'Main',

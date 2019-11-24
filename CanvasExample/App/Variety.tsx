@@ -1,10 +1,10 @@
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
-import { Alert, Image, ImageBackground, StyleSheet, ToastAndroid } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { Image, ImageBackground, StyleSheet, ToastAndroid } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
-import RNSketchCanvas from '../App/RNSketchCanvas';
-import { styles, useCanvasContext } from './common';
 import Animated, { Easing } from 'react-native-reanimated';
+import RNSketchCanvas from '../App/RNSketchCanvas';
+import { styles } from './common';
 const { cond, eq, sub, add, divide, abs, call, set, Value, event, concat, timing, color, modulo, invoke, dispatch, diff, useCode, lessThan, greaterThan, or, Code, map, callback, round, neq, createAnimatedComponent, Text, View, ScrollView, and, proc, Clock, multiply, onChange, not, defined, clockRunning, block, startClock, stopClock, spring } = Animated;
 
 function runTimingLoop(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
@@ -117,7 +117,6 @@ function HelloSimpsons({ animate }: { animate?: boolean }) {
 
 
 export default function Variety() {
-  const context = useCanvasContext();
   const ref = useRef();
   const [animate, setAnimate] = useState(true);
 
@@ -126,7 +125,6 @@ export default function Variety() {
 
       <ImageBackground source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1 }}>
         <RNSketchCanvas
-          {...context.canvas}
           defaultStrokeWidth={25}
           strokeColor='#00000000'
           waitFor={ref}

@@ -1,20 +1,18 @@
 
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { Platform, ScrollView as RNScrollView, View, Text, FlatList } from 'react-native';
-import RCanvas, { RCanvasModule } from 'react-native-reanimated-canvas';
-import { styles, useCanvasContext } from './common';
-import { PanGestureHandler, ScrollView } from 'react-native-gesture-handler';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { FlatList, Text } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { styles } from './common';
 import RNSketchCanvas from './RNSketchCanvas';
 
 export default function Example() {
-  const context = useCanvasContext();
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const [defaultScroll, setScroller] = useState(false);
-  const dispatchScroll = useCallback((value: boolean) => defaultScroll && context.dispatch({ scrollEnabled: value }), [defaultScroll]);
-  const onStrokeStart = useCallback(() => dispatchScroll(false), [dispatchScroll]);
-  const onStrokeEnd = useCallback(() => dispatchScroll(true), [dispatchScroll]);
+  const onStrokeStart = useCallback(() => defaultScroll && setScrollEnabled(false), [defaultScroll, setScrollEnabled]);
+  const onStrokeEnd = useCallback(() => defaultScroll && setScrollEnabled(true), [defaultScroll, setScrollEnabled]);
   const ref = useRef();
-  const data = useMemo(() => new Array(5).map((v, i) => React.createRef()), [])
+  const refs = useMemo(() => new Array(5).map((v, i) => React.createRef()), [])
   const renderItem = useCallback(({ item, index }: { item: React.RefObject<any>, index: number }) => {
     const useNativeDriver = index === 0;
     return (
@@ -37,10 +35,10 @@ export default function Example() {
   return (
     <FlatList
       style={styles.default}
-      data={data}
+      data={refs}
       renderItem={renderItem}
       keyExtractor={(item, index) => `WilliWoonka${index}`}
-      renderScrollComponent={(props) => <ScrollView {...props} ref={ref} />}
+      renderScrollComponent={(props) => <ScrollView {...props} ref={ref} simultaneousHandlers={refs} />}
     />
   );
 

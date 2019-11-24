@@ -2,30 +2,7 @@
 import React, { MutableRefObject, PropsWithChildren, useCallback, useContext, useMemo, useReducer, useRef } from 'react';
 import { Alert, Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
 import { RCanvasRef } from '../../src/types';
-
-
-export async function takePicture(camera: MutableRefObject<any>, onSuccess: (uri: string) => void) {
-  if (camera.current) {
-    const options = { quality: 0.5, base64: true };
-    const data = await camera.current.takePictureAsync(options);
-    onSuccess(data.uri);
-  } else {
-    throw new Error('no camera');
-  }
-};
-
-export function saveCanvasEventBuilder(setURI: (uri: string) => void) {
-  const cb = (e) => {
-    console.log(e.nativeEvent)
-    const { success, path } = e.nativeEvent;
-    Alert.alert(success ? 'Image saved!' : 'Failed to save image!', path);
-    if (success) {
-      setURI(path);
-    }
-  };
-
-  return cb;
-}
+import _ from 'lodash';
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);
@@ -39,91 +16,6 @@ export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R =
   );
 
   return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
-}
-
-export function ImageModal() {
-  const context = useCanvasContext();
-  const close = useCallback(() => context.dispatch({ modalVisible: false }), [context]);
-  const uri = `file://${context.state.uri}`;
-  return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      visible={context.state.modalVisible}
-      onRequestClose={close}
-    >
-      <View style={{ marginTop: 22 }}>
-        <Text>Displaying image: {uri}</Text>
-        <Image
-          source={{ uri }}
-          style={{ width: 200, height: 200 }}
-        />
-        <Button
-          title="close"
-          onPress={close}
-        />
-      </View>
-    </Modal>
-  );
-}
-
-const initialState = {
-  example: 0,
-  color: '#FF0000',
-  thickness: 5,
-  message: '',
-  photoPath: "",
-  scrollEnabled: true,
-  touchState: 'draw',
-  modalVisible: false,
-  uri: ""
-}
-
-export function useCanvasReducer() {
-  return useReducer((nextState, action) => nextState, initialState);
-}
-
-const Context = React.createContext(null);
-
-export function useCanvasContext() {
-  const context = useContext(Context);
-  if (context === null) {
-    throw new Error('Failed to initialize App Context');
-  }
-  return context as ReturnType<typeof useCanvasContextFactory>;
-}
-
-function useCanvasContextFactory() {
-  const canvas = useRef();
-  const camera = useRef();
-  const [state, dispatch] = useCanvasReducer();
-  return useMemo(() => ({
-    state,
-    dispatch,
-    get _canvas() {
-      return this.canvas.ref.current;
-    },
-    canvas: {
-      ref: canvas
-    },
-    camera: {
-      ref: camera,
-      takePicture: () => {
-        console.log('what?')
-        takePicture(camera, (uri) => dispatch({ photoPath: uri }))
-      }
-    }
-  }), [state]);
-}
-
-export default function CommonExample({ children }: PropsWithChildren<any>) {
-  const context = useCanvasContextFactory();
-  return (
-    <Context.Provider value={context}>
-      <ImageModal />
-      {children}
-    </Context.Provider>
-  )
 }
 
 export const styles = StyleSheet.create({

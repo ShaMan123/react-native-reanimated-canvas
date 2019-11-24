@@ -1,10 +1,10 @@
 import React, { Component, forwardRef } from 'react';
 import { FlatList, TouchableOpacity, View, processColor, Text } from 'react-native';
-import RCanvas from 'react-native-reanimated-canvas';
+import RCanvas, { RCanvasProperties } from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
 import { styles } from './common';
 
-class SketchCanvas extends Component {
+class SketchCanvas extends Component<RCanvasProperties> {
 
   static defaultProps = {
     containerStyle: null,
