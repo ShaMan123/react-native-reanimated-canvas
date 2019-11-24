@@ -115,11 +115,9 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void startPath(String id, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
-        mCurrentPath = new RCanvasPath(
-                id,
-                strokeColor == null ? mStrokeColor : strokeColor,
-                strokeWidth == null ? mStrokeWidth : strokeWidth
-        );
+        strokeColor = strokeColor == null ? mStrokeColor : strokeColor;
+        strokeWidth = strokeWidth == null ? mStrokeWidth : strokeWidth;
+        mCurrentPath = new RCanvasPath(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
         if (isErase && !mDisableHardwareAccelerated) {
