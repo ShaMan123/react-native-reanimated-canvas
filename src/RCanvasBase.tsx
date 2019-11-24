@@ -178,6 +178,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       endPath,
       clear,
       setNativeProps,
+      getNode: () => node.value(),
       handle: findNodeHandle(node.value())
     }),
     [
@@ -243,7 +244,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
 const ForwardedRCanvasBase = forwardRef(RCanvasBase);
 ForwardedRCanvasBase.defaultProps = {
-  strokeColor: 'transparent',
+  strokeColor: 'black',
   strokeWidth: 5,
   touchEnabled: true,
 
