@@ -37,12 +37,6 @@ export type PathData = {
   points: Point[]
 }
 
-export type Path = {
-  drawer?: string
-  size: Size
-  path: PathData
-}
-
 export type TouchStates = 'draw' | 'touch' | 'none';
 
 export interface NativeTouchEvent {
@@ -51,28 +45,32 @@ export interface NativeTouchEvent {
   paths: number,
 }
 
-export interface NativeSketchEvent {
+export interface NativeStrokeEvent {
   x: number,
   y: number,
   id: string,
 }
 
+export type StrokeStartEvent = NativeSyntheticEvent<PathData>;
+export type StrokeEvent = NativeSyntheticEvent<NativeStrokeEvent>;
+export type StrokeEndEvent = NativeSyntheticEvent<PathData>;
+export type PathsChangeEvent = NativeSyntheticEvent<{ paths: string[] }>;
+
 interface NativeTouchProps {
   /** set to true to handle touches with the native driver */
   useNativeDriver?: boolean
   /** fires only if `useNativeDriver` is set to `true` */
-  onPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
+  onPress?: (e: SketchEvent) => void
   /** fires only if `useNativeDriver` is set to `true` */
-  onLongPress?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
+  onLongPress?: (e: SketchEvent) => void
 }
 
 export interface RCanvasProps extends NativeTouchProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string | Animated.Adaptable<number>
   strokeWidth?: Animated.Adaptable<number>
-  user?: string
-  paths?: Path[]
-  touchEnabled?: boolean
+  paths?: PathData[]
+  touchEnabled?: boolean | TouchStates
 
   /**
    * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -89,10 +87,10 @@ export interface RCanvasProps extends NativeTouchProps {
    */
   hardwareAccelerated?: boolean
 
-  onStrokeStart?: (e: NativeSyntheticEvent<any>) => void
-  onStrokeChanged?: (e: NativeSyntheticEvent<NativeSketchEvent>) => void
-  onStrokeEnd?: (e: NativeSyntheticEvent<any>) => void
-  onPathsChange?: (e: NativeSyntheticEvent<{ paths: string[] }>) => void,
+  onStrokeStart?: (e: StrokeStartEvent) => void
+  onStrokeChange?: (e: SketchEvent) => void
+  onStrokeEnd?: (e: StrokeEndEvent) => void
+  onPathsChange?: (e: PathsChangeEvent) => void,
 }
 
 export type RCanvasProperties = React.PropsWithChildren<RCanvasProps & ViewProps & PanGestureHandlerProperties>;
@@ -156,4 +154,10 @@ export type RCanvasRef = {
   handle(): number | null
 
   setNativeProps(props: RCanvasProperties): void
+
+  /**
+   * return only the unassigned module
+   * use to assign to a ref
+   */
+  module(): RCanvasRef
 }
