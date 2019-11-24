@@ -33,20 +33,10 @@ public class RCanvasPath extends View {
     private Paint mPaint;
     private Path mPath;
 
-    public RCanvasPath(ReactContext context, String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
-        this(context);
-        init(id, strokeColor, strokeWidth, points);
-
-    }
-
-    public RCanvasPath(ReactContext context, String id, int strokeColor, float strokeWidth) {
-        this(context);
-        init(id, strokeColor, strokeWidth);
-    }
-
     public RCanvasPath(ReactContext context) {
         super(context);
         mPath = new Path();
+        //setHardwareAcceleration(false);
     }
 
     public void init(String id, int strokeColor, float strokeWidth) {
@@ -71,7 +61,6 @@ public class RCanvasPath extends View {
     public void setStrokeColor(int color) {
         mStrokeColor = color;
         boolean isErase = mStrokeColor == Color.TRANSPARENT;
-        //  make sure paint initializes
         getPaint().setColor(mStrokeColor);
         getPaint().setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
     }
@@ -82,11 +71,10 @@ public class RCanvasPath extends View {
 
     public void setStrokeWidth(float width) {
         mStrokeWidth = width;
-        //  make sure paint initializes
         getPaint().setStrokeWidth(mStrokeWidth);
     }
 
-    public void setHardwareAcceleration(boolean useHardwareAcceleration) {
+    private void setHardwareAcceleration(boolean useHardwareAcceleration) {
         Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
 
@@ -127,6 +115,12 @@ public class RCanvasPath extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawPath(mPath, getPaint());
+        /*
+        for (int i = 0; i < points.size(); i++) {
+            draw(canvas, i);
+        }
+
+         */
     }
 
     protected void drawPoint(int pointIndex) {

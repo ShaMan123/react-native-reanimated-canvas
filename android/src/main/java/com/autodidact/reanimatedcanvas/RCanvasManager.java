@@ -77,7 +77,7 @@ public class RCanvasManager extends ReactViewManager {
         ((RCanvas) view).tearDown();
     }
 
-    @ReactProp(name = PROPS_HARDWARE_ACCELERATED, defaultBoolean = true)
+    @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAccelerated(useAcceleration);
     }

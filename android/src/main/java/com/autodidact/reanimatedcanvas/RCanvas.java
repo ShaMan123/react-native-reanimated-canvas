@@ -1,15 +1,9 @@
 package com.autodidact.reanimatedcanvas;
 
-import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Picture;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -30,7 +24,7 @@ public class RCanvas extends ReactViewGroup {
     private ArrayList<RCanvasPath> mPaths = new ArrayList<RCanvasPath>();
     private RCanvasPath mCurrentPath = null;
 
-    private boolean mDisableHardwareAccelerated = false;
+    private boolean mHardwareAccelerated = false;
     private int mStrokeColor;
     private float mStrokeWidth;
 
@@ -54,12 +48,8 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void setHardwareAccelerated(boolean useHardwareAcceleration) {
-        mDisableHardwareAccelerated = !useHardwareAcceleration;
+        mHardwareAccelerated = useHardwareAcceleration;
         Utility.setHardwareAcceleration(this, useHardwareAcceleration);
-
-        for (RCanvasPath path: mPaths) {
-            path.setHardwareAcceleration(useHardwareAcceleration);
-        }
     }
 
     public void setStrokeColor(int color){
