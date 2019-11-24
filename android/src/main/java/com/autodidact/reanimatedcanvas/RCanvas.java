@@ -1,10 +1,9 @@
 package com.autodidact.reanimatedcanvas;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -20,14 +19,13 @@ import com.facebook.react.views.view.ReactViewGroup;
 import java.util.ArrayList;
 
 public class RCanvas extends ReactViewGroup {
-    public final static String TAG = "RNReanimatedCanvas";
 
     private ArrayList<RCanvasPath> mPaths = new ArrayList<RCanvasPath>();
     private RCanvasPath mCurrentPath = null;
 
     private boolean mDisableHardwareAccelerated = false;
     private int mStrokeColor;
-    private int mStrokeWidth;
+    private float mStrokeWidth;
 
     private final RCanvasEventHandler eventHandler;
     private final PathIntersectionHelper mIntersectionHelper;
@@ -45,11 +43,6 @@ public class RCanvas extends ReactViewGroup {
         return mIntersectionHelper;
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return eventHandler.onTouchEvent(event);
-    }
-
     public void setHardwareAccelerated(boolean useHardwareAccelerated) {
         mDisableHardwareAccelerated = !useHardwareAccelerated;
         if(useHardwareAccelerated) {
@@ -63,7 +56,7 @@ public class RCanvas extends ReactViewGroup {
         mStrokeColor = color;
     }
 
-    public void setStrokeWidth(int width){
+    public void setStrokeWidth(float width){
         mStrokeWidth = width;
     }
 
@@ -121,8 +114,12 @@ public class RCanvas extends ReactViewGroup {
         startPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
     }
 
-    public void startPath(String id, int strokeColor, float strokeWidth) {
-        mCurrentPath = new RCanvasPath(id, strokeColor, strokeWidth);
+    public void startPath(String id, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
+        mCurrentPath = new RCanvasPath(
+                id,
+                strokeColor == null ? mStrokeColor : strokeColor,
+                strokeWidth == null ? mStrokeWidth : strokeWidth
+        );
         mPaths.add(mCurrentPath);
         boolean isErase = strokeColor == Color.TRANSPARENT;
         if (isErase && !mDisableHardwareAccelerated) {
@@ -130,7 +127,6 @@ public class RCanvas extends ReactViewGroup {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
 
-        invalidate();
         eventHandler.emitStrokeStart();
     }
 
@@ -152,10 +148,9 @@ public class RCanvas extends ReactViewGroup {
     public void addPoint(PointF point) {
         mCurrentPath.addPoint(point);
         invalidate();
-        Log.d("RCanvas", "addPoint: " + point);
     }
 
-    public void end() {
+    public void endPath() {
         if (mCurrentPath != null) {
             eventHandler.emitStrokeEnd();
             mCurrentPath = null;
@@ -206,41 +201,50 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void deletePaths(String[] arr) {
-        String id;
-        for (int k = 0; k < arr.length; k++) {
-            id = arr[k];
+        for (String id: arr) {
             for (RCanvasPath path: mPaths) {
                 if (id.equals(path.id)) {
                     if (mCurrentPath.equals(path)){
-                        end();
+                        endPath();
                     }
                     mPaths.remove(path);
                 }
             }
         }
-
         invalidate();
         eventHandler.emitPathsChange();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-        super.onDraw(canvas);
-        drawPaths(canvas);
+        draw(canvas, false);
     }
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-        super.dispatchDraw(canvas);
+        draw(canvas, true);
+    }
+
+    @SuppressLint("WrongCall")
+    private void draw(Canvas canvas, Boolean dispatchDraw) {
+        //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+        if (dispatchDraw) {
+            super.dispatchDraw(canvas);
+        } else {
+            super.onDraw(canvas);
+        }
         drawPaths(canvas);
     }
 
-    protected void drawPaths(Canvas canvas){
+    private void drawPaths(Canvas canvas){
         for(RCanvasPath path: mPaths) {
             path.draw(canvas);
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return eventHandler.onTouchEvent(event);
     }
 
     public void tearDown(){

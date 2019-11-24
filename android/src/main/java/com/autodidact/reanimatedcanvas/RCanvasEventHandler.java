@@ -39,7 +39,7 @@ public class RCanvasEventHandler {
             @Override
             public boolean onTouchEvent(MotionEvent ev) {
                 if(ev.getAction() == MotionEvent.ACTION_UP && mView.getCurrentPath() != null) {
-                    mView.end();
+                    mView.endPath();
                 }
                 return super.onTouchEvent(ev);
             }
@@ -87,7 +87,7 @@ public class RCanvasEventHandler {
         @Override
         public boolean onDown(MotionEvent event) {
             int action = event.getAction();
-            if(mView.getCurrentPath() != null) mView.end();
+            if(mView.getCurrentPath() != null) mView.endPath();
             prevTouchAction = action;
             isLongPress = false;
             return true;
@@ -122,7 +122,7 @@ public class RCanvasEventHandler {
             RCanvasPath mCurrentPath = mView.getCurrentPath();
 
             if(shouldFail(event)) {
-                if(mCurrentPath != null) mView.end();
+                if(mCurrentPath != null) mView.endPath();
                 event.setAction(MotionEvent.ACTION_CANCEL);
                 prevTouchAction = action;
                 return false;

@@ -1,7 +1,6 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +14,6 @@ import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.views.modal.ReactModalHostView;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.facebook.react.views.view.ReactViewManager;
 
@@ -39,14 +37,14 @@ public class RCanvasManager extends ReactViewManager {
 
      */
 
-    public static final int COMMAND_START_PATH = 1;
-    public static final int COMMAND_ADD_POINT = 2;
-    public static final int COMMAND_END_PATH = 3;
-    public static final int COMMAND_CLEAR = 4;
-    public static final int COMMAND_ADD_PATHS = 5;
-    public static final int COMMAND_DELETE_PATHS = 6;
-    public static final int COMMAND_CHANGE_PATH = 7;
-    public static final int COMMAND_SET_PATH_ATTRIBUTES = 8;
+    private static final int COMMAND_START_PATH = 1;
+    private static final int COMMAND_ADD_POINT = 2;
+    private static final int COMMAND_END_PATH = 3;
+    private static final int COMMAND_CLEAR = 4;
+    private static final int COMMAND_ADD_PATHS = 5;
+    private static final int COMMAND_DELETE_PATHS = 6;
+    private static final int COMMAND_CHANGE_PATH = 7;
+    private static final int COMMAND_SET_PATH_ATTRIBUTES = 8;
 
     private static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
     private static final String PROPS_STROKE_COLOR = "strokeColor";
@@ -90,8 +88,8 @@ public class RCanvasManager extends ReactViewManager {
     }
 
     @ReactProp(name = PROPS_STROKE_WIDTH)
-    public void setStrokeWidth(RCanvas viewContainer, int width) {
-        viewContainer.setStrokeWidth((int) PixelUtil.toPixelFromDIP(width));
+    public void setStrokeWidth(RCanvas viewContainer, float width) {
+        viewContainer.setStrokeWidth(PixelUtil.toPixelFromDIP(width));
     }
 
     @ReactProp(name = PROPS_TOUCH_ENABLED, defaultBoolean = true)
@@ -137,8 +135,8 @@ public class RCanvasManager extends ReactViewManager {
             }
             case COMMAND_START_PATH: {
                 String id = args.getString(0);
-                int strokeColor = args.getInt(1);
-                float strokeWidth = PixelUtil.toPixelFromDIP(args.getDouble(2));
+                Integer strokeColor = !args.isNull(1) ? args.getInt(1) : null;
+                Float strokeWidth = !args.isNull(2) ? PixelUtil.toPixelFromDIP(args.getDouble(2)) : null;
                 view.startPath(id, strokeColor, strokeWidth);
                 return;
             }
@@ -155,7 +153,7 @@ public class RCanvasManager extends ReactViewManager {
                 return;
             }
             case COMMAND_END_PATH: {
-                view.end();
+                view.endPath();
                 return;
             }
             case COMMAND_CHANGE_PATH: {
