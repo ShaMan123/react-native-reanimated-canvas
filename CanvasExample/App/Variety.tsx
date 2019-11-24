@@ -105,6 +105,7 @@ function HelloSimpsons({ animate }: { animate?: boolean }) {
     <View
       style={[styles.abs100]}
       pointerEvents='none'
+      renderToHardwareTextureAndroid
     >
       <Text
         style={[styles.text, animate && { color, borderColor: color }]}
@@ -123,7 +124,11 @@ export default function Variety() {
   return (
     <View style={styles.container}>
 
-      <ImageBackground source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1 }}>
+      <ImageBackground
+        renderToHardwareTextureAndroid
+        source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }}
+        style={styles.default}
+      >
         <LegacyCanvas
           defaultStrokeWidth={25}
           strokeColor='#00000000'
@@ -138,7 +143,7 @@ export default function Variety() {
             onPress={() => {
               ToastAndroid.show(
                 !animate ?
-                  'Notice fps -> need to implement better drawing while animating' :
+                  'Notice fps -> use hardwareAccelerated' :
                   'I\'m pressed, are you impressed? Try erasing me',
                 2500
               );
