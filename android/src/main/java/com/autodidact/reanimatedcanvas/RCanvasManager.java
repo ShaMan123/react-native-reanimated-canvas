@@ -116,12 +116,7 @@ public class RCanvasManager extends ReactViewManager {
     public void shouldFireOnLongPressEvent(RCanvas viewContainer, @Nullable Dynamic callback) {
         viewContainer.getEventHandler().setShouldFireOnLongPressEvent(callback != null);
     }
-/*
-    @Override
-    protected void addEventEmitters(ThemedReactContext reactContext, RCanvas view) {
-        //super.addEventEmitters(reactContext, view);
-    }
-*/
+
     @Override
     public void receiveCommand(@NonNull ReactViewGroup root, int command, @Nullable ReadableArray args) {
         RCanvas view = ((RCanvas) root);
