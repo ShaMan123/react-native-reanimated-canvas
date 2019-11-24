@@ -11,7 +11,7 @@ import { createNativeWrapper } from 'react-native-gesture-handler';
 import * as _ from 'lodash';
 
 import SketchCanvas from 'react-native-reanimated-canvas';
-import Example8 from './E8';
+import GCanva from './Gestures';
 
 const GHSC = createNativeWrapper(SketchCanvas, {
   disallowInterruption: true,
@@ -71,7 +71,7 @@ export default class DynamicTabBar extends React.Component {
   );
 
   renderScene = ({ position, layout, jumpTo, route }) => {
-    return <Example8 />;
+    return <GCanva />;
     /*
     return <GHSC
       ref={this.routeRefs[route.key]}

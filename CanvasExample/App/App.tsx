@@ -8,7 +8,7 @@ import { createStackNavigator } from 'react-navigation-stack';
 import Basic from './Basic';
 import CommonExample from './common';
 import E4 from './E4';
-import E8 from './E8';
+import Gestures from './Gestures';
 import Scrollable from './Scrollable';
 import Synced from './Synced';
 import Tabs from './Tabs';
@@ -16,13 +16,12 @@ import Variety from './Variety';
 
 
 const SCREENS = {
-  E1: { screen: Basic, title: 'Basic' },
-  E3: { screen: Synced, title: 'Sync two canvases' },
-  E4: { screen: E4, title: 'Take a photo first' },
-  E5: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
-  E7: { screen: Scrollable, title: 'Scrollable-ish' },
-  E8: { screen: E8, title: 'R' },
-  E9: { screen: Tabs, title: 'Tabs' }
+  Basic: { screen: Basic, title: 'Basic' },
+  Synced: { screen: Synced, title: 'Sync two canvases' },
+  Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
+  Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
+  Gestures: { screen: Gestures, title: 'Gestures' },
+  Tabs: { screen: Tabs, title: 'Tabs' }
 };
 
 _.map(SCREENS, ({ screen, title }) => _.set(screen, 'navigationOptions.title', title));
