@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View } from "react-native";
 import Animated from 'react-native-reanimated';
+import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
 
 /*
 declare module 'react-native-sketch-canvas' {
@@ -94,7 +95,7 @@ export interface RCanvasProps extends NativeTouchProps {
   onPathsChange?: (e: NativeSyntheticEvent<{ paths: string[] }>) => void,
 }
 
-export type RCanvasProperties = React.PropsWithChildren<RCanvasProps & ViewProps>;
+export type RCanvasProperties = React.PropsWithChildren<RCanvasProps & ViewProps & PanGestureHandlerProperties>;
 
 
 export type RCanvasRef = {
