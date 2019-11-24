@@ -127,27 +127,6 @@ export default function Variety() {
       <ImageBackground source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1 }}>
         <RNSketchCanvas
           {...context.canvas}
-          containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
-          canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
-          clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
-          eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
-          strokeComponent={color => (
-            <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
-          )}
-          strokeSelectedComponent={(color, index, changed) => {
-            return (
-              <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
-            )
-          }}
-          strokeWidthComponent={(w) => {
-            return (<View style={styles.strokeWidthButton}>
-              <View style={{
-                backgroundColor: 'white', marginHorizontal: 2.5,
-                width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
-              }} />
-            </View>
-            )
-          }}
           defaultStrokeWidth={25}
           strokeColor='#00000000'
           waitFor={ref}

@@ -1,26 +1,26 @@
 import { createBrowserApp } from '@react-navigation/web';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
-import { FlatList, Platform, StyleSheet, Text, View, UIManager } from 'react-native';
+import { FlatList, Platform, StyleSheet, Text, View } from 'react-native';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
-import CommonExample from './common';
-
 import Basic from './Basic';
-import Synced from './Synced';
+import CommonExample from './common';
 import E4 from './E4';
-import Variety from './Variety';
-import E7 from './E7';
 import E8 from './E8';
+import Scrollable from './Scrollable';
+import Synced from './Synced';
 import Tabs from './Tabs';
+import Variety from './Variety';
+
 
 const SCREENS = {
   E1: { screen: Basic, title: 'Basic' },
   E3: { screen: Synced, title: 'Sync two canvases' },
   E4: { screen: E4, title: 'Take a photo first' },
   E5: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
-  E7: { screen: E7, title: 'Multiple canvases in ScrollView' },
+  E7: { screen: Scrollable, title: 'Scrollable-ish' },
   E8: { screen: E8, title: 'R' },
   E9: { screen: Tabs, title: 'Tabs' }
 };

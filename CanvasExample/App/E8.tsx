@@ -207,8 +207,6 @@ export default class Example8 extends Component {
                         {/* <Image source={require('./p.png')} style={{ width: 100, height: 100 }} />*/}
                         <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: this.scale }, { translateX: Animated.divide(this.panX, this.scale) }] }]}>
                           <RCanvas
-
-                            gestureHandler={this.panRef}
                             style={{ flex: 1 }}
                             strokeWidth={24}
                             strokeColor={this.state.color}

@@ -8,7 +8,7 @@ export async function takePicture(camera: MutableRefObject<any>, onSuccess: (uri
   if (camera.current) {
     const options = { quality: 0.5, base64: true };
     const data = await camera.current.takePictureAsync(options);
-    onSuccess(data.uri.replace('file://', ''));
+    onSuccess(data.uri);
   } else {
     throw new Error('no camera');
   }
@@ -90,7 +90,7 @@ export function useCanvasContext() {
   if (context === null) {
     throw new Error('Failed to initialize App Context');
   }
-  return context;
+  return context as ReturnType<typeof useCanvasContextFactory>;
 }
 
 function useCanvasContextFactory() {
@@ -109,6 +109,7 @@ function useCanvasContextFactory() {
     camera: {
       ref: camera,
       takePicture: () => {
+        console.log('what?')
         takePicture(camera, (uri) => dispatch({ photoPath: uri }))
       }
     }
@@ -126,6 +127,9 @@ export default function CommonExample({ children }: PropsWithChildren<any>) {
 }
 
 export const styles = StyleSheet.create({
+  default: {
+    flex: 1
+  },
   container: {
     flex: 1,
     justifyContent: 'center',

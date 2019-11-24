@@ -1,9 +1,10 @@
 import React, { Component, forwardRef } from 'react';
-import { FlatList, TouchableOpacity, View, processColor } from 'react-native';
+import { FlatList, TouchableOpacity, View, processColor, Text } from 'react-native';
 import RCanvas from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
+import { styles } from './common';
 
-class RNSketchCanvas extends Component {
+class SketchCanvas extends Component {
 
   static defaultProps = {
     containerStyle: null,
@@ -169,4 +170,35 @@ class RNSketchCanvas extends Component {
   }
 };
 
-export default React.forwardRef((props, ref) => <RNSketchCanvas {...props} forwardedRef={ref} />);
+const RNSketchCanvas = React.forwardRef((props, ref) => <SketchCanvas {...props} forwardedRef={ref} />);
+RNSketchCanvas.defaultProps = {
+  containerStyle: styles.default,
+  canvasStyle: styles.default,
+  closeComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View >,
+  clearComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View >,
+  eraseComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View >,
+  strokeComponent: (color) => (
+    <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
+  ),
+  strokeSelectedComponent: (color, index, changed) => {
+    return (
+      <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
+    )
+  },
+  strokeWidthComponent: (w) => {
+    return (<View style={styles.strokeWidthButton}>
+      <View style={{
+        backgroundColor: 'white', marginHorizontal: 2.5,
+        width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
+      }} />
+    </View>
+    )
+  },
+  defaultStrokeIndex: 0,
+  defaultStrokeWidth: 5,
+  onPathsChange: ({ nativeEvent }) => {
+    console.log('paths', nativeEvent)
+  }
+}
+
+export default RNSketchCanvas;
