@@ -4,12 +4,11 @@ import React, { forwardRef, Ref, useCallback, useMemo } from 'react';
 import { findNodeHandle, processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import RCanvasBase, { processColorProp } from './RCanvasBase';
+import RCanvasBase, { processColorProp, useEventProp } from './RCanvasBase';
 import { VIEW_MANAGER } from './RCanvasModule';
 import { Commands, RCanvasProperties, RCanvasRef } from './types';
 
-const { and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call } = Animated;
-
+const { createAnimatedComponent, and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call } = Animated;
 
 const stringId = proc((id) => concat('RPath', id));
 const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
@@ -104,10 +103,9 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
           endPath(tag, n),
           set(isActive, 0)
         ]
-      ),
-      call([tag, n, x, y, state, isActive], console.log)
+      )
     ]),
-    [tag, state, oldState, x, y, isActive, /*strokeColor, strokeWidth*/]
+    [tag, state, oldState, x, y, isActive, strokeColor, strokeWidth]
   )
 
   const onLayout = useCallback((e) => {
