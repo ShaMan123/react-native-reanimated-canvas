@@ -152,6 +152,7 @@ class RNSketchCanvas extends Component {
           style={this.props.canvasStyle}
           strokeColor={this.state.color + (this.state.color.length === 9 ? '' : this.state.alpha)}
           strokeWidth={this.state.strokeWidth}
+        //useNativeDriver
         />
         <View style={{ flexDirection: 'row' }}>
           <FlatList

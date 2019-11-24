@@ -1,5 +1,5 @@
 
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Alert, Image, ImageBackground, StyleSheet, ToastAndroid } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import RNSketchCanvas from '../App/RNSketchCanvas';
@@ -99,26 +99,31 @@ function useColor() {
   return color;
 }
 
-
-export default function Variety() {
-  const context = useCanvasContext();
-  const ref = useRef();
+function HelloSimpsons({ animate }: { animate?: boolean }) {
   const color = useColor();
-  const helloSimpsons = (
+  return (
     <View
       style={[styles.abs100]}
       pointerEvents='none'
     >
       <Text
-        style={[styles.text, { color, borderColor: color, borderWidth: 2, margin: 15, backgroundColor: 'rgba(255,255,255,0.6)' }]}
+        style={[styles.text, animate && { color, borderColor: color }]}
       >
         The Simpsons
           </Text>
     </View>
-  );
+  )
+}
+
+
+export default function Variety() {
+  const context = useCanvasContext();
+  const ref = useRef();
+  const [animate, setAnimate] = useState(true);
 
   return (
     <View style={styles.container}>
+
       <ImageBackground source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1 }}>
         <RNSketchCanvas
           {...context.canvas}
@@ -148,20 +153,25 @@ export default function Variety() {
           waitFor={ref}
         >
           <Image source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1, width: 480, height: 480 }} />
-          {helloSimpsons}
+          <HelloSimpsons animate={animate} />
           <RectButton
             ref={ref}
             rippleColor="red"
-            style={[styles.functionButton, { backgroundColor: 'black', width: 90 }, StyleSheet.absoluteFill]}
+            style={[styles.functionButton, { width: 200 }, StyleSheet.absoluteFill]}
             onPress={() => {
-              ToastAndroid.show('I\'m pressed, are you impressed? Try erasing me', 500);
+              ToastAndroid.show(
+                !animate ?
+                  'Notice fps -> need to implement better drawing while animating' :
+                  'I\'m pressed, are you impressed? Try erasing me',
+                2500
+              );
+              setAnimate(!animate)
             }}>
-            <Text style={{ color: 'white' }}>Get Paths</Text>
+            <Text style={{ color: 'white' }}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
           </RectButton>
         </RNSketchCanvas>
-        {helloSimpsons}
+        <HelloSimpsons animate />
       </ImageBackground>
-      {helloSimpsons}
     </View>
   )
 }

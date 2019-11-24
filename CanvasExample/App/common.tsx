@@ -190,7 +190,10 @@ export const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center'
+    textAlign: 'center',
+    borderWidth: 2,
+    margin: 15,
+    backgroundColor: 'rgba(255,255,255,0.6)'
   },
   abs100: {
     ...StyleSheet.absoluteFillObject,
