@@ -99,6 +99,8 @@ function useColor() {
   return color;
 }
 
+const simpsonsImage = 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*';
+
 function HelloSimpsons({ animate }: { animate?: boolean }) {
   const color = useColor();
   return (
@@ -126,7 +128,7 @@ export default function Variety() {
 
       <ImageBackground
         renderToHardwareTextureAndroid
-        source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }}
+        source={{ uri: simpsonsImage }}
         style={styles.default}
       >
         <LegacyCanvas
@@ -134,7 +136,7 @@ export default function Variety() {
           strokeColor='#00000000'
           waitFor={ref}
         >
-          <Image source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1, width: 480, height: 480 }} />
+          <Image source={{ uri: simpsonsImage }} style={{ flex: 1, width: 480, height: 480 }} />
           <HelloSimpsons animate={animate} />
           <RectButton
             ref={ref}
