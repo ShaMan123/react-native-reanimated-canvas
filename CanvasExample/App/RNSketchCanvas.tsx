@@ -1,5 +1,5 @@
 import React, { Component, forwardRef } from 'react';
-import { FlatList, TouchableOpacity, View } from 'react-native';
+import { FlatList, TouchableOpacity, View, processColor } from 'react-native';
 import RCanvas from 'react-native-reanimated-canvas';
 import { RectButton } from 'react-native-gesture-handler';
 
@@ -69,7 +69,7 @@ class RNSketchCanvas extends Component {
     super(props)
 
     this.state = {
-      color: props.strokeColors[props.defaultStrokeIndex].color,
+      color: props.strokeColor || props.strokeColors[props.defaultStrokeIndex].color,
       strokeWidth: props.defaultStrokeWidth,
       alpha: 'FF'
     }

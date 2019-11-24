@@ -1,14 +1,121 @@
 
-import React, { useRef } from 'react';
-import { Alert, Image, ImageBackground, Text, View, StyleSheet } from 'react-native';
+import React, { useRef, useMemo, useEffect } from 'react';
+import { Alert, Image, ImageBackground, StyleSheet, ToastAndroid } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
 import RNSketchCanvas from '../App/RNSketchCanvas';
 import { styles, useCanvasContext } from './common';
+import Animated, { Easing } from 'react-native-reanimated';
+const { cond, eq, sub, add, divide, abs, call, set, Value, event, concat, timing, color, modulo, invoke, dispatch, diff, useCode, lessThan, greaterThan, or, Code, map, callback, round, neq, createAnimatedComponent, Text, View, ScrollView, and, proc, Clock, multiply, onChange, not, defined, clockRunning, block, startClock, stopClock, spring } = Animated;
+
+function runTimingLoop(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
+  const state = {
+    finished: new Value(0),
+    position: new Value(0),
+    frameTime: new Value(0),
+    time: new Value(0),
+  };
+
+  const config = {
+    toValue: new Value(0),
+    duration: 2500,
+    easing: Easing.linear,
+  };
+
+  const reset = [
+    set(state.finished, 0),
+    set(state.frameTime, 0),
+    set(state.time, 0),
+    set(state.position, not(value)),
+    set(config.toValue, dest),
+    startClock(clock),
+  ]
+
+  return [
+    cond(clockRunning(clock), 0, reset),
+    timing(clock, state, config),
+    cond(state.finished, reset),
+    state.position,
+  ];
+}
+
+function match(condsAndResPairs, offset = 0) {
+  if (condsAndResPairs.length - offset === 1) {
+    return condsAndResPairs[offset];
+  } else if (condsAndResPairs.length - offset === 0) {
+    return undefined;
+  }
+  return cond(
+    condsAndResPairs[offset],
+    condsAndResPairs[offset + 1],
+    match(condsAndResPairs, offset + 2)
+  );
+}
+
+export function colorHSV(h /* 0 - 360 */, s /* 0 - 1 */, v /* 0 - 1 */) {
+  // Converts color from HSV format into RGB
+  // Formula explained here: https://www.rapidtables.com/convert/color/hsv-to-rgb.html
+  const c = multiply(v, s);
+  const hh = divide(h, 60);
+  const x = multiply(c, sub(1, abs(sub(modulo(hh, 2), 1))));
+
+  const m = sub(v, c);
+
+  const colorRGB = (r, g, b) =>
+    color(
+      round(multiply(255, add(r, m))),
+      round(multiply(255, add(g, m))),
+      round(multiply(255, add(b, m)))
+    );
+
+  return match([
+    lessThan(h, 60),
+    colorRGB(c, x, 0),
+    lessThan(h, 120),
+    colorRGB(x, c, 0),
+    lessThan(h, 180),
+    colorRGB(0, c, x),
+    lessThan(h, 240),
+    colorRGB(0, x, c),
+    lessThan(h, 300),
+    colorRGB(x, 0, c),
+    colorRGB(c, 0, x) /* else */,
+  ]);
+}
+
+function useColor() {
+  const animator = useMemo(() => new Value(1), []);
+  const dest = useMemo(() => multiply(animator, 360), [animator]);
+  const colorHue = useMemo(() => new Value(0), []);
+  const clock = useMemo(() => new Clock(), []);
+  const color = useMemo(() => colorHSV(colorHue, 0.9, 1), [colorHue]);
+
+  useCode(() =>
+    block([
+      set(colorHue, runTimingLoop(clock, colorHue, dest)),
+    ]),
+    [colorHue, clock, dest, animator]
+  );
+
+  return color;
+}
 
 
 export default function Variety() {
   const context = useCanvasContext();
   const ref = useRef();
+  const color = useColor();
+  const helloSimpsons = (
+    <View
+      style={[styles.abs100]}
+      pointerEvents='none'
+    >
+      <Text
+        style={[styles.text, { color, borderColor: color, borderWidth: 2, margin: 15, backgroundColor: 'rgba(255,255,255,0.6)' }]}
+      >
+        The Simpsons
+          </Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -16,11 +123,8 @@ export default function Variety() {
         <RNSketchCanvas
           {...context.canvas}
           containerStyle={{ backgroundColor: 'transparent', flex: 1 }}
-          canvasStyle={{ backgroundColor: 'red', flex: 1 }}
+          canvasStyle={{ backgroundColor: 'transparent', flex: 1 }}
           clearComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View>}
-          onClearPressed={() => {
-            // Alert.alert('do something')
-          }}
           eraseComponent={<View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View>}
           strokeComponent={color => (
             <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
@@ -39,33 +143,25 @@ export default function Variety() {
             </View>
             )
           }}
-          defaultStrokeIndex={0}
-          defaultStrokeWidth={5}
+          defaultStrokeWidth={25}
+          strokeColor='#00000000'
           waitFor={ref}
-          strokeColor='transparent'
         >
           <Image source={{ uri: 'https://hips.hearstapps.com/digitalspyuk.cdnds.net/17/50/1512996015-simpsons.jpg?crop=0.718xw:1.00xh;0.156xw,0&resize=480:*' }} style={{ flex: 1, width: 480, height: 480 }} />
-          <Text style={[styles.text, styles.abs100]}>hello simpsons</Text>
+          {helloSimpsons}
           <RectButton
             ref={ref}
+            rippleColor="red"
             style={[styles.functionButton, { backgroundColor: 'black', width: 90 }, StyleSheet.absoluteFill]}
             onPress={() => {
-              Alert.alert('I\'m pressed, are you impressed? Try erasing me')
+              ToastAndroid.show('I\'m pressed, are you impressed? Try erasing me', 500);
             }}>
             <Text style={{ color: 'white' }}>Get Paths</Text>
           </RectButton>
         </RNSketchCanvas>
-        <View
-          style={[styles.abs100]}
-          pointerEvents='none'
-        >
-          <Text
-            style={[styles.text]}
-          >
-            hello simpsons
-          </Text>
-        </View>
+        {helloSimpsons}
       </ImageBackground>
+      {helloSimpsons}
     </View>
   )
 }

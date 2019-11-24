@@ -190,10 +190,10 @@ export const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'darkblue'
+    textAlign: 'center'
   },
   abs100: {
     ...StyleSheet.absoluteFillObject,
     top: 100
-  }
+  },
 });
