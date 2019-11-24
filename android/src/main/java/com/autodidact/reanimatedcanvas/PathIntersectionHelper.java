@@ -80,8 +80,11 @@ public class PathIntersectionHelper {
         WritableArray array = Arguments.createArray();
         Region mRegion = getRegion();
         float r;
+        RCanvasPath mPath;
+        ArrayList<RCanvasPath> paths = getPaths();
 
-        for(RCanvasPath mPath: getPaths()) {
+        for (int i = paths.size() - 1; i >= 0; i--) {
+            mPath = paths.get(i);
             r = getTouchRadius(mPath.strokeWidth);
             if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.id)){
                 array.pushString(mPath.id);
