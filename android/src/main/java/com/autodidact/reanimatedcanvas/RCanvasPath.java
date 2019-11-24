@@ -22,15 +22,14 @@ import com.facebook.react.uimanager.PixelUtil;
 import java.util.ArrayList;
 
 public class RCanvasPath {
-    public final ArrayList<PointF> points = new ArrayList<>();
-    public final String id;
-    public int strokeColor;
-    public float strokeWidth;
-    public boolean isTranslucent;
+    protected final ArrayList<PointF> points = new ArrayList<>();
+    protected final String id;
+    protected int strokeColor;
+    protected float strokeWidth;
+    protected boolean isTranslucent;
 
     private Paint mPaint;
     private Path mPath;
-    private RectF mDirty = null;
 
     public RCanvasPath(String id, int strokeColor, float strokeWidth) {
         this(id, strokeColor, strokeWidth, null);
@@ -42,11 +41,10 @@ public class RCanvasPath {
         this.isTranslucent = isTranslucent(strokeColor);
         this.strokeWidth = strokeWidth;
 
+        mPath = new Path();
         if (points != null) {
             this.points.addAll(points);
-            mPath = this.isTranslucent ? evaluatePath() : null;
-        } else {
-            mPath = this.isTranslucent ? new Path() : null;
+            mPath.set(evaluatePath());
         }
     }
 
@@ -58,127 +56,72 @@ public class RCanvasPath {
         return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
     }
 
-    public WritableMap toWritableMap() {
-        return toWritableMap(true);
-    }
-
-    public WritableMap toWritableMap(Boolean includePoints){
-        WritableMap path = Arguments.createMap();
-        WritableArray arr = Arguments.createArray();
-        path.putString("id", id);
-        path.putInt("color", strokeColor);
-        path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
-
-        if (includePoints) {
-            for(PointF point: points){
-                arr.pushMap(Utility.toWritablePoint(point));
-            }
-            path.putArray("points", arr);
-        }
-
-        return path;
-    }
-
-    public Rect addPoint(PointF p) {
+    public void addPoint(PointF p) {
         points.add(p);
-
-        RectF updateRect;
-
         int pointsCount = points.size();
 
-        if (this.isTranslucent) {
-            if (pointsCount >= 3) {
-                addPointToPath(mPath, 
-                    this.points.get(pointsCount - 3), 
+        if (pointsCount >= 3) {
+            addPointToPath(mPath,
+                    this.points.get(pointsCount - 3),
                     this.points.get(pointsCount - 2),
                     p);
-            } else if (pointsCount >= 2) {
-                addPointToPath(mPath, this.points.get(0), this.points.get(0), p);
-            } else {
-                addPointToPath(mPath, p, p, p);
-            }
-
-            float x = p.x, y = p.y;
-            if (mDirty == null) {
-                mDirty = new RectF(x, y, x + 1, y + 1);
-                updateRect = new RectF(x - this.strokeWidth, y - this.strokeWidth, 
-                    x + this.strokeWidth, y + this.strokeWidth);
-            } else {
-                mDirty.union(x, y);
-                updateRect = new RectF(
-                                    mDirty.left - this.strokeWidth, mDirty.top - this.strokeWidth,
-                                    mDirty.right + this.strokeWidth, mDirty.bottom + this.strokeWidth
-                                    );
-            }
+        } else if (pointsCount >= 2) {
+            addPointToPath(mPath, this.points.get(0), this.points.get(0), p);
         } else {
-            if (pointsCount >= 3) {
-                PointF a = points.get(pointsCount - 3);
-                PointF b = points.get(pointsCount - 2);
-                PointF c = p;
-                PointF prevMid = midPoint(a, b);
-                PointF currentMid = midPoint(b, c);
-
-                updateRect = new RectF(prevMid.x, prevMid.y, prevMid.x, prevMid.y);
-                updateRect.union(b.x, b.y);
-                updateRect.union(currentMid.x, currentMid.y);
-            } else if (pointsCount >= 2) {
-                PointF a = points.get(pointsCount - 2);
-                PointF b = p;
-                PointF mid = midPoint(a, b);
-
-                updateRect = new RectF(a.x, a.y, a.x, a.y);
-                updateRect.union(mid.x, mid.y);
-            } else {
-                updateRect = new RectF(p.x, p.y, p.x, p.y);
-            }
-
-            updateRect.inset(-strokeWidth * 2, -strokeWidth * 2);
-
+            addPointToPath(mPath, p, p, p);
         }
-        Rect integralRect = new Rect();
-        updateRect.roundOut(integralRect);
-        
-        return integralRect;
     }
 
-    public void drawLastPoint(Canvas canvas) {
+
+    public void draw(Canvas canvas) {
+        canvas.drawPath(mPath, getPaint());
+    }
+
+    protected void drawPoint(int pointIndex) {
         int pointsCount = points.size();
-        if (pointsCount < 1) {
+        if (pointIndex < 0) {
+            pointIndex += pointsCount;
+        }
+        if (pointIndex >= pointsCount) {
             return;
         }
 
-        draw(canvas, pointsCount - 1);
-    }
+        if (pointsCount >= 3 && pointIndex >= 2) {
+            PointF a = points.get(pointIndex - 2);
+            PointF b = points.get(pointIndex - 1);
+            PointF c = points.get(pointIndex);
+            PointF prevMid = midPoint(a, b);
+            PointF currentMid = midPoint(b, c);
 
-    public void draw(Canvas canvas) {
-        if (this.isTranslucent) {
-            canvas.drawPath(mPath, getPaint());
-        } else {
-            int pointsCount = points.size();
-            for (int i = 0; i < pointsCount; i++) {
-                draw(canvas, i);
-            }
+            // Draw a curve
+            Path path = new Path();
+            path.moveTo(prevMid.x, prevMid.y);
+            path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
+
+            mPath.addPath(path);
+        } else if (pointsCount >= 2 && pointIndex >= 1) {
+            PointF a = points.get(pointIndex - 1);
+            PointF b = points.get(pointIndex);
+            PointF mid = midPoint(a, b);
+
+            // Draw a line to the middle of points a and b
+            // This is so the next draw which uses a curve looks correct and continues from there
+            //mPath.drawLine(a.x, a.y, mid.x, mid.y, getPaint());
+            mPath.moveTo(a.x, a.y);
+            mPath.lineTo(mid.x, mid.y);
+        } else if (pointsCount >= 1) {
+            PointF a = points.get(pointIndex);
+
+            // Draw a single point
+            mPath.addCircle(a.x, a.y, strokeWidth, Path.Direction.CCW);
         }
     }
 
-    private Paint getPaint() {
-        if (mPaint == null) {
-            boolean isErase = strokeColor == Color.TRANSPARENT;
-
-            mPaint = new Paint();
-            mPaint.setColor(strokeColor);
-            mPaint.setStrokeWidth(strokeWidth);
-            mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeCap(Paint.Cap.ROUND);
-            mPaint.setStrokeJoin(Paint.Join.ROUND);
-            mPaint.setAntiAlias(true);
-            mPaint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
-        }
-        return mPaint;
-    }
-
-    private void draw(Canvas canvas, int pointIndex) {
+    protected void draw(Canvas canvas, int pointIndex) {
         int pointsCount = points.size();
+        if (pointIndex < 0) {
+            pointIndex += pointsCount;
+        }
         if (pointIndex >= pointsCount) {
             return;
         }
@@ -212,6 +155,22 @@ public class RCanvasPath {
         }
     }
 
+    private Paint getPaint() {
+        if (mPaint == null) {
+            boolean isErase = strokeColor == Color.TRANSPARENT;
+
+            mPaint = new Paint();
+            mPaint.setColor(strokeColor);
+            mPaint.setStrokeWidth(strokeWidth);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeJoin(Paint.Join.ROUND);
+            mPaint.setAntiAlias(true);
+            mPaint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+        }
+        return mPaint;
+    }
+
     private Path evaluatePath() {
         int pointsCount = points.size();
         Path path = new Path();
@@ -223,7 +182,7 @@ public class RCanvasPath {
                 PointF c = points.get(pointIndex);
                 PointF prevMid = midPoint(a, b);
                 PointF currentMid = midPoint(b, c);
-                
+
                 // Draw a curve
                 path.moveTo(prevMid.x, prevMid.y);
                 path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
@@ -231,14 +190,14 @@ public class RCanvasPath {
                 PointF a = points.get(pointIndex - 1);
                 PointF b = points.get(pointIndex);
                 PointF mid = midPoint(a, b);
-                
+
                 // Draw a line to the middle of points a and b
                 // This is so the next draw which uses a curve looks correct and continues from there
                 path.moveTo(a.x, a.y);
                 path.lineTo(mid.x, mid.y);
             } else if (pointsCount >= 1) {
                 PointF a = points.get(pointIndex);
-                
+
                 // Draw a single point
                 path.moveTo(a.x, a.y);
                 path.lineTo(a.x, a.y);
@@ -272,23 +231,24 @@ public class RCanvasPath {
         return region1.op(region2, Region.Op.INTERSECT);
     }
 
-/*
-    //  could not get these methods to work
-    @TargetApi(26)
-    private float[][] mGetCoords() {
-        float acceptableError = 0.5f;
-        if (mPath == null && !this.isTranslucent) mPath = evaluatePath();
-        if(mPath != null) {
-            float[] apprx = mPath.approximate(acceptableError);
-            float[][] coords = new float[(int)(apprx.length/3)][3];
-            for (int i=0; i<apprx.length; i++) {
-                coords[(int)(i/3)][i%3] = apprx[i];
-            }
-            return coords;
-        }
-        return new float[0][0];
+    public WritableMap toWritableMap() {
+        return toWritableMap(true);
     }
 
-    */
+    public WritableMap toWritableMap(Boolean includePoints){
+        WritableMap path = Arguments.createMap();
+        WritableArray arr = Arguments.createArray();
+        path.putString("id", id);
+        path.putInt("color", strokeColor);
+        path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
 
+        if (includePoints) {
+            for(PointF point: points){
+                arr.pushMap(Utility.toWritablePoint(point));
+            }
+            path.putArray("points", arr);
+        }
+
+        return path;
+    }
 }
