@@ -181,7 +181,7 @@ public class RCanvasEventHandler {
         WritableMap event = Arguments.createMap();
         WritableArray paths = Arguments.createArray();
         for (RCanvasPath path: mView.getPaths()) {
-            paths.pushString(path.id);
+            paths.pushString(path.getPathId());
         }
         event.putArray("paths", paths);
         emit(RCanvasEventHandler.ON_PATHS_CHANGE, event);

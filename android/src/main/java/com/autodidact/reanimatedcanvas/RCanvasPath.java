@@ -11,41 +11,83 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.util.ArrayList;
 
-public class RCanvasPath {
+public class RCanvasPath extends View {
     protected final ArrayList<PointF> points = new ArrayList<>();
-    protected final String id;
-    protected int strokeColor;
-    protected float strokeWidth;
+    private String mPathId;
+    private int mStrokeColor;
+    private float mStrokeWidth;
     protected boolean isTranslucent;
 
     private Paint mPaint;
     private Path mPath;
 
-    public RCanvasPath(String id, int strokeColor, float strokeWidth) {
-        this(id, strokeColor, strokeWidth, null);
+    public RCanvasPath(ReactContext context, String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
+        this(context);
+        init(id, strokeColor, strokeWidth, points);
+
     }
 
-    public RCanvasPath(String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
-        this.id = id;
-        this.strokeColor = strokeColor;
-        this.isTranslucent = isTranslucent(strokeColor);
-        this.strokeWidth = strokeWidth;
+    public RCanvasPath(ReactContext context, String id, int strokeColor, float strokeWidth) {
+        this(context);
+        init(id, strokeColor, strokeWidth);
+    }
 
+    public RCanvasPath(ReactContext context) {
+        super(context);
         mPath = new Path();
-        if (points != null) {
-            this.points.addAll(points);
-            mPath.set(evaluatePath());
-        }
+    }
+
+    public void init(String id, int strokeColor, float strokeWidth) {
+        mPathId = id;
+        setStrokeColor(strokeColor);
+        setStrokeWidth(strokeWidth);
+    }
+
+    public void init(String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
+        init(id, strokeColor, strokeWidth);
+        setPoints(points);
+    }
+
+    public String getPathId() {
+        return mPathId;
+    }
+
+    public int getStrokeColor() {
+        return mStrokeColor;
+    }
+
+    public void setStrokeColor(int color) {
+        mStrokeColor = color;
+        boolean isErase = mStrokeColor == Color.TRANSPARENT;
+        //  make sure paint initializes
+        getPaint().setColor(mStrokeColor);
+        getPaint().setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+    }
+
+    public float getStrokeWidth() {
+        return  mStrokeWidth;
+    }
+
+    public void setStrokeWidth(float width) {
+        mStrokeWidth = width;
+        //  make sure paint initializes
+        getPaint().setStrokeWidth(mStrokeWidth);
+    }
+
+    public void setHardwareAcceleration(boolean useHardwareAcceleration) {
+        Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
 
     private static Boolean isTranslucent(int strokeColor) {
@@ -70,10 +112,20 @@ public class RCanvasPath {
         } else {
             addPointToPath(mPath, p, p, p);
         }
+
+        postInvalidateOnAnimation();
     }
 
+    public void setPoints(@Nullable ArrayList<PointF> points) {
+        if (points != null) {
+            this.points.addAll(points);
+            mPath.set(evaluatePath());
+        }
+    }
 
-    public void draw(Canvas canvas) {
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
         canvas.drawPath(mPath, getPaint());
     }
 
@@ -113,7 +165,7 @@ public class RCanvasPath {
             PointF a = points.get(pointIndex);
 
             // Draw a single point
-            mPath.addCircle(a.x, a.y, strokeWidth, Path.Direction.CCW);
+            mPath.addCircle(a.x, a.y, mStrokeWidth, Path.Direction.CCW);
         }
     }
 
@@ -157,11 +209,11 @@ public class RCanvasPath {
 
     private Paint getPaint() {
         if (mPaint == null) {
-            boolean isErase = strokeColor == Color.TRANSPARENT;
+            boolean isErase = mStrokeColor == Color.TRANSPARENT;
 
             mPaint = new Paint();
-            mPaint.setColor(strokeColor);
-            mPaint.setStrokeWidth(strokeWidth);
+            mPaint.setColor(mStrokeColor);
+            mPaint.setStrokeWidth(mStrokeWidth);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeCap(Paint.Cap.ROUND);
             mPaint.setStrokeJoin(Paint.Join.ROUND);
@@ -238,9 +290,9 @@ public class RCanvasPath {
     public WritableMap toWritableMap(Boolean includePoints){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
-        path.putString("id", id);
-        path.putInt("color", strokeColor);
-        path.putDouble("width", PixelUtil.toDIPFromPixel(strokeWidth));
+        path.putString("id", mPathId);
+        path.putInt("color", mStrokeColor);
+        path.putDouble("width", PixelUtil.toDIPFromPixel(mStrokeWidth));
 
         if (includePoints) {
             for(PointF point: points){

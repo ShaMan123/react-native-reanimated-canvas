@@ -3,6 +3,7 @@ package com.autodidact.reanimatedcanvas;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.view.View;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.bridge.Arguments;
@@ -74,6 +75,14 @@ public final class Utility {
                 ((float) rect.getDouble("right")),
                 ((float) rect.getDouble("bottom"))
         );
+    }
+
+    public static void setHardwareAcceleration(View view, Boolean useHardwareAcceleration){
+        if(useHardwareAcceleration) {
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        } else{
+            view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
     }
 
     public static float getDeviceScale(){

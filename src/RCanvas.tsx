@@ -148,6 +148,7 @@ const styles = {
 
 const ForwardedRCanvas = forwardRef(RCanvas);
 ForwardedRCanvas.defaultProps = {
-  useNativeDriver: false
+  useNativeDriver: false,
+  hardwareAccelerated: true
 } as RCanvasProperties;
 export default ForwardedRCanvas;

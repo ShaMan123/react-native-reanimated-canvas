@@ -14,6 +14,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.UiThreadUtil;
@@ -36,10 +37,13 @@ public class RCanvas extends ReactViewGroup {
     private final RCanvasEventHandler eventHandler;
     private final PathIntersectionHelper mIntersectionHelper;
 
+    private RCanvasPath mNextPath;
+
     public RCanvas(ThemedReactContext context) {
         super(context);
         eventHandler = new RCanvasEventHandler(this);
         mIntersectionHelper = new PathIntersectionHelper(this);
+        prepareNextPath();
     }
 
     public RCanvasEventHandler getEventHandler(){
@@ -49,12 +53,12 @@ public class RCanvas extends ReactViewGroup {
         return mIntersectionHelper;
     }
 
-    public void setHardwareAccelerated(boolean useHardwareAccelerated) {
-        mDisableHardwareAccelerated = !useHardwareAccelerated;
-        if(useHardwareAccelerated) {
-            setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        } else{
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+    public void setHardwareAccelerated(boolean useHardwareAcceleration) {
+        mDisableHardwareAccelerated = !useHardwareAcceleration;
+        Utility.setHardwareAcceleration(this, useHardwareAcceleration);
+
+        for (RCanvasPath path: mPaths) {
+            path.setHardwareAcceleration(useHardwareAcceleration);
         }
     }
 
@@ -76,7 +80,7 @@ public class RCanvas extends ReactViewGroup {
 
     public RCanvasPath getPath(String id){
         for (RCanvasPath path: mPaths) {
-            if (path.id.equals(id)) {
+            if (path.getPathId().equals(id)) {
                 return path;
             }
         }
@@ -86,7 +90,7 @@ public class RCanvas extends ReactViewGroup {
 
     public int getPathIndex(String pathId){
         for (int i=0; i < mPaths.size(); i++) {
-            if(pathId.equals(mPaths.get(i).id)) {
+            if(pathId.equals(mPaths.get(i).getPathId())) {
                 return i;
             }
         }
@@ -100,20 +104,33 @@ public class RCanvas extends ReactViewGroup {
     public void setAttributes(String id, ReadableMap attributes) {
         RCanvasPath path = getPath(id);
         if (attributes.hasKey("color")) {
-            path.strokeColor = attributes.getInt("color");
+            path.setStrokeColor(attributes.getInt("color"));
         }
         if (attributes.hasKey("width")) {
-            path.strokeWidth = PixelUtil.toPixelFromDIP(attributes.getInt("width"));
+            path.setStrokeWidth(PixelUtil.toPixelFromDIP(attributes.getInt("width")));
         }
 
-        postInvalidateOnAnimation();
+        path.postInvalidateOnAnimation();
     }
 
     public void clear() {
+        for (RCanvasPath path: mPaths) {
+            removeView(path);
+        }
         mPaths.clear();
         mCurrentPath = null;
-        invalidatePicture();
+        postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
+    }
+
+    private void prepareNextPath() { prepareNextPath(true); }
+
+    private void prepareNextPath(Boolean invalidate) {
+        mNextPath = new RCanvasPath(((ReactContext) getContext()));
+        addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        if (invalidate) {
+            postInvalidateOnAnimation();
+        }
     }
 
     public void startPath() {
@@ -123,13 +140,9 @@ public class RCanvas extends ReactViewGroup {
     public void startPath(String id, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
         strokeColor = strokeColor == null ? mStrokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? mStrokeWidth : strokeWidth;
-        mCurrentPath = new RCanvasPath(id, strokeColor, strokeWidth);
+        mCurrentPath = mNextPath;
+        mCurrentPath.init(id, strokeColor, strokeWidth);
         mPaths.add(mCurrentPath);
-        boolean isErase = strokeColor == Color.TRANSPARENT;
-        if (isErase && !mDisableHardwareAccelerated) {
-            mDisableHardwareAccelerated = true;
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
 
         eventHandler.emitStrokeStart();
     }
@@ -138,13 +151,15 @@ public class RCanvas extends ReactViewGroup {
         @Nullable RCanvasPath current = mCurrentPath;
         if (current == null) {
             Log.w(ReactConstants.TAG, "RCanvas trying to add point on null object reference");
-        } else if (pathId == null || current.id.equals(pathId)) {
+        } else if (pathId == null || current.getPathId().equals(pathId)) {
             addPoint(x, y);
         } else {
             setCurrentPath(pathId);
             addPoint(x, y);
             mCurrentPath = current;
         }
+
+        postInvalidateOnAnimation();
     }
 
     public void addPoint(float x, float y) {
@@ -160,7 +175,7 @@ public class RCanvas extends ReactViewGroup {
         picture.endRecording();
 
          */
-        postInvalidateOnAnimation();
+        //postInvalidateOnAnimation();
         eventHandler.maybeEmitStrokeChange(point);
     }
 
@@ -173,7 +188,8 @@ public class RCanvas extends ReactViewGroup {
         if (mCurrentPath != null) {
             eventHandler.emitStrokeEnd();
             mCurrentPath = null;
-            invalidatePicture(false);
+            prepareNextPath();
+            Log.d("RCanvas", "endPath: " + mNextPath.getPathId());
         }
     }
 
@@ -188,27 +204,23 @@ public class RCanvas extends ReactViewGroup {
             );
         }
 
-        invalidatePicture();
+        postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
     }
 
     private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         boolean exist = false;
         for(RCanvasPath data: mPaths) {
-            if (data.id.equals(id)) {
+            if (data.getPathId().equals(id)) {
                 exist = true;
                 break;
             }
         }
 
         if (!exist) {
-            RCanvasPath newPath = new RCanvasPath(id, strokeColor, strokeWidth, points);
-            mPaths.add(newPath);
-            boolean isErase = strokeColor == Color.TRANSPARENT;
-            if (isErase && !mDisableHardwareAccelerated) {
-                mDisableHardwareAccelerated = true;
-                setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-            }
+            prepareNextPath(false);
+            mNextPath.init(id, strokeColor, strokeWidth, points);
+            mPaths.add(mNextPath);
         }
     }
 
@@ -223,32 +235,32 @@ public class RCanvas extends ReactViewGroup {
     public void deletePaths(String[] arr) {
         for (String id: arr) {
             for (RCanvasPath path: mPaths) {
-                if (id.equals(path.id)) {
+                if (id.equals(path.getPathId())) {
                     if (mCurrentPath.equals(path)){
                         endPath();
                     }
                     mPaths.remove(path);
+                    removeView(path);
                 }
             }
         }
-        invalidatePicture();
+        postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
     }
-
+/*
     private void invalidatePicture() { invalidatePicture(true); }
 
     private void invalidatePicture(Boolean invalidateView) {
-        /*
+
         Canvas canvas = mFullPicture.beginRecording(getWidth(), getHeight());
         drawPaths(canvas);
         mFullPicture.endRecording();
 
-         */
         if (invalidateView) {
             postInvalidateOnAnimation();
         }
     }
-
+/*
     @Override
     protected void onDraw(Canvas canvas) {
         draw(canvas, false);
@@ -270,7 +282,7 @@ public class RCanvas extends ReactViewGroup {
         }
 
         //drawPaths(canvas);
-        drawPaths(canvas);
+        //drawPaths(canvas);
     }
 
     private void drawPaths(Canvas canvas){
@@ -278,7 +290,7 @@ public class RCanvas extends ReactViewGroup {
             path.draw(canvas);
         }
     }
-
+*/
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return eventHandler.onTouchEvent(event);
