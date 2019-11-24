@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -12,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.view.ReactViewGroup;
@@ -130,7 +132,9 @@ public class RCanvas extends ReactViewGroup {
 
     public void addPoint(float x, float y, @Nullable String pathId) {
         @Nullable RCanvasPath current = mCurrentPath;
-        if (pathId == null || current.id.equals(pathId)) {
+        if (current == null) {
+            Log.w(ReactConstants.TAG, "RCanvas trying to add point on null object reference");
+        } else if (pathId == null || current.id.equals(pathId)) {
             addPoint(x, y);
         } else {
             setCurrentPath(pathId);
@@ -145,6 +149,7 @@ public class RCanvas extends ReactViewGroup {
 
     public void addPoint(PointF point) {
         mCurrentPath.addPoint(point);
+        eventHandler.maybeEmitStrokeChange(point);
         invalidate();
     }
 

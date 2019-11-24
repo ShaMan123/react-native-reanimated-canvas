@@ -15,7 +15,7 @@ import com.facebook.react.uimanager.events.EventDispatcher;
 
 public class RCanvasEventHandler {
     public final static String STROKE_START = "onStrokeStart";
-    public final static String STROKE_CHANGED = "onStrokeChanged";
+    public final static String STROKE_CHANGED = "onStrokeChange";
     public final static String STROKE_END = "onStrokeEnd";
     public final static String ON_PRESS = "onPress";
     public final static String ON_LONG_PRESS = "onLongPress";
@@ -130,7 +130,6 @@ public class RCanvasEventHandler {
 
             if(mCurrentPath != null){
                 mView.addPoint(point);
-                if(mShouldFireOnStrokeChangedEvent) emitStrokeChanged(point);
             }
 
             prevTouchAction = action;
@@ -160,16 +159,18 @@ public class RCanvasEventHandler {
         emit(STROKE_START, mView.getCurrentPath().toWritableMap(false));
     }
 
-    public void emitStrokeChanged(PointF p){
-        emitStrokeChanged(p.x, p.y);
+    public void maybeEmitStrokeChange(PointF p){
+        maybeEmitStrokeChange(p.x, p.y);
     }
 
-    public void emitStrokeChanged(float x, float y){
-        WritableMap e = Arguments.createMap();
-        e.putDouble("x", PixelUtil.toDIPFromPixel(x));
-        e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        e.merge(mView.getCurrentPath().toWritableMap(false));
-        emit(STROKE_CHANGED, e);
+    public void maybeEmitStrokeChange(float x, float y) {
+        if (mShouldFireOnStrokeChangedEvent) {
+            WritableMap e = Arguments.createMap();
+            e.putDouble("x", PixelUtil.toDIPFromPixel(x));
+            e.putDouble("y", PixelUtil.toDIPFromPixel(y));
+            e.merge(mView.getCurrentPath().toWritableMap(false));
+            emit(STROKE_CHANGED, e);
+        }
     }
 
     public void emitStrokeEnd(){
