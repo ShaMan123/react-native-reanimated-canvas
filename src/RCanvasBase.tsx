@@ -1,12 +1,12 @@
 'use strict';
 
 import * as _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef, MutableRefObject, Children } from 'react';
-import { findNodeHandle, NativeSyntheticEvent, processColor, requireNativeComponent, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import { findNodeHandle, LayoutChangeEvent, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { requestPermissions } from './handlePermissions';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
-import { CanvasText, Commands, PathData, RCanvasProperties, RCanvasRef } from './types';
+import { Commands, PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, StrokeEndEvent, StrokeStartEvent } from './types';
 
 const { createAnimatedComponent } = Animated;
 
@@ -14,11 +14,6 @@ const RNativeCanvas = createAnimatedComponent(requireNativeComponent(VIEW_MANAGE
 
 export function generatePathId() {
   return _.uniqueId('RCanvasPath');
-}
-
-function processText(text: CanvasText[] | null) {
-  text && text.forEach(t => t.fontColor = processColor(t.fontColor));
-  return text;
 }
 
 function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
@@ -94,7 +89,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         ];
       });
 
-      dispatchCommand(Commands.addPaths, parsedPaths);
+      parsedPaths.length > 0 && dispatchCommand(Commands.addPaths, parsedPaths);
     }
     else {
       const addPaths = _.differenceBy(data, pathsToProcess.value(), 'id');
@@ -138,7 +133,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     [strokeColor, strokeWidth]
   );
 
-  const addPoint = useCallback((x: number, y: number, pathId: number = currentPathId.value()) =>
+  const addPoint = useCallback((x: number, y: number, pathId: string = currentPathId.value()) =>
     pathId && dispatchCommand(Commands.addPoint, [x, y, pathId]),
     [currentPathId, dispatchCommand]
   );
@@ -179,7 +174,10 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       clear,
       setNativeProps,
       getNode: () => node.value(),
-      handle: findNodeHandle(node.value())
+      handle: findNodeHandle(node.value()),
+      module() {
+        return this;
+      }
     }),
     [
       module,
@@ -200,19 +198,19 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
-    size.set({ width, height })
+    size.set({ width, height });
     initialized.set(true);
     addPaths(pathsToProcess.value());
   }, [size, initialized, pathsToProcess]);
 
-  const onStrokeStart = useCallback((e) => {
+  const onStrokeStart = useCallback((e: StrokeStartEvent) => {
     currentPathId.set(e.nativeEvent.id);
     if (typeof props.onStrokeStart === 'function') {
       props.onStrokeStart(e);
     }
   }, [currentPathId, props.onStrokeStart]);
 
-  const onStrokeEnd = useCallback((e) => {
+  const onStrokeEnd = useCallback((e: StrokeEndEvent) => {
     paths.set(_.concat(paths.value(), e.nativeEvent));
     currentPathId.set();
     if (typeof props.onStrokeEnd === 'function') {
@@ -220,7 +218,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     }
   }, [paths, currentPathId, props.onStrokeEnd]);
 
-  const onPathsChange = useCallback((e) => {
+  const onPathsChange = useCallback((e: PathsChangeEvent) => {
     const pathIds = e.nativeEvent.paths;
     paths.set(_.differenceWith(paths.value(), pathIds, (a, b) => a.id === b));
   }, [paths]);
