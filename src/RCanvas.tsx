@@ -10,10 +10,10 @@ import { Commands, RCanvasProperties, RCanvasRef } from './types';
 
 const { createAnimatedComponent, and, set, cond, add, block, eq, acc, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call } = Animated;
 
-export const stringId = proc((id) => concat('RPath', id));
+export const stringId = proc((id) => concat('RACanvasPath', id));
 export const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
 
-export const startPath = proc((tag, id, color, width, x, y) => {
+export const startPath = proc((tag, id, color, width) => {
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, stringId(id), color, width));
 });
 
@@ -91,7 +91,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         eq(state, State.BEGAN),
         [
           set(n, add(n, 1)),
-          startPath(tag, n, strokeColor, strokeWidth, x, y),
+          startPath(tag, n, strokeColor, strokeWidth),
           set(isActive, 1)
         ]
       ),
