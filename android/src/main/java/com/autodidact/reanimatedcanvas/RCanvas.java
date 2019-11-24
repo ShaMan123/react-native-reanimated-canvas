@@ -1,9 +1,12 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Picture;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,6 +16,7 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -102,13 +106,13 @@ public class RCanvas extends ReactViewGroup {
             path.strokeWidth = PixelUtil.toPixelFromDIP(attributes.getInt("width"));
         }
 
-        invalidate();
+        postInvalidateOnAnimation();
     }
 
     public void clear() {
         mPaths.clear();
         mCurrentPath = null;
-        invalidate();
+        invalidatePicture();
         eventHandler.emitPathsChange();
     }
 
@@ -148,15 +152,28 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void addPoint(PointF point) {
+        UiThreadUtil.assertOnUiThread();
         mCurrentPath.addPoint(point);
+        /*
+        Canvas canvas = picture.beginRecording(getWidth(), getHeight());
+        mCurrentPath.draw(canvas);
+        picture.endRecording();
+
+         */
+        postInvalidateOnAnimation();
         eventHandler.maybeEmitStrokeChange(point);
-        invalidate();
     }
 
+    private Picture picture = new Picture();
+    private Picture mFullPicture = new Picture();
+    private Picture mChildrenPicture = new Picture();
+
     public void endPath() {
+        UiThreadUtil.assertOnUiThread();
         if (mCurrentPath != null) {
             eventHandler.emitStrokeEnd();
             mCurrentPath = null;
+            invalidatePicture(false);
         }
     }
 
@@ -171,7 +188,7 @@ public class RCanvas extends ReactViewGroup {
             );
         }
 
-        invalidate();
+        invalidatePicture();
         eventHandler.emitPathsChange();
     }
 
@@ -214,8 +231,22 @@ public class RCanvas extends ReactViewGroup {
                 }
             }
         }
-        invalidate();
+        invalidatePicture();
         eventHandler.emitPathsChange();
+    }
+
+    private void invalidatePicture() { invalidatePicture(true); }
+
+    private void invalidatePicture(Boolean invalidateView) {
+        /*
+        Canvas canvas = mFullPicture.beginRecording(getWidth(), getHeight());
+        drawPaths(canvas);
+        mFullPicture.endRecording();
+
+         */
+        if (invalidateView) {
+            postInvalidateOnAnimation();
+        }
     }
 
     @Override
@@ -228,6 +259,7 @@ public class RCanvas extends ReactViewGroup {
         draw(canvas, true);
     }
 
+    private Boolean mDidDraw = false;
     @SuppressLint("WrongCall")
     private void draw(Canvas canvas, Boolean dispatchDraw) {
         //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
@@ -236,6 +268,8 @@ public class RCanvas extends ReactViewGroup {
         } else {
             super.onDraw(canvas);
         }
+
+        //drawPaths(canvas);
         drawPaths(canvas);
     }
 
