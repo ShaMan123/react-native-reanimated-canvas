@@ -61,7 +61,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const initialized = useRefGetter(false);
   const size = useRefGetter({ width: 0, height: 0 });
-  const node = useRefGetter(null as any, (current) => findNodeHandle(current));
+  const node = useRefGetter(null as any, (current) => current && current.getNode());
   const currentPathId = useRefGetter<string>();
   const paths = useRefGetter([] as PathData[]);
   const pathsToProcess = useRefGetter<PathData[]>([]);
@@ -128,8 +128,8 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     currentPathId.set(id);
     const state = {
       id,
-      color: strokeColor,
-      width: strokeWidth,
+      color: typeof strokeColor === 'number' ? strokeColor : null,
+      width: typeof strokeWidth === 'number' ? strokeWidth : null,
       points: [{ x, y }]
     };
 
@@ -153,7 +153,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   }, []);
 
   const setNativeProps = useCallback((props) =>
-    node.current() && node.current().setNativeProps(props),
+    node.value() && node.value().setNativeProps(props),
     [node]
   );
 
@@ -165,7 +165,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   }, []);
 
   useImperativeHandle(forwardedRef, () =>
-    _.assign(node.current().getNode(), {
+    _.assign(node.value(), {
       ...module,
       addPath,
       addPaths,
@@ -178,8 +178,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       endPath,
       clear,
       setNativeProps,
-      getNode: node.ref,
-      handle: node.value()
+      handle: findNodeHandle(node.value())
     }),
     [
       module,
@@ -245,7 +244,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 const ForwardedRCanvasBase = forwardRef(RCanvasBase);
 ForwardedRCanvasBase.defaultProps = {
   strokeColor: 'transparent',
-  strokeWidth: 3,
+  strokeWidth: 5,
   touchEnabled: true,
 
   permissionDialogTitle: '',
