@@ -46,7 +46,10 @@ export default function SyncedCanvases() {
         onLayout={(e) => tagB.setValue(e.nativeEvent.target)}
         ref={_b}
         onStrokeEnd={(e) => {
-          e.nativeEvent.id.includes('RCanvasPath') && a().addPath(_.set(e.nativeEvent, 'id', generatePathId()));
+          const path = e.nativeEvent;
+          console.log(_a.current.addPath)
+          _a.current.addPath(_.set(path, 'id', generatePathId()));
+          path.id.includes('RCanvasPath') && a().addPaths([_.set(path, 'id', generatePathId())]);
         }}
       />
     </View>

@@ -47,18 +47,18 @@ public final class Utility {
     }
 
     public static ArrayList<PointF> processPointArray(ReadableArray points){
-        ArrayList<PointF> pointPath;
-        pointPath = new ArrayList<>(points.size());
+        ArrayList<PointF> processedPoints;
+        processedPoints = new ArrayList<>(points.size());
         for (int i=0; i < points.size(); i++) {
             ReadableMap p = points.getMap(i);
-            pointPath.add(
+            processedPoints.add(
                     new PointF(
                             PixelUtil.toPixelFromDIP(p.getDouble("x")),
                             PixelUtil.toPixelFromDIP(p.getDouble("y"))
                     )
             );
         }
-        return pointPath;
+        return processedPoints;
     }
 
     public static WritableMap toWritablePoint(PointF point) {

@@ -1,6 +1,7 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
+import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -30,7 +31,7 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     @TargetApi(19)
-    public void isPointOnPath(final int tag, final float x, final float y, @Nullable final String pathId, final Callback callback){
+    public void isPointOnPath(final int tag, final float x, final float y, @Nullable final String pathId, final Callback success, final Callback error){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
@@ -40,19 +41,19 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
                     PathIntersectionHelper intersectionHelper = view.getIntersectionHelper();
                     float nativeX = PixelUtil.toPixelFromDIP(x);
                     float nativeY = PixelUtil.toPixelFromDIP(y);
-                    callback.invoke(null, pathId == null ?
+                    success.invoke(pathId == null ?
                             intersectionHelper.isPointOnPath(nativeX, nativeY):
                             intersectionHelper.isPointOnPath(nativeX, nativeY, pathId)
                     );
                 }
             });
-        } catch (Exception e) {
-            callback.invoke(e.getMessage(), null);
+        } catch (Throwable e) {
+            error.invoke(e);
         }
     }
 
     @ReactMethod
-    public void setTouchRadius(final int tag, final float r, final Callback callback){
+    public void setTouchRadius(final int tag, final float r, final Callback success, final Callback error){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
@@ -60,11 +61,11 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
                     view.getIntersectionHelper().setTouchRadius(PixelUtil.toPixelFromDIP(r));
-                    callback.invoke(null, true);
+                    success.invoke(true);
                 }
             });
         } catch (Exception e) {
-            callback.invoke(e.getMessage(), null);
+            error.invoke(e);
         }
     }
 }

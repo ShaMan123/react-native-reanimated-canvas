@@ -16,11 +16,16 @@ const config = {
   resolver: {
     blacklistRE: blacklist([
       //path.resolve(__dirname, '../node_modules'),
+      path.resolve(__dirname, '..', '../react-native-reanimated/node_modules'),
+      path.resolve(__dirname, '..', '../react-native-reanimated/Example'),
     ]),
     //providesModuleNodeModules: _.keys(pkg.dependencies),
     //extraNodeModules: _.mapValues({ ...pkg.dependencies, ...{ lodash: '' } }, (n) => path.resolve(__dirname, 'node_modules', n))
+    extraNodeModules: {
+      'react-native-reanimated': path.resolve(__dirname, '..', '../react-native-reanimated')
+    }
   },
-  watchFolders: [path.resolve(__dirname, '..')],
+  watchFolders: [path.resolve(__dirname, '..'), path.resolve(__dirname, '..', '../react-native-reanimated')],
   transformer: {
     getTransformOptions: async () => ({
       transform: {

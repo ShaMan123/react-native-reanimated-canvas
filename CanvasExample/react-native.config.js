@@ -7,6 +7,9 @@ module.exports = {
   dependencies: {
     'react-native-reanimated-canvas': {
       root,
+    },
+    'react-native-reanimated': {
+      root: path.resolve(root, '../react-native-reanimated')
     }
   },
 };

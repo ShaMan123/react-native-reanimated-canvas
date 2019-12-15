@@ -75,6 +75,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   const addPaths = useCallback((data: PathData[]) => {
+    console.log('here')
     if (initialized.value()) {
       const parsedPaths = data.map((d) => {
         if (_.isNil(findPath(d.id))) paths.set(_.concat(paths.value(), d));

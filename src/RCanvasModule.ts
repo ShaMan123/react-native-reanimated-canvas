@@ -6,6 +6,7 @@ import { findNodeHandle, NativeModules, Platform, UIManager } from 'react-native
 import { Commands, RCanvasRef } from './types';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
+export const PATH_VIEW_MANAGER = 'ReanimatedCanvasPathManager';
 export const MODULE = 'ReanimatedCanvasModule';
 
 const NativeModuleManager = Platform.select({
@@ -20,55 +21,53 @@ export function dispatchCommand(tag: number, command: Commands, data: any[] = []
 export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
 export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>, C extends (error: any, result?: R) => void>(
+export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>>(
   handle: number,
   x: number,
   y: number,
   pathId?: T,
-  callback?: C
+  onSuccess?: (result: R) => void,
+  onFail?: (error: any) => void
 ) {
   const nativeX = x;
   const nativeY = y;
   const normalizedPathId = typeof pathId === 'number' ? pathId : null;
-  const nativeMethod = (callback: (error: any, result?: R) => void) => {
-    return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, callback);
-  };
+  const nativeMethod = ((onSuccess: (result: R) => void, onFail: (error: any) => void) => {
+    return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, onSuccess, onFail);
+  });
 
-  if (callback) {
-    nativeMethod(callback);
-  }
-  else {
-    return new Promise((resolve, reject) => {
-      nativeMethod((err, success) => {
-        if (err) reject(err);
-        resolve(success);
-      });
-    }) as Promise<R>;
-  }
+  return promisify(nativeMethod, onSuccess, onFail);
 };
 
-export function setTouchRadius(handle: number, radius: number, callback: (error: any, result?: boolean) => void) {
+export function setTouchRadius<R extends boolean, E extends Error>(
+  handle: number,
+  radius: number,
+  onSuccess?: (result: R) => void,
+  onFail?: (error: E) => void
+) {
   const r = typeof radius === 'number' ? radius : 0;
 
-  const nativeMethod = (callback: (error: any, result?: boolean) => void) => {
+  const nativeMethod = (onSuccess: (result: R) => void, onFail: (error: E) => void) => {
     if (Platform.OS === 'ios') {
       //  need to implement native callback 
       //SketchCanvasManager.setTouchRadius(handle, r, callback);
       throw new Error('Sketch Canvas: `setTouchRadius` isn\'t implemented yet');
     } else {
-      NativeModuleManager.setTouchRadius(handle, r, callback);
+      NativeModuleManager.setTouchRadius(handle, r, onSuccess, onFail);
     }
   };
 
-  if (callback) {
-    nativeMethod(callback);
-  }
-  else {
+  return promisify(nativeMethod, onSuccess, onFail);
+}
+
+function promisify<R, E>(method: (onSuccess: (result: R) => void, onFail: (error: E) => void) => void, onSuccess?: (result: R) => void, onFail?: (error: E) => void) {
+  if (onSuccess && onFail) {
+    return method(onSuccess, onFail);
+  } else if (onSuccess) {
+    return method(onSuccess, console.error);
+  } else {
     return new Promise((resolve, reject) => {
-      nativeMethod((err, success) => {
-        if (err) reject(err);
-        resolve(success);
-      });
+      method(resolve, reject)
     });
   }
 }

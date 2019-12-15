@@ -4,7 +4,9 @@ import android.graphics.Picture;
 import android.graphics.PointF;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
@@ -47,7 +49,21 @@ public class RCanvas extends ReactViewGroup {
         return mIntersectionHelper;
     }
 
-    public void setHardwareAccelerated(boolean useHardwareAcceleration) {
+    private void prepareNextPath() { prepareNextPath(true); }
+
+    private void prepareNextPath(Boolean invalidate) {
+        mNextPath = new RCanvasPath(((ReactContext) getContext()));
+        addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        if (invalidate) {
+            postInvalidateOnAnimation();
+        }
+    }
+
+    protected void addPath(RCanvasPath path) {
+        mPaths.add(path);
+    }
+
+    public void setHardwareAcceleration(boolean useHardwareAcceleration) {
         mHardwareAccelerated = useHardwareAcceleration;
         Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
@@ -113,16 +129,6 @@ public class RCanvas extends ReactViewGroup {
         eventHandler.emitPathsChange();
     }
 
-    private void prepareNextPath() { prepareNextPath(true); }
-
-    private void prepareNextPath(Boolean invalidate) {
-        mNextPath = new RCanvasPath(((ReactContext) getContext()));
-        addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        if (invalidate) {
-            postInvalidateOnAnimation();
-        }
-    }
-
     public void startPath() {
         startPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
     }
@@ -179,7 +185,6 @@ public class RCanvas extends ReactViewGroup {
             eventHandler.emitStrokeEnd();
             mCurrentPath = null;
             prepareNextPath();
-            Log.d("RCanvas", "endPath: " + mNextPath.getPathId());
         }
     }
 

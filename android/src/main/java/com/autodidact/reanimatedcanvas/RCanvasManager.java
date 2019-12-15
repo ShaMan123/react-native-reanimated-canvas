@@ -1,6 +1,7 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.views.modal.ReactModalHostView;
 import com.facebook.react.views.view.ReactViewGroup;
 import com.facebook.react.views.view.ReactViewManager;
 
@@ -46,16 +48,16 @@ public class RCanvasManager extends ReactViewManager {
     private static final int COMMAND_CHANGE_PATH = 7;
     private static final int COMMAND_SET_PATH_ATTRIBUTES = 8;
 
-    private static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
-    private static final String PROPS_STROKE_COLOR = "strokeColor";
-    private static final String PROPS_STROKE_WIDTH = "strokeWidth";
-    private static final String PROPS_TOUCH_ENABLED = "touchEnabled";
-    private static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "useNativeDriver";
-    private static final String PROPS_ON_STROKE = "onStrokeChanged";
-    private static final String PROPS_ON_PRESS = "onPress";
-    private static final String PROPS_ON_LONG_PRESS = "onLongPress";
+    protected static final String PROPS_HARDWARE_ACCELERATED = "hardwareAccelerated";
+    protected static final String PROPS_STROKE_COLOR = "strokeColor";
+    protected static final String PROPS_STROKE_WIDTH = "strokeWidth";
+    protected static final String PROPS_TOUCH_ENABLED = "touchEnabled";
+    protected static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "useNativeDriver";
+    protected static final String PROPS_ON_STROKE = "onStrokeChanged";
+    protected static final String PROPS_ON_PRESS = "onPress";
+    protected static final String PROPS_ON_LONG_PRESS = "onLongPress";
 
-    RCanvasManager(){
+    public RCanvasManager(){
         super();
     }
 
@@ -77,9 +79,17 @@ public class RCanvasManager extends ReactViewManager {
         ((RCanvas) view).tearDown();
     }
 
+    @Override
+    public void addView(ReactViewGroup parent, View child, int index) {
+        super.addView(parent, child, index);
+        if (child instanceof RCanvasPath) {
+            ((RCanvas) parent).addPath(((RCanvasPath) child));
+        }
+    }
+
     @ReactProp(name = PROPS_HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvas viewContainer, boolean useAcceleration) {
-        viewContainer.setHardwareAccelerated(useAcceleration);
+        viewContainer.setHardwareAcceleration(useAcceleration);
     }
 
     @ReactProp(name = PROPS_STROKE_COLOR)

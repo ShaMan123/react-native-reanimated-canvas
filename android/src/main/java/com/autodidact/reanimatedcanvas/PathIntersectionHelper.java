@@ -51,10 +51,10 @@ public class PathIntersectionHelper {
     }
 
     @TargetApi(19)
-    public boolean isPointUnderTransparentPath(float x, float y, String pathId){
+    public boolean isTransparent(float x, float y, String pathId){
         ArrayList<RCanvasPath> mPaths = getPaths();
         int start = getIndex(pathId);
-        int beginAt = Math.min(start + 1, mPaths.size() - 1);
+        //int beginAt = Math.min(start + 1, mPaths.size() - 1);
         for (int i = start; i < mPaths.size(); i++){
             RCanvasPath mPath = mPaths.get(i);
             if(mPath.isPointOnPath(x, y, getTouchRadius(mPath.getStrokeWidth()), getRegion()) && mPath.getStrokeColor() == Color.TRANSPARENT) {
@@ -66,7 +66,7 @@ public class PathIntersectionHelper {
 
     @TargetApi(19)
     public boolean isPointOnPath(float x, float y, String pathId){
-        if(isPointUnderTransparentPath(x, y, pathId)) {
+        if(isTransparent(x, y, pathId)) {
             return false;
         }
         else {
@@ -82,12 +82,14 @@ public class PathIntersectionHelper {
         float r;
         RCanvasPath mPath;
         ArrayList<RCanvasPath> paths = getPaths();
+        String id;
 
-        for (int i = paths.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < paths.size(); i++) {
             mPath = paths.get(i);
+            id = mPath.getPathId();
             r = getTouchRadius(mPath.getStrokeWidth());
-            if(mPath.isPointOnPath(x, y, r, mRegion) && !isPointUnderTransparentPath(x, y, mPath.getPathId())){
-                array.pushString(mPath.getPathId());
+            if(mPath.isPointOnPath(x, y, r, mRegion) && !isTransparent(x, y, id)){
+                array.pushString(id);
             }
         }
 

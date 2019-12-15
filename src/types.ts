@@ -39,18 +39,16 @@ export type PathData = {
 
 export type TouchStates = 'draw' | 'touch' | 'none';
 
-export interface NativeTouchEvent {
-  x: number,
-  y: number,
-  paths: number,
+export type PathIntersectionResponse = {
+  paths: string[],
+  topPath: string
 }
 
-export interface NativeStrokeEvent {
-  x: number,
-  y: number,
+export interface NativeStrokeEvent extends Point {
   id: string,
 }
 
+export type NativeTouchEvent = PathIntersectionResponse & Point;
 export type StrokeStartEvent = NativeSyntheticEvent<PathData>;
 export type StrokeEvent = NativeSyntheticEvent<NativeStrokeEvent>;
 export type StrokeEndEvent = NativeSyntheticEvent<PathData>;
@@ -60,9 +58,9 @@ interface NativeTouchProps {
   /** set to true to handle touches with the native driver */
   useNativeDriver?: boolean
   /** fires only if `useNativeDriver` is set to `true` */
-  onPress?: (e: SketchEvent) => void
+  onPress?: (e: NativeTouchEvent) => void
   /** fires only if `useNativeDriver` is set to `true` */
-  onLongPress?: (e: SketchEvent) => void
+  onLongPress?: (e: NativeTouchEvent) => void
 }
 
 export interface RCanvasProps extends NativeTouchProps {
@@ -117,9 +115,9 @@ export type RCanvasRef = {
  * @param callback If omitted the method returns a Promise
  */
   isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-  isPointOnPath(x: number, y: number, pathId: never, callback: (error: any, result?: string[]) => void): void
+  isPointOnPath(x: number, y: number, pathId: never, callback: (error: any, result?: PathIntersectionResponse) => void): void
   isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
-  isPointOnPath(x: number, y: number): Promise<string[]>
+  isPointOnPath(x: number, y: number): Promise<PathIntersectionResponse>
 
   /**
    * start a new path
