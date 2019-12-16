@@ -4,11 +4,10 @@ import android.graphics.Picture;
 import android.graphics.PointF;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.facebook.react.bridge.JSApplicationCausedNativeException;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -17,6 +16,7 @@ import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.views.view.ColorUtil;
 import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class RCanvas extends ReactViewGroup {
         return mIntersectionHelper;
     }
 
-    private void prepareNextPath() { prepareNextPath(true); }
+    private void prepareNextPath() { prepareNextPath(false); }
 
     private void prepareNextPath(Boolean invalidate) {
         mNextPath = new RCanvasPath(((ReactContext) getContext()));
@@ -117,6 +117,7 @@ public class RCanvas extends ReactViewGroup {
         }
 
         path.postInvalidateOnAnimation();
+        postInvalidateOnAnimation();
     }
 
     public void clear() {
@@ -145,9 +146,11 @@ public class RCanvas extends ReactViewGroup {
 
     public void addPoint(float x, float y, @Nullable String pathId) {
         @Nullable RCanvasPath current = mCurrentPath;
-        if (current == null) {
-            Log.w(ReactConstants.TAG, "RCanvas trying to add point on null object reference");
-        } else if (pathId == null || current.getPathId().equals(pathId)) {
+        if (current == null && pathId == null) {
+            throw new JSApplicationCausedNativeException(
+                    String.format("RCanvas is trying to add point(%f, %f) on null object reference", x, y)
+            );
+        } else if (current != null && (pathId == null || current.getPathId().equals(pathId))) {
             addPoint(x, y);
         } else {
             setCurrentPath(pathId);
@@ -165,19 +168,8 @@ public class RCanvas extends ReactViewGroup {
     public void addPoint(PointF point) {
         UiThreadUtil.assertOnUiThread();
         mCurrentPath.addPoint(point);
-        /*
-        Canvas canvas = picture.beginRecording(getWidth(), getHeight());
-        mCurrentPath.draw(canvas);
-        picture.endRecording();
-
-         */
-        //postInvalidateOnAnimation();
         eventHandler.maybeEmitStrokeChange(point);
     }
-
-    private Picture picture = new Picture();
-    private Picture mFullPicture = new Picture();
-    private Picture mChildrenPicture = new Picture();
 
     public void endPath() {
         UiThreadUtil.assertOnUiThread();
@@ -213,7 +205,7 @@ public class RCanvas extends ReactViewGroup {
         }
 
         if (!exist) {
-            prepareNextPath(false);
+            prepareNextPath();
             mNextPath.init(id, strokeColor, strokeWidth, points);
             mPaths.add(mNextPath);
         }

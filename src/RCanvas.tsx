@@ -10,16 +10,18 @@ import { Commands, RCanvasProperties, RCanvasRef, PathIntersectionResponse } fro
 
 const { callback, and, set, cond, add, block, eq, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call, debug, onChange } = Animated;
 
+const pathIdMem = new Value(0);
+
 export const stringId = proc((id) => concat('RACanvasPath', id));
 
 export const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
 
 export const startPath = proc((tag, id, color, width) => {
-  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, stringId(id), color, width));
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, id, color, width));
 });
 
 export const addPoint = proc((tag, id, x, y) => {
-  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y, stringId(id)));
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y, id));
 });
 
 export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
@@ -103,21 +105,21 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       cond(
         eq(state, State.BEGAN),
         [
-          set(n, add(n, 1)),
-          startPath(tag, n, strokeColor, strokeWidth),
+          set(pathIdMem, add(pathIdMem, 1)),
+          startPath(tag, stringId(pathIdMem), strokeColor, strokeWidth),
           set(isActive, 1)
         ]
       ),
       cond(
         and(eq(state, State.ACTIVE), isActive),
         [
-          addPoint(tag, n, x, y),
+          addPoint(tag, stringId(pathIdMem), x, y),
         ]
       ),
       cond(
         eq(oldState, State.ACTIVE),
         [
-          endPath(tag, n),
+          endPath(tag, pathIdMem),
           set(isActive, 0)
         ]
       )

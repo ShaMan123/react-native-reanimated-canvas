@@ -5,33 +5,48 @@ import { RAnimatedCanvasModule, generatePathId, RCanvasRef, StrokeEndEvent, Stro
 import LegacyCanvas from './LegacyCanvas';
 import { styles, useRefGetter } from './common';
 import _ from 'lodash';
-const { Value, event, View } = Animated;
+const { Value, event, View, cond, neq, block, and, set, eq, debug } = Animated;
 
 
 export default function SyncedCanvases() {
   const tagB = useMemo(() => new Value(0), []);
+  const currentId = useMemo(() => new Value(-1), []);
   const [_a, a] = useRefGetter<RCanvasRef>();
   const [_b] = useRefGetter<RCanvasRef>();
 
   const onStrokeStartA = useMemo(() =>
     event<StrokeStartEvent>([{
-      nativeEvent: ({ id, width, color }) => RAnimatedCanvasModule.startPath(tagB, id, color, width)
+      nativeEvent: ({ id, width, color }) => cond(
+        neq(id, 0),
+        [
+          set(currentId, id),
+          RAnimatedCanvasModule.startPath(tagB, currentId, color, width),
+          debug('?????', currentId),
+
+        ]
+      )
     }]),
-    [tagB]
+    []
   );
 
   const onStrokeA = useMemo(() =>
     event<StrokeEvent>([{
-      nativeEvent: ({ x, y, id }) => RAnimatedCanvasModule.addPoint(tagB, id, x, y)
+      nativeEvent: ({ x, y, id }) => block([
+        debug('!!!!!!!!!!!!!', currentId),
+        cond(and(eq(currentId, id), neq(id, -1)), RAnimatedCanvasModule.addPoint(tagB, currentId, x, y))
+      ])
     }]),
-    [tagB]
+    []
   );
 
   const onStrokeEndA = useMemo(() =>
     event<StrokeEndEvent>([{
-      nativeEvent: ({ id }) => RAnimatedCanvasModule.endPath(tagB, id)
+      nativeEvent: ({ id }) => block([
+        RAnimatedCanvasModule.endPath(tagB, id),
+        set(currentId, -1)
+      ])
     }]),
-    [tagB]
+    []
   );
 
   return (
@@ -47,9 +62,10 @@ export default function SyncedCanvases() {
         ref={_b}
         onStrokeEnd={(e) => {
           const path = e.nativeEvent;
-          console.log(_a.current.addPath)
-          _a.current.addPath(_.set(path, 'id', generatePathId()));
-          path.id.includes('RCanvasPath') && a().addPaths([_.set(path, 'id', generatePathId())]);
+          if (path.id.match('CanvasPath').length === 1) {
+            //a().addPath(path);
+          }
+          //b().setPathAttributes(path.id, { width: path.width * 1.5, /*color: processColor('red')*/ });
         }}
       />
     </View>
