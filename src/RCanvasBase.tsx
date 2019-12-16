@@ -75,7 +75,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   );
 
   const addPaths = useCallback((data: PathData[]) => {
-    console.log('here')
     if (initialized.value()) {
       const parsedPaths = data.map((d) => {
         if (_.isNil(findPath(d.id))) paths.set(_.concat(paths.value(), d));
@@ -148,6 +147,13 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     dispatchCommand(Commands.clear);
   }, []);
 
+  const setPathAttributes = useCallback((pathId: string, attr: { width: number, color: string | number }) => {
+    if (typeof attr.color === 'string') {
+      attr.color = processColor(attr.color);
+    }
+    dispatchCommand(Commands.setAttributes, [pathId, attr]);
+  }, []);
+
   const setNativeProps = useCallback((props) =>
     node.value() && node.value().setNativeProps(props),
     [node]
@@ -173,6 +179,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       addPoint,
       endPath,
       clear,
+      setPathAttributes,
       setNativeProps,
       getNode: () => node.value(),
       handle: findNodeHandle(node.value()),
@@ -192,6 +199,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       addPoint,
       endPath,
       clear,
+      setPathAttributes,
       setNativeProps,
       node
     ]
