@@ -104,8 +104,10 @@ export type RCanvasRef = {
   addPaths(paths: Path[]): void
   deletePath(id: string): void
   deletePaths(pathIds: string[]): void
+  setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 
   dispatchCommand(command: Commands, data?: any[]): void
+
   setTouchRadius(radius: number): void
 
   /**
