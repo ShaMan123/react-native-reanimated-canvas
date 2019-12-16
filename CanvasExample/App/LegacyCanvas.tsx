@@ -100,7 +100,7 @@ LegacyCanvas.defaultProps = {
   onUndoPressed: () => { },
   onClearPressed: () => { },
   onPathsChange: ({ nativeEvent }) => {
-    console.log('paths', nativeEvent.paths);
+    //console.log('paths', nativeEvent.paths);
   },
   user: null,
 
