@@ -139,14 +139,6 @@ export default function Basic() {
     [tag, x, y]
   );
 
-  useEffect(() => {
-    console.log(pip)
-    setTimeout(() => {
-      //pip > 0 && UIManager.dispatchViewManagerCommand(pip, 8, ['RCanvasPath1.0', { width: 20 }]);
-    }, 5000)
-
-  }, [pip])
-
   return (
     <TapGestureHandler
       ref={tap}
@@ -156,10 +148,6 @@ export default function Basic() {
     >
       <View collapsable={false} style={styles.default}>
         <LongPressGestureHandler
-          onHandlerStateChange={async (e) => {
-            const a = await RCanvasModule.isPointOnPath(175, e.nativeEvent.x, e.nativeEvent.y);
-            console.log('?', a)
-          }}
           waitFor={button}
           //enabled={false}
           onHandlerStateChange={onTap}
