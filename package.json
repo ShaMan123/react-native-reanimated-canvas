@@ -29,7 +29,7 @@
   },
   "optionalDependencies": {
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-working-branch"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",
@@ -41,10 +41,9 @@
     "@types/react": "^16.9.11",
     "@types/react-native": "^0.60.22",
     "@types/react-test-renderer": "^16.9.1",
-    "chalk": "^2.4.2",
     "lodash": "^4.17.11",
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-working-branch"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd"
   },
   "scripts": {},
   "files": [
