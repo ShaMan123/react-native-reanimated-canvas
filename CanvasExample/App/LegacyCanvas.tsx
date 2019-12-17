@@ -1,9 +1,11 @@
-import React, { Component, forwardRef, useCallback, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import React, { Component, forwardRef, useCallback, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import { FlatList, View, processColor, Text, StyleSheet } from 'react-native';
 import RCanvas, { RCanvasProperties, RCanvasRef } from 'react-native-reanimated-canvas';
 import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
 import { styles } from './common';
+import Animated from 'react-native-reanimated';
 
+const { divide, sqrt, multiply } = Animated;
 
 function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
   const [color, setColor] = useState(props.strokeColor || props.strokeColors[props.defaultStrokeIndex].color);
@@ -16,7 +18,6 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
   useImperativeHandle(ref, () => _ref.current);
 
   const nextStrokeWidth = useCallback(() => {
-
     if ((strokeWidth >= props.maxStrokeWidth && strokeWidthStep.current > 0) ||
       (strokeWidth <= props.minStrokeWidth && strokeWidthStep.current < 0))
       strokeWidthStep.current = -strokeWidthStep.current
@@ -65,11 +66,9 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
           }
         </View>
         <View style={styles.flexEnd} pointerEvents="box-none">
-          {props.strokeWidthComponent && (
-            <TouchableOpacity onPress={() => nextStrokeWidth()}>
-              {props.strokeWidthComponent(strokeWidth)}
-            </TouchableOpacity>)
-          }
+          <TouchableOpacity onPress={() => nextStrokeWidth()}>
+            <StrokeWidthButton strokeWidth={strokeWidth} />
+          </TouchableOpacity>
 
           {props.clearComponent && (
             <TouchableOpacity onPress={() => {
@@ -156,16 +155,22 @@ LegacyCanvas.defaultProps = {
       <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
     )
   },
-  strokeWidthComponent: (w: number) => {
-    return (<View style={styles.strokeWidthButton}>
-      <View style={{
-        backgroundColor: 'white', marginHorizontal: 2.5,
-        width: Math.sqrt(w / 3) * 10, height: Math.sqrt(w / 3) * 10, borderRadius: Math.sqrt(w / 3) * 10 / 2
-      }} />
-    </View>
-    )
-  },
-
 } as RCanvasProperties;
+
+function StrokeWidthButton({ strokeWidth }: { strokeWidth: Animated.Adaptable<number> }) {
+  const value = useMemo(() => multiply(sqrt(divide(strokeWidth, 3)), 10), [strokeWidth]);
+
+  return (
+    <View style={styles.strokeWidthButton}>
+      <Animated.View
+        style={{
+          backgroundColor: 'white',
+          marginHorizontal: 2.5,
+          width: value, height: value, borderRadius: multiply(value, 0.5)
+        }}
+      />
+    </View>
+  )
+}
 
 export default LegacyCanvas;

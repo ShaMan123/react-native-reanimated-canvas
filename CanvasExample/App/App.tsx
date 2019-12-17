@@ -6,10 +6,8 @@ import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import Basic from './Basic';
-import Gestures from './Gestures';
 import Scrollable from './Scrollable';
 import Synced from './Synced';
-import Tabs from './Tabs';
 import Variety from './Variety';
 
 const SCREENS = {
@@ -17,8 +15,6 @@ const SCREENS = {
   Synced: { screen: Synced, title: 'Sync two canvases' },
   Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
   Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
-  Gestures: { screen: Gestures, title: 'Gestures' },
-  Tabs: { screen: Tabs, title: 'Tabs' }
 };
 
 _.map(SCREENS, ({ screen, title }) => _.set(screen, 'navigationOptions.title', title));

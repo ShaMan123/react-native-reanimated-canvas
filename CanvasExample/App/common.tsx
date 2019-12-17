@@ -53,6 +53,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
+    //elevation: 5 // causes the button to be above the canvas
   },
   cameraContainer: {
     flex: 1,
@@ -101,5 +102,6 @@ export const styles = StyleSheet.create({
   util: {
     position: 'absolute',
     top: 0,
-  }
+  },
+  centerContent: { alignItems: 'center', justifyContent: 'center' }
 });

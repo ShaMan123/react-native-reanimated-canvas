@@ -136,12 +136,19 @@ export default function Variety() {
           strokeColor='#00000000'
           waitFor={ref}
         >
-          <Image source={{ uri: simpsonsImage }} style={{ flex: 1, width: 480, height: 480 }} />
-          <HelloSimpsons animate={animate} />
+          <Image source={{ uri: simpsonsImage }} style={[styles.default, styles.centerContent]} />
+          <View style={styles.abs100}>
+            <HelloSimpsons animate={animate} />
+          </View>
+          <Text
+            style={{ elevation: 5, maxHeight: 20, backgroundColor: 'pink', textAlign: 'center', opacity: 0.75 }}
+          >
+            I'm elevated. I should be erasable, shouldn't I?
+            </Text>
           <RectButton
             ref={ref}
             rippleColor="red"
-            style={[styles.functionButton, { width: 200 }, StyleSheet.absoluteFill]}
+            style={[styles.functionButton, StyleSheet.absoluteFill, { width: 200, top: 50 }, { alignContent: 'center' }]}
             onPress={() => {
               ToastAndroid.show(
                 !animate ?
