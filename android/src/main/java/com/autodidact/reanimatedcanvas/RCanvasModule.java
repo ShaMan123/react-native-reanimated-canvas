@@ -52,17 +52,16 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             error.invoke(e);
         }
     }
-/*
+
     @ReactMethod
-    public void setTouchRadius(final int tag, final float r, final Callback success, final Callback error){
+    public void getPath(final int tag, final String pathId, final boolean includePoints, final Callback success, final Callback error){
         try {
             final ReactApplicationContext context = getReactApplicationContext();
             UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
             uiManager.addUIBlock(new UIBlock() {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
-                    view.getIntersectionHelper().setTouchRadius(PixelUtil.toPixelFromDIP(r));
-                    success.invoke(true);
+                    success.invoke(view.getPath(pathId).toWritableMap(includePoints));
                 }
             });
         } catch (Exception e) {
@@ -70,5 +69,4 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
         }
     }
 
- */
 }

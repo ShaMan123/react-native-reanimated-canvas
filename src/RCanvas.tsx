@@ -6,7 +6,7 @@ import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStat
 import Animated from 'react-native-reanimated';
 import RCanvasBase, { processColorProp } from './RCanvasBase';
 import { VIEW_MANAGER, MODULE } from './RCanvasModule';
-import { Commands, RCanvasProperties, RCanvasRef, PathIntersectionResponse } from './types';
+import { Commands, RCanvasProperties, RCanvasRef, PathIntersectionResponse, PathData } from './types';
 
 const { callback, and, set, cond, add, block, eq, event, Value, proc, neq, invoke, dispatch, concat, useCode, not, map, View, call, debug, onChange } = Animated;
 
@@ -27,6 +27,10 @@ export const addPoint = proc((tag, id, x, y) => {
 export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
 
 export const setPathWidth = proc((tag, id, width) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ width }))));
+
+export const getPath = proc((tag, id, cb) => {
+  return safeDispatch(tag, invoke(MODULE, 'getPath', tag, id, 0, cb, callback()));
+});
 
 export const isPointOnPath = proc((tag, x, y, topPath, error) => {
   const cb = callback<PathIntersectionResponse>(map.fromEnd([topPath]), 0);
