@@ -1,5 +1,5 @@
 import React, { Component, forwardRef, useCallback, useState, useRef, useImperativeHandle, useEffect } from 'react';
-import { FlatList, View, processColor, Text } from 'react-native';
+import { FlatList, View, processColor, Text, StyleSheet } from 'react-native';
 import RCanvas, { RCanvasProperties, RCanvasRef } from 'react-native-reanimated-canvas';
 import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
 import { styles } from './common';
@@ -45,15 +45,26 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
 
   return (
     <View style={props.containerStyle}>
-      <View style={{ flexDirection: 'row' }}>
-        <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-start' }}>
+      <RCanvas
+        {...props}
+        ref={_ref}
+        style={props.canvasStyle}
+        strokeColor={color + (color.length === 9 ? '' : alpha)}
+        strokeWidth={strokeWidth}
+      //useNativeDriver
+      />
+      <View
+        style={[styles.util, styles.row]}
+        pointerEvents="box-none"
+      >
+        <View style={styles.flexStart} pointerEvents="box-none">
           {props.eraseComponent && (
             <TouchableOpacity onPress={() => { setColor('#00000000') }}>
               {props.eraseComponent}
             </TouchableOpacity>)
           }
         </View>
-        <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-end' }}>
+        <View style={styles.flexEnd} pointerEvents="box-none">
           {props.strokeWidthComponent && (
             <TouchableOpacity onPress={() => nextStrokeWidth()}>
               {props.strokeWidthComponent(strokeWidth)}
@@ -71,15 +82,8 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
 
         </View>
       </View>
-      <RCanvas
-        {...props}
-        ref={_ref}
-        style={props.canvasStyle}
-        strokeColor={color + (color.length === 9 ? '' : alpha)}
-        strokeWidth={strokeWidth}
-      //useNativeDriver
-      />
-      <View style={{ flexDirection: 'row' }}>
+
+      <View style={styles.row}>
         <FlatList
           data={props.strokeColors}
           keyExtractor={(item, index) => `@@@${index}`}
@@ -93,6 +97,7 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
 }
 
 const LegacyCanvas = React.forwardRef(LegacyCanvasBase);
+
 LegacyCanvas.defaultProps = {
   onStrokeStart: () => { },
   onStrokeChanged: () => { },

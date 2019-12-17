@@ -95,4 +95,11 @@ export const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     top: 100
   },
+  flexStart: { flexDirection: 'row', flex: 1, justifyContent: 'flex-start' },
+  flexEnd: { flexDirection: 'row', flex: 1, justifyContent: 'flex-end' },
+  row: { flexDirection: 'row' },
+  util: {
+    position: 'absolute',
+    top: 0,
+  }
 });
