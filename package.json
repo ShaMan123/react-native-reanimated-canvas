@@ -43,9 +43,14 @@
     "@types/react-test-renderer": "^16.9.1",
     "lodash": "^4.17.11",
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd",
+    "semver": "^6.2.0",
+    "yargs": "^14.0.0"
   },
-  "scripts": {},
+  "scripts": {
+    "publish:next": "node scripts/publish.js --tag next",
+    "publish": "node scripts/publish.js"
+  },
   "files": [
     "/src",
     "/android",
