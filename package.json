@@ -46,9 +46,7 @@
     "react-native-gesture-handler": "^1.5.0",
     "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-working-branch"
   },
-  "scripts": {
-    "postinstall": "node ./alertConfigChangeNeededScript.js"
-  },
+  "scripts": {},
   "files": [
     "/src",
     "/android",
