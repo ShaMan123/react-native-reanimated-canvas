@@ -57,8 +57,9 @@
   "files": [
     "/src",
     "/android",
-    "/ios"
+    "/ios",
+    "react-native-reanimated-canvas.d.ts"
   ],
-  "types": "index.d.ts",
+  "types": "react-native-reanimated-canvas.d.ts",
   "homepage": "https://shaman123.github.io/react-native-reanimated-canvas/"
 }
