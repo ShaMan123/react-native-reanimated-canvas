@@ -29,7 +29,7 @@ export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER
 export const setPathWidth = proc((tag, id, width) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ width }))));
 
 export const isPointOnPath = proc((tag, x, y, topPath, error) => {
-  const cb = callback<PathIntersectionResponse>(map.fromEnd([0, topPath]), 0);
+  const cb = callback<PathIntersectionResponse>(map.fromEnd([topPath]), 0);
   const isPointOnPath = invoke(MODULE, 'isPointOnPath', tag, x, y, new Value(), cb, callback());
   return safeDispatch(
     tag,
