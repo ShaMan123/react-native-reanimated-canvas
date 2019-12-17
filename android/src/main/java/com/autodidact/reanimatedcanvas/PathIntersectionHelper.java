@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -78,6 +79,47 @@ public class PathIntersectionHelper {
         return array;
     }
 
+    @TargetApi(19)
+    static class IntersectionOperator {
+
+        static boolean intersectsPath(final PointF point, final RectF hitSlop, final Path path) {
+            RectF finalHitRect = Utility.applyHitSlop(point, hitSlop);
+            Rect roundedHitRect = new Rect();
+            finalHitRect.roundOut(roundedHitRect);
+
+            Path mTouchPath = new Path();
+            mTouchPath.addRect(finalHitRect, Path.Direction.CW);
+
+            mTouchPath.op(path, Path.Op.INTERSECT);
+            return !mTouchPath.isEmpty();
+        }
+
+
+        static boolean intersetsRegion(final PointF point, final RectF hitSlop, final Path path) {
+            RectF finalHitRect = Utility.applyHitSlop(point, hitSlop);
+            Rect roundedHitRect = new Rect();
+            finalHitRect.roundOut(roundedHitRect);
+            Region region1 = new Region();
+            region1.set(roundedHitRect);
+            region1.setPath(path, region1);
+            return !region1.isEmpty();
+        }
+
+        //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
+        boolean intersectsWithRegions(final PointF point, final RectF hitSlop, final Path path, final Region boundingRegion /* Utility.getViewRegion((View) getParent()) */) {
+            RectF finalHitRect = Utility.applyHitSlop(point, hitSlop);
+            Rect roundedHitRect = new Rect();
+            finalHitRect.roundOut(roundedHitRect);
+
+            Region region1 = new Region();
+            region1.set(roundedHitRect);
+            Region region2 = new Region();
+            region2.setPath(path, boundingRegion);
+
+            return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
+        }
+    }
+
     static class DebugRect extends RCanvasPath {
         private RectF mRect;
         private Paint mPaint;
@@ -98,14 +140,12 @@ public class PathIntersectionHelper {
         static void draw(final RCanvas view, final PointF point) {
             final DebugRect debugRect = new DebugRect(view, point);
             view.addView(debugRect);
-            view.addPath(debugRect);
             view.postInvalidateOnAnimation();
             view.postDelayed(
                     new Runnable() {
                         @Override
                         public void run() {
                             view.removeView(debugRect);
-                            view.removePath(debugRect);
                             view.postInvalidateOnAnimation();
                         }
                     },

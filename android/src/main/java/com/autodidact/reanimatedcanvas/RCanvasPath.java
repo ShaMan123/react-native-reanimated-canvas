@@ -340,39 +340,9 @@ public class RCanvasPath extends View {
         if (mPoints.size() == 0) {
             return false;
         }
-
-        RectF finalHitRect = Utility.applyHitSlop(point, mHitSlop);
-        Rect roundedHitRect = new Rect();
-        finalHitRect.roundOut(roundedHitRect);
-
-        Path path = mPath == null ? evaluatePath(): mPath;
-        //Path mTouchPath = new Path();
-        //mTouchPath.addRect(finalHitRect, Path.Direction.CW);
-
-        Region region1 = new Region();
-        region1.set(roundedHitRect);
-        Region region2 = new Region();
-        region2.setPath(path, Utility.getViewRegion((View) getParent()));
-
-        //mTouchPath.op(path, Path.Op.INTERSECT);
-        //return mTouchPath.isEmpty();
-        //return mTouchPath.op(path, Path.Op.INTERSECT);
-        Log.d(TAG, "regions: " + roundedHitRect + " " + finalHitRect+"  " +  region1 + "  " + region2);
-        Log.d(TAG, "isPointOnPath: " + (!region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT)) + "  " + isPointOnPath1(point));
-
-        return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
-    }
-
-    @TargetApi(19)
-    boolean isPointOnPath1(final PointF point) {
-        RectF finalHitRect = Utility.applyHitSlop(point, mHitSlop);
-        Rect roundedHitRect = new Rect();
-        finalHitRect.roundOut(roundedHitRect);
-        Path path = mPath == null ? evaluatePath(): mPath;
-        Region region1 = new Region();
-        region1.set(roundedHitRect);
-        region1.setPath(path, region1);
-        return !region1.isEmpty();
+        return PathIntersectionHelper
+                .IntersectionOperator
+                .intersectsPath(point, mHitSlop, mPath);
     }
 
     public WritableMap toWritableMap() {
