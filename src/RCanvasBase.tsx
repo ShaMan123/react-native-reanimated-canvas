@@ -28,7 +28,7 @@ function useHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
         }
       }
     }
-    console.log(rect)
+
     return rect;
   }, [hitSlop]);
 }
