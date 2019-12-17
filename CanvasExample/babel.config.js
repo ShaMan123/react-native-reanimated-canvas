@@ -6,7 +6,7 @@ module.exports = {
       'module-resolver',
       {
         alias: {
-          'react-native-reanimated': '../../react-native-reanimated',
+          //'react-native-reanimated': '../../react-native-reanimated',
           'react-native-gesture-handler': './node_modules/react-native-gesture-handler',
           react: './node_modules/react',
           'react-native': './node_modules/react-native',

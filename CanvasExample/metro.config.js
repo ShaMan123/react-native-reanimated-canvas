@@ -22,10 +22,10 @@ const config = {
     //providesModuleNodeModules: _.keys(pkg.dependencies),
     //extraNodeModules: _.mapValues({ ...pkg.dependencies, ...{ lodash: '' } }, (n) => path.resolve(__dirname, 'node_modules', n))
     extraNodeModules: {
-      'react-native-reanimated': path.resolve(__dirname, '..', '../react-native-reanimated')
+      //'react-native-reanimated': path.resolve(__dirname, '..', '../react-native-reanimated')
     }
   },
-  watchFolders: [path.resolve(__dirname, '..'), path.resolve(__dirname, '..', '../react-native-reanimated')],
+  watchFolders: [path.resolve(__dirname, '..'), /*path.resolve(__dirname, '..', '../react-native-reanimated')*/],
   transformer: {
     getTransformOptions: async () => ({
       transform: {
