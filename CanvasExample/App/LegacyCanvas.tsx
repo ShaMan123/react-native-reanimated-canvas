@@ -16,6 +16,7 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
   useImperativeHandle(ref, () => _ref.current);
 
   const nextStrokeWidth = useCallback(() => {
+
     if ((strokeWidth >= props.maxStrokeWidth && strokeWidthStep.current > 0) ||
       (strokeWidth <= props.minStrokeWidth && strokeWidthStep.current < 0))
       strokeWidthStep.current = -strokeWidthStep.current
@@ -150,7 +151,7 @@ LegacyCanvas.defaultProps = {
       <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
     )
   },
-  strokeWidthComponent: (w) => {
+  strokeWidthComponent: (w: number) => {
     return (<View style={styles.strokeWidthButton}>
       <View style={{
         backgroundColor: 'white', marginHorizontal: 2.5,

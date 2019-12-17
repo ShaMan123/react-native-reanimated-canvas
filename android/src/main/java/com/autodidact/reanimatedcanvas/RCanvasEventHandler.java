@@ -190,10 +190,9 @@ public class RCanvasEventHandler {
     public void emitPress(float x, float y, String eventName){
         WritableMap e = Arguments.createMap();
         PathIntersectionHelper intersectionHelper = mView.getIntersectionHelper();
-        e.putArray("paths", intersectionHelper.isPointOnPath(x, y));
+        e.putArray("paths", intersectionHelper.isPointOnPath(new PointF(x, y)));
         e.putDouble("x", PixelUtil.toDIPFromPixel(x));
         e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        if(intersectionHelper.getTouchRadius() > 0) e.putDouble("radius", PixelUtil.toDIPFromPixel(intersectionHelper.getTouchRadius()));
         emit(eventName, e);
     }
 

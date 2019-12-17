@@ -10,6 +10,29 @@ import { Commands, PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, St
 
 const { createAnimatedComponent } = Animated;
 
+const basicRect = { left: 0, top: 0, right: 0, bottom: 0 };
+
+function useHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
+  return useMemo(() => {
+    let rect;
+    if (typeof hitSlop === 'number') {
+      rect = _.mapValues(basicRect, () => hitSlop)
+    } else {
+      rect = _.pick(hitSlop, _.keys(basicRect));
+      if (hitSlop) {
+        if (hitSlop.vertical) {
+          rect.top = rect.bottom = hitSlop.vertical;
+        }
+        if (hitSlop.horizontal) {
+          rect.left = rect.right = hitSlop.horizontal;
+        }
+      }
+    }
+    console.log(rect)
+    return rect;
+  }, [hitSlop]);
+}
+
 const RNativeCanvas = createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
 
 export function generatePathId() {
@@ -33,6 +56,10 @@ export function processColorProp(value: any) {
   return value instanceof Animated.Node ? value : processColor(value);
 }
 
+export function useStrokeColor(value: any) {
+  return useMemo(() => processColorProp(value), [value]);
+}
+
 function useEventProp<TArgs extends any[], T extends (...args: TArgs) => (any | void)>(callback: T, prop?: T | Animated.Node<any>) {
   const cb = useCallback((...args: TArgs) => {
     callback(...args);
@@ -48,11 +75,11 @@ function useEventProp<TArgs extends any[], T extends (...args: TArgs) => (any | 
 
 function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const {
-    strokeColor: strokeColorP,
     strokeWidth
   } = props;
 
-  const strokeColor = useMemo(() => processColorProp(strokeColorP), [strokeColorP]);
+  const strokeColor = useStrokeColor(props.strokeColor);
+  const hitSlop = useHitSlop(props.hitSlop);
 
   const initialized = useRefGetter(false);
   const size = useRefGetter({ width: 0, height: 0 });
@@ -118,11 +145,10 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     [paths]
   );
 
-  const startPath = useCallback((x: number, y: number) => {
-    const id = generatePathId();
-    currentPathId.set(id);
+  const startPath = useCallback((x: number, y: number, pathId: string = generatePathId()) => {
+    currentPathId.set(pathId);
     const state = {
-      id,
+      id: pathId,
       color: typeof strokeColor === 'number' ? strokeColor : null,
       width: typeof strokeWidth === 'number' ? strokeWidth : null,
       points: [{ x, y }]
@@ -158,13 +184,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     node.value() && node.value().setNativeProps(props),
     [node]
   );
-
-  useEffect(() => {
-    requestPermissions(
-      props.permissionDialogTitle || '',
-      props.permissionDialogMessage || '',
-    );
-  }, []);
 
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
@@ -205,6 +224,13 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     ]
   );
 
+  useEffect(() => {
+    requestPermissions(
+      props.permissionDialogTitle || '',
+      props.permissionDialogMessage || '',
+    );
+  }, []);
+
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     size.set({ width, height });
@@ -214,18 +240,12 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const onStrokeStart = useCallback((e: StrokeStartEvent) => {
     currentPathId.set(e.nativeEvent.id);
-    if (typeof props.onStrokeStart === 'function') {
-      props.onStrokeStart(e);
-    }
-  }, [currentPathId, props.onStrokeStart]);
+  }, [currentPathId]);
 
   const onStrokeEnd = useCallback((e: StrokeEndEvent) => {
     paths.set(_.concat(paths.value(), e.nativeEvent));
     currentPathId.set();
-    if (typeof props.onStrokeEnd === 'function') {
-      props.onStrokeEnd(e);
-    }
-  }, [paths, currentPathId, props.onStrokeEnd]);
+  }, [paths, currentPathId]);
 
   const onPathsChange = useCallback((e: PathsChangeEvent) => {
     const pathIds = e.nativeEvent.paths;
@@ -241,6 +261,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       onStrokeEnd={useEventProp(onStrokeEnd, props.onStrokeEnd)}
       onPathsChange={useEventProp(onPathsChange, props.onPathsChange)}
       strokeColor={strokeColor}
+      hitSlop={hitSlop}
     >
       <View style={StyleSheet.absoluteFill}>
         {props.children}
@@ -254,6 +275,7 @@ ForwardedRCanvasBase.defaultProps = {
   strokeColor: 'black',
   strokeWidth: 5,
   touchEnabled: true,
+  hitSlop: 20,
 
   permissionDialogTitle: '',
   permissionDialogMessage: '',

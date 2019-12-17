@@ -24,6 +24,7 @@ import java.util.Map;
 
 public class RCanvasManager extends ReactViewManager {
     public static final String NAME = "ReanimatedCanvasManager";
+    public static final String TAG = "RCanvas";
 
     /*
     public static final String COMMAND_ADD_POINT = "addPoint";
@@ -52,6 +53,7 @@ public class RCanvasManager extends ReactViewManager {
     protected static final String PROPS_STROKE_COLOR = "strokeColor";
     protected static final String PROPS_STROKE_WIDTH = "strokeWidth";
     protected static final String PROPS_TOUCH_ENABLED = "touchEnabled";
+    protected static final String PROPS_HIT_SLOP = "hitSlop";
     protected static final String PROPS_HANDLE_TOUCHES_IN_NATIVE = "useNativeDriver";
     protected static final String PROPS_ON_STROKE = "onStrokeChanged";
     protected static final String PROPS_ON_PRESS = "onPress";
@@ -75,15 +77,30 @@ public class RCanvasManager extends ReactViewManager {
 
     @Override
     public void onDropViewInstance(@NonNull ReactViewGroup view) {
-        if (BuildConfig.DEBUG) Log.i(ReactConstants.TAG, "Tearing down RCanvas " +  view.toString());
+        //if (BuildConfig.DEBUG) Log.i(TAG, "Tearing down RCanvas " +  view.toString());
         ((RCanvas) view).tearDown();
+    }
+
+    @Override
+    protected void onAfterUpdateTransaction(@NonNull ReactViewGroup view) {
+        super.onAfterUpdateTransaction(view);
+        ((RCanvas) view).finalizeUpdate();
     }
 
     @Override
     public void addView(ReactViewGroup parent, View child, int index) {
         super.addView(parent, child, index);
         if (child instanceof RCanvasPath) {
-            ((RCanvas) parent).addPath(((RCanvasPath) child));
+            ((RCanvas) parent).addPath((RCanvasPath) child);
+        }
+    }
+
+    @Override
+    public void removeViewAt(ReactViewGroup parent, int index) {
+        View child = parent.getChildAt(index);
+        super.removeViewAt(parent, index);
+        if (child instanceof RCanvasPath) {
+            ((RCanvas) parent).removePath((RCanvasPath) child);
         }
     }
 
@@ -105,6 +122,12 @@ public class RCanvasManager extends ReactViewManager {
     @ReactProp(name = PROPS_TOUCH_ENABLED, defaultBoolean = true)
     public void setTouchState(RCanvas viewContainer, Dynamic propValue) {
         viewContainer.getEventHandler().setTouchState(new TouchState(propValue));
+    }
+
+    @Override
+    public void setHitSlop(ReactViewGroup view, @Nullable ReadableMap hitSlop) {
+        super.setHitSlop(view, hitSlop);
+        ((RCanvas) view).setHitSlop(Utility.parseHitSlop(hitSlop));
     }
 
     @ReactProp(name = PROPS_HANDLE_TOUCHES_IN_NATIVE)

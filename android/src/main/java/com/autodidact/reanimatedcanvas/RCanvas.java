@@ -1,8 +1,7 @@
 package com.autodidact.reanimatedcanvas;
 
-import android.graphics.Picture;
 import android.graphics.PointF;
-import android.util.Log;
+import android.graphics.RectF;
 import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
@@ -13,10 +12,8 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.UiThreadUtil;
-import com.facebook.react.common.ReactConstants;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.views.view.ColorUtil;
 import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
@@ -29,11 +26,14 @@ public class RCanvas extends ReactViewGroup {
     private boolean mHardwareAccelerated = false;
     private int mStrokeColor;
     private float mStrokeWidth;
+    protected RectF mHitSlop = new RectF();
 
     private final RCanvasEventHandler eventHandler;
     private final PathIntersectionHelper mIntersectionHelper;
 
     private RCanvasPath mNextPath;
+
+    private boolean mChangedChildren = false;
 
     public RCanvas(ThemedReactContext context) {
         super(context);
@@ -61,6 +61,20 @@ public class RCanvas extends ReactViewGroup {
 
     protected void addPath(RCanvasPath path) {
         mPaths.add(path);
+        path.setHitSlop(mHitSlop);
+        mChangedChildren = true;
+    }
+
+    protected void removePath(RCanvasPath path) {
+        mPaths.remove(path);
+        mChangedChildren = true;
+    }
+
+    protected void finalizeUpdate() {
+        if (mChangedChildren) {
+            mChangedChildren = false;
+            eventHandler.emitPathsChange();
+        }
     }
 
     public void setHardwareAcceleration(boolean useHardwareAcceleration) {
@@ -74,6 +88,13 @@ public class RCanvas extends ReactViewGroup {
 
     public void setStrokeWidth(float width){
         mStrokeWidth = width;
+    }
+
+    public void setHitSlop(RectF hitSlop){
+        mHitSlop = hitSlop;
+        for (RCanvasPath path: mPaths) {
+            path.setHitSlop(mHitSlop);
+        }
     }
 
     @Nullable public RCanvasPath getCurrentPath(){
@@ -91,7 +112,7 @@ public class RCanvas extends ReactViewGroup {
             }
         }
 
-        throw new JSApplicationIllegalArgumentException("RCanvas failed to find path with id + " + id);
+        throw new JSApplicationIllegalArgumentException(String.format("%s failed to find path#%s", RCanvasManager.TAG, id));
     }
 
     public int getPathIndex(String pathId){
@@ -138,7 +159,7 @@ public class RCanvas extends ReactViewGroup {
         strokeColor = strokeColor == null ? mStrokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? mStrokeWidth : strokeWidth;
         mCurrentPath = mNextPath;
-        mCurrentPath.init(id, strokeColor, strokeWidth);
+        mCurrentPath.init(id, strokeColor, strokeWidth, mHitSlop);
         mPaths.add(mCurrentPath);
 
         eventHandler.emitStrokeStart();
@@ -148,7 +169,7 @@ public class RCanvas extends ReactViewGroup {
         @Nullable RCanvasPath current = mCurrentPath;
         if (current == null && pathId == null) {
             throw new JSApplicationCausedNativeException(
-                    String.format("RCanvas is trying to add point(%f, %f) on null object reference", x, y)
+                    String.format("%s is trying to add point(%f, %f) on null object reference", RCanvasManager.TAG, x, y)
             );
         } else if (current != null && (pathId == null || current.getPathId().equals(pathId))) {
             addPoint(x, y);
@@ -206,8 +227,10 @@ public class RCanvas extends ReactViewGroup {
 
         if (!exist) {
             prepareNextPath();
-            mNextPath.init(id, strokeColor, strokeWidth, points);
+            mNextPath.init(id, strokeColor, strokeWidth, mHitSlop, points);
             mPaths.add(mNextPath);
+        } else {
+            throw new JSApplicationIllegalArgumentException(String.format("%s: path#%s already exists", RCanvasManager.TAG, id));
         }
     }
 
@@ -234,50 +257,7 @@ public class RCanvas extends ReactViewGroup {
         postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
     }
-/*
-    private void invalidatePicture() { invalidatePicture(true); }
 
-    private void invalidatePicture(Boolean invalidateView) {
-
-        Canvas canvas = mFullPicture.beginRecording(getWidth(), getHeight());
-        drawPaths(canvas);
-        mFullPicture.endRecording();
-
-        if (invalidateView) {
-            postInvalidateOnAnimation();
-        }
-    }
-/*
-    @Override
-    protected void onDraw(Canvas canvas) {
-        draw(canvas, false);
-    }
-
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        draw(canvas, true);
-    }
-
-    private Boolean mDidDraw = false;
-    @SuppressLint("WrongCall")
-    private void draw(Canvas canvas, Boolean dispatchDraw) {
-        //canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-        if (dispatchDraw) {
-            super.dispatchDraw(canvas);
-        } else {
-            super.onDraw(canvas);
-        }
-
-        //drawPaths(canvas);
-        //drawPaths(canvas);
-    }
-
-    private void drawPaths(Canvas canvas){
-        for(RCanvasPath path: mPaths) {
-            path.draw(canvas);
-        }
-    }
-*/
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return eventHandler.onTouchEvent(event);

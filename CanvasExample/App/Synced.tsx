@@ -5,26 +5,27 @@ import { RAnimatedCanvasModule, generatePathId, RCanvasRef, StrokeEndEvent, Stro
 import LegacyCanvas from './LegacyCanvas';
 import { styles, useRefGetter } from './common';
 import _ from 'lodash';
-const { Value, event, View, cond, neq, block, and, set, eq, debug } = Animated;
+const { Value, event, View, cond, neq, block, and, set, eq, debug, onChange } = Animated;
 
 
 export default function SyncedCanvases() {
   const tagB = useMemo(() => new Value(0), []);
   const currentId = useMemo(() => new Value(-1), []);
   const [_a, a] = useRefGetter<RCanvasRef>();
-  const [_b] = useRefGetter<RCanvasRef>();
+  const [_b, b] = useRefGetter<RCanvasRef>();
 
   const onStrokeStartA = useMemo(() =>
     event<StrokeStartEvent>([{
-      nativeEvent: ({ id, width, color }) => cond(
-        neq(id, 0),
-        [
-          set(currentId, id),
-          RAnimatedCanvasModule.startPath(tagB, currentId, color, width),
-          debug('?????', currentId),
-
-        ]
-      )
+      nativeEvent: ({ id, width, color }) =>
+        onChange(id,
+          cond(
+            neq(id, 0),
+            [
+              set(currentId, id),
+              RAnimatedCanvasModule.startPath(tagB, currentId, color, width),
+            ]
+          )
+        )
     }]),
     []
   );
@@ -32,8 +33,7 @@ export default function SyncedCanvases() {
   const onStrokeA = useMemo(() =>
     event<StrokeEvent>([{
       nativeEvent: ({ x, y, id }) => block([
-        debug('!!!!!!!!!!!!!', currentId),
-        cond(and(eq(currentId, id), neq(id, -1)), RAnimatedCanvasModule.addPoint(tagB, currentId, x, y))
+        cond(and(eq(currentId, id), neq(id, -1)), RAnimatedCanvasModule.addPoint(tagB, id, x, y))
       ])
     }]),
     []
@@ -62,9 +62,12 @@ export default function SyncedCanvases() {
         ref={_b}
         onStrokeEnd={(e) => {
           const path = e.nativeEvent;
-          if (path.id.match('CanvasPath').length === 1) {
-            //a().addPath(path);
-          }
+          const has = a().getPaths().findIndex((p) => p.id === path.id) > -1;
+          //console.log(a().getPaths().map(({ id }) => id), b().getPaths().map(({ id }) => id), has)
+          //!has && a().addPath(_.set(_.cloneDeep(path), 'id', `@${path.id}`));
+          //a().startPath(0, 0);
+          //a().addPoint(500, 11)
+          //a().endPath();
           //b().setPathAttributes(path.id, { width: path.width * 1.5, /*color: processColor('red')*/ });
         }}
       />

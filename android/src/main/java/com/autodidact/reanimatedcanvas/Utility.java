@@ -1,15 +1,16 @@
 package com.autodidact.reanimatedcanvas;
 
-import android.graphics.Point;
+import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.view.View;
 
-import com.facebook.jni.HybridData;
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableNativeMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.DisplayMetricsHolder;
 import com.facebook.react.uimanager.PixelUtil;
@@ -41,12 +42,12 @@ public final class Utility {
     }
 
     private static int i = 0;
-    public static String generateId(){
+    static String generateId(){
         i++;
         return new StringBuilder("aSketchCanvasPath").append(i).toString();
     }
 
-    public static ArrayList<PointF> processPointArray(ReadableArray points){
+    static ArrayList<PointF> processPointArray(ReadableArray points){
         ArrayList<PointF> processedPoints;
         processedPoints = new ArrayList<>(points.size());
         for (int i=0; i < points.size(); i++) {
@@ -61,7 +62,7 @@ public final class Utility {
         return processedPoints;
     }
 
-    public static WritableMap toWritablePoint(PointF point) {
+    static WritableMap toWritablePoint(PointF point) {
         WritableMap p = Arguments.createMap();
         p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
         p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
@@ -77,7 +78,7 @@ public final class Utility {
         );
     }
 
-    public static void setHardwareAcceleration(View view, Boolean useHardwareAcceleration){
+    static void setHardwareAcceleration(View view, Boolean useHardwareAcceleration){
         if(useHardwareAcceleration) {
             view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         } else{
@@ -87,5 +88,37 @@ public final class Utility {
 
     public static float getDeviceScale(){
         return DisplayMetricsHolder.getScreenDisplayMetrics().density;
+    }
+
+    static RectF parseHitSlop(@Nullable ReadableMap hitSlop) {
+        if (hitSlop == null) {
+            return new RectF();
+        } else {
+            return new RectF(
+                    hitSlop.hasKey("left") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("left")) : 0,
+                    hitSlop.hasKey("top") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("top")) : 0,
+                    hitSlop.hasKey("right") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("right")) : 0,
+                    hitSlop.hasKey("bottom") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("bottom")) : 0
+            );
+        }
+    }
+
+    static RectF applyHitSlop(PointF point, RectF hitSlop) {
+        return new RectF(
+                Math.max(point.x - hitSlop.left, 0),
+                Math.max(point.y - hitSlop.top, 0),
+                point.x + hitSlop.right,
+                point.y + hitSlop.bottom
+        );
+    }
+
+    @TargetApi(19)
+    static Region getViewRegion(View view){
+        return new Region(
+                view.getLeft(),
+                view.getTop(),
+                view.getRight(),
+                view.getBottom()
+        );
     }
 }

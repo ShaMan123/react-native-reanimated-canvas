@@ -8,6 +8,8 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
 import android.view.View;
@@ -21,16 +23,18 @@ import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
+
+import static com.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 
 public class RCanvasPath extends View {
     protected final ArrayList<PointF> mPoints;
     private String mPathId;
     private int mStrokeColor;
     private float mStrokeWidth;
-    protected boolean isTranslucent;
+    private RectF mHitSlop;
+    private boolean mOverriddenHitSlop = false;
 
     private Paint mPaint;
     private Path mPath;
@@ -43,22 +47,28 @@ public class RCanvasPath extends View {
         super(context);
         mPath = new Path();
         mPoints = new ArrayList<>();
+        mHitSlop = new RectF();
         //setHardwareAcceleration(false);
     }
 
-    public void init(String id, int strokeColor, float strokeWidth) {
-        mPathId = id;
-        setStrokeColor(strokeColor);
-        setStrokeWidth(strokeWidth);
+    public void init(String id, int strokeColor, float strokeWidth, @Nullable RectF hitSlop, @Nullable ArrayList<PointF> points) {
+        init(id, strokeColor, strokeWidth, hitSlop);
+        setPoints(points);
     }
 
-    public void init(String id, int strokeColor, float strokeWidth, @Nullable ArrayList<PointF> points) {
-        init(id, strokeColor, strokeWidth);
-        setPoints(points);
+    public void init(String id, int strokeColor, float strokeWidth, @Nullable RectF hitSlop) {
+        setPathId(id);
+        setStrokeColor(strokeColor);
+        setStrokeWidth(strokeWidth);
+        setHitSlop(hitSlop);
     }
 
     public String getPathId() {
         return mPathId;
+    }
+
+    public void setPathId(String id) {
+        mPathId = id;
     }
 
     public int getStrokeColor() {
@@ -70,6 +80,7 @@ public class RCanvasPath extends View {
         boolean isErase = mStrokeColor == Color.TRANSPARENT;
         getPaint().setColor(mStrokeColor);
         getPaint().setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+        postInvalidateOnAnimation();
     }
 
     public float getStrokeWidth() {
@@ -79,10 +90,24 @@ public class RCanvasPath extends View {
     public void setStrokeWidth(float width) {
         mStrokeWidth = width;
         getPaint().setStrokeWidth(mStrokeWidth);
+        postInvalidateOnAnimation();
     }
 
     protected void setHardwareAcceleration(boolean useHardwareAcceleration) {
         Utility.setHardwareAcceleration(this, useHardwareAcceleration);
+    }
+
+    void setHitSlop(RectF hitSlop){
+        setHitSlop(hitSlop, false);
+    }
+
+    void setHitSlop(RectF hitSlop, boolean override) {
+        if (override || !mOverriddenHitSlop) {
+            mHitSlop = hitSlop;
+        }
+        if (override) {
+            mOverriddenHitSlop = true;
+        }
     }
 
     private static Boolean isTranslucent(int strokeColor) {
@@ -150,6 +175,9 @@ public class RCanvasPath extends View {
     }
 
     public void onAfterUpdateTransaction() {
+        if (mPathId == null) {
+            mPathId = Utility.generateId();
+        }
         if (mReceivedPoints) {
             mReceivedPoints = false;
             if (!mShouldAnimatePath) {
@@ -248,7 +276,7 @@ public class RCanvasPath extends View {
         }
     }
 
-    private Paint getPaint() {
+    protected Paint getPaint() {
         if (mPaint == null) {
             boolean isErase = mStrokeColor == Color.TRANSPARENT;
 
@@ -308,22 +336,43 @@ public class RCanvasPath extends View {
 
     //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
     @TargetApi(19)
-    boolean isPointOnPath(float x, float y, float r, Region boundingRegion) {
-        float radius = r;       //Math.max((int)(strokeWidth * 0.5), r);
+    boolean isPointOnPath(final PointF point) {
+        if (mPoints.size() == 0) {
+            return false;
+        }
+
+        RectF finalHitRect = Utility.applyHitSlop(point, mHitSlop);
+        Rect roundedHitRect = new Rect();
+        finalHitRect.roundOut(roundedHitRect);
+
         Path path = mPath == null ? evaluatePath(): mPath;
-        Path mTouchPath = new Path();
-        mTouchPath.addCircle(x, y, radius, Path.Direction.CW);
+        //Path mTouchPath = new Path();
+        //mTouchPath.addRect(finalHitRect, Path.Direction.CW);
 
         Region region1 = new Region();
-        region1.setPath(mTouchPath, new Region((int)(Math.max(x - radius, 0)), (int)(Math.max(y - radius, 0)), (int)(Math.max(x + radius, 0)), (int)(Math.max(y + radius, 0))));
+        region1.set(roundedHitRect);
         Region region2 = new Region();
-        region2.setPath(path, boundingRegion);
+        region2.setPath(path, Utility.getViewRegion((View) getParent()));
 
-        return mTouchPath.op(path, Path.Op.INTERSECT);
+        //mTouchPath.op(path, Path.Op.INTERSECT);
+        //return mTouchPath.isEmpty();
+        //return mTouchPath.op(path, Path.Op.INTERSECT);
+        Log.d(TAG, "regions: " + roundedHitRect + " " + finalHitRect+"  " +  region1 + "  " + region2);
+        Log.d(TAG, "isPointOnPath: " + (!region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT)) + "  " + isPointOnPath1(point));
 
-        //Log.d("RNSketchCanvas", "isPointOnPath: r: " + r + ", left: " + Math.max(x - radius, 0)+ ", top: " + Math.max(y - radius, 0)+ ", right: " +Math.max(x + radius, 0)+ ", bottom: " + Math.max(y + radius, 0));
-        //return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
-        //return region1.op(region2, Region.Op.INTERSECT);
+        return !region1.quickReject(region2) && region1.op(region2, Region.Op.INTERSECT);
+    }
+
+    @TargetApi(19)
+    boolean isPointOnPath1(final PointF point) {
+        RectF finalHitRect = Utility.applyHitSlop(point, mHitSlop);
+        Rect roundedHitRect = new Rect();
+        finalHitRect.roundOut(roundedHitRect);
+        Path path = mPath == null ? evaluatePath(): mPath;
+        Region region1 = new Region();
+        region1.set(roundedHitRect);
+        region1.setPath(path, region1);
+        return !region1.isEmpty();
     }
 
     public WritableMap toWritableMap() {
@@ -341,7 +390,7 @@ public class RCanvasPath extends View {
             for(PointF point: mPoints){
                 arr.pushMap(Utility.toWritablePoint(point));
             }
-            path.putArray("mPoints", arr);
+            path.putArray("points", arr);
         }
 
         return path;

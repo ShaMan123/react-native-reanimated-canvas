@@ -1,6 +1,8 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
@@ -39,11 +41,10 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
                 public void execute(NativeViewHierarchyManager nvhm) {
                     RCanvas view = (RCanvas) nvhm.resolveView(tag);
                     PathIntersectionHelper intersectionHelper = view.getIntersectionHelper();
-                    float nativeX = PixelUtil.toPixelFromDIP(x);
-                    float nativeY = PixelUtil.toPixelFromDIP(y);
+                    PointF point = new PointF(PixelUtil.toPixelFromDIP(x), PixelUtil.toPixelFromDIP(y));
                     success.invoke(pathId == null ?
-                            intersectionHelper.isPointOnPath(nativeX, nativeY):
-                            intersectionHelper.isPointOnPath(nativeX, nativeY, pathId)
+                            intersectionHelper.isPointOnPath(point):
+                            intersectionHelper.isPointOnPath(point, pathId)
                     );
                 }
             });
@@ -51,7 +52,7 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             error.invoke(e);
         }
     }
-
+/*
     @ReactMethod
     public void setTouchRadius(final int tag, final float r, final Callback success, final Callback error){
         try {
@@ -68,4 +69,6 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             error.invoke(e);
         }
     }
+
+ */
 }

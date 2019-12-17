@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View } from "react-native";
+import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View, Insets } from "react-native";
 import Animated from 'react-native-reanimated';
 import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
 
@@ -63,12 +63,24 @@ interface NativeTouchProps {
   onLongPress?: (e: NativeTouchEvent) => void
 }
 
+interface ExtendedInsets extends Insets {
+  /**overrides left & right insets */
+  horizontal?: number,
+  /**overrides top & bottom insets */
+  vertical?: number
+}
+
 export interface RCanvasProps extends NativeTouchProps {
   style?: StyleProp<ViewStyle>
   strokeColor?: string | Animated.Adaptable<number>
   strokeWidth?: Animated.Adaptable<number>
   paths?: PathData[]
   touchEnabled?: boolean | TouchStates
+
+  /**
+   * pass a rect or a number to apply all insets equally
+   */
+  hitSlop?: ExtendedInsets | number
 
   /**
    * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
@@ -91,24 +103,21 @@ export interface RCanvasProps extends NativeTouchProps {
   onPathsChange?: (e: PathsChangeEvent) => void,
 }
 
-export type RCanvasProperties = React.PropsWithChildren<RCanvasProps & ViewProps & PanGestureHandlerProperties>;
-
+export type RCanvasProperties = React.PropsWithChildren<ViewProps & PanGestureHandlerProperties & RCanvasProps>;
 
 export type RCanvasRef = {
   clear(): void
   undo(): null | string
 
-  getPaths(): Path[]
-  currentPath(): Path
-  addPath(data: Path): void
-  addPaths(paths: Path[]): void
+  getPaths(): PathData[]
+  currentPath(): PathData
+  addPath(data: PathData): void
+  addPaths(paths: PathData[]): void
   deletePath(id: string): void
   deletePaths(pathIds: string[]): void
   setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 
   dispatchCommand(command: Commands, data?: any[]): void
-
-  setTouchRadius(radius: number): void
 
   /**
  * @param x Set it to `evt.nativeEvent.locationX`
@@ -129,8 +138,9 @@ export type RCanvasRef = {
    * 
    * @param x
    * @param y
+   * @param id the path's id
    */
-  startPath(x: number, y: number): void
+  startPath(x: number, y: number, id?: string): void
   /**
    * add a point to the current path
    * use this method to customize touch handling or to mock drawing animations
@@ -139,8 +149,9 @@ export type RCanvasRef = {
    * 
    * @param x
    * @param y
+   * @param id the path's id
    */
-  addPoint(x: number, y: number): void
+  addPoint(x: number, y: number, id?: string): void
   /**
    * close the current path
    * use this method to customize touch handling or to mock drawing animations

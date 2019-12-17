@@ -5,9 +5,9 @@ import { TapGestureHandler, BorderlessButton, LongPressGestureHandler, TapGestur
 import { styles } from './common';
 import Animated, { Easing } from 'react-native-reanimated';
 import { RCanvasPath, RAnimatedCanvasModule, RCanvasModule, PathIntersectionResponse } from 'react-native-reanimated-canvas';
-import { UIManager } from 'react-native';
+import { UIManager, StatusBar } from 'react-native';
 const { View, cond, not, set, sub, greaterOrEq, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
-
+//StatusBar.setHidden(true)
 function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
   const state = {
     finished: new Value(0),
@@ -94,7 +94,11 @@ export default function Basic() {
 
   const onTap = useMemo(() =>
     event<TapGestureHandlerStateChangeEvent>([{
-      nativeEvent: { x, y }
+      nativeEvent: ({ x: _x, y: _y }) => block([
+        set(x, _x),
+        set(y, _y),
+        set(path, -1)
+      ])
     }]),
     [x, y]
   );
@@ -132,11 +136,11 @@ export default function Basic() {
   const width = useMemo(() => new Value(0), []);
   useCode(() =>
     block([
-      //RAnimatedCanvasModule.isPointOnPath(tag, x, y, path, error),
+      RAnimatedCanvasModule.isPointOnPath(tag, x, y, path, error),
       intercept('didUpdateDimensions', { windowPhysicalPixels: { width } }),
-      call([path, width], console.log)
+      call([path, x, y], console.log)
     ]),
-    [tag, x, y]
+    [x, y]
   );
 
   return (
@@ -163,6 +167,7 @@ export default function Basic() {
                   setPip(e.nativeEvent.target)
                 }}
                 defaultStrokeWidth={20}
+                hitSlop={20}
               >
                 <RCanvasPath
                   points={points}

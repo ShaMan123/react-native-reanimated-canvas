@@ -1,16 +1,22 @@
 package com.autodidact.reanimatedcanvas;
 
 import android.annotation.TargetApi;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Region;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
 
 public class PathIntersectionHelper {
-    private float mTouchRadius = 0;
+
     private final RCanvas mView;
 
     public PathIntersectionHelper(RCanvas view) {
@@ -26,38 +32,13 @@ public class PathIntersectionHelper {
     }
 
     @TargetApi(19)
-    private Region getRegion(){
-        return new Region(
-                mView.getLeft(),
-                mView.getTop(),
-                mView.getRight(),
-                mView.getBottom()
-        );
-    }
-
-    public void setTouchRadius(int value){
-        mTouchRadius = ((float) value);
-    }
-    public void setTouchRadius(float value){
-        mTouchRadius = value;
-    }
-
-    public float getTouchRadius(){
-        return mTouchRadius;
-    }
-
-    public float getTouchRadius(float strokeWidth){
-        return mTouchRadius <= 0 && strokeWidth > 0? (strokeWidth * 0.5f): mTouchRadius;
-    }
-
-    @TargetApi(19)
-    public boolean isTransparent(float x, float y, String pathId){
+    boolean isTransparent(PointF point, String pathId){
         ArrayList<RCanvasPath> mPaths = getPaths();
         int start = getIndex(pathId);
         //int beginAt = Math.min(start + 1, mPaths.size() - 1);
         for (int i = start; i < mPaths.size(); i++){
             RCanvasPath mPath = mPaths.get(i);
-            if(mPath.isPointOnPath(x, y, getTouchRadius(mPath.getStrokeWidth()), getRegion()) && mPath.getStrokeColor() == Color.TRANSPARENT) {
+            if(mPath.isPointOnPath(point) && mPath.getStrokeColor() == Color.TRANSPARENT) {
                 return true;
             }
         }
@@ -65,34 +46,71 @@ public class PathIntersectionHelper {
     }
 
     @TargetApi(19)
-    public boolean isPointOnPath(float x, float y, String pathId){
-        if(isTransparent(x, y, pathId)) {
+    public boolean isPointOnPath(PointF point, String pathId){
+        if(isTransparent(point, pathId)) {
             return false;
         }
         else {
             RCanvasPath mPath = getPaths().get(getIndex(pathId));
-            return mPath.isPointOnPath(x, y, getTouchRadius(mPath.getStrokeWidth()), getRegion());
+            return mPath.isPointOnPath(point);
         }
     }
 
     @TargetApi(19)
-    public WritableArray isPointOnPath(float x, float y){
+    public WritableArray isPointOnPath(PointF point){
         WritableArray array = Arguments.createArray();
-        Region mRegion = getRegion();
-        float r;
         RCanvasPath mPath;
         ArrayList<RCanvasPath> paths = getPaths();
         String id;
 
+        if (BuildConfig.DEBUG) {
+            DebugRect.draw(mView, point);
+        }
+
         for (int i = 0; i < paths.size(); i++) {
             mPath = paths.get(i);
             id = mPath.getPathId();
-            r = getTouchRadius(mPath.getStrokeWidth());
-            if(mPath.isPointOnPath(x, y, r, mRegion) && !isTransparent(x, y, id)){
+            if (mPath.isPointOnPath(point) && !isTransparent(point, id)) {
                 array.pushString(id);
             }
         }
 
         return array;
+    }
+
+    static class DebugRect extends RCanvasPath {
+        private RectF mRect;
+        private Paint mPaint;
+        DebugRect(RCanvas view,PointF point) {
+            super((ReactContext) view.getContext());
+            mRect = Utility.applyHitSlop(point, view.mHitSlop);
+            setStrokeColor(Color.BLUE);
+            setStrokeWidth(10);
+            mPaint = getPaint();
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            canvas.drawRect(mRect, mPaint);
+        }
+
+        static void draw(final RCanvas view, final PointF point) {
+            final DebugRect debugRect = new DebugRect(view, point);
+            view.addView(debugRect);
+            view.addPath(debugRect);
+            view.postInvalidateOnAnimation();
+            view.postDelayed(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            view.removeView(debugRect);
+                            view.removePath(debugRect);
+                            view.postInvalidateOnAnimation();
+                        }
+                    },
+                    1500
+            );
+        }
     }
 }

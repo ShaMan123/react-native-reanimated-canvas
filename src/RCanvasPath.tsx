@@ -1,18 +1,17 @@
 'use strict';
 
+import React, { Ref, useMemo } from 'react';
 import { requireNativeComponent } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { generatePathId, useStrokeColor } from './RCanvasBase';
 import { PATH_VIEW_MANAGER } from './RCanvasModule';
-import { Ref, useMemo } from 'react';
-import React from 'react';
-import { processColorProp } from './RCanvasBase';
 
 const { createAnimatedComponent } = Animated;
 
 const NativeRCanvasPath = createAnimatedComponent(requireNativeComponent(PATH_VIEW_MANAGER));
 
 function RCanvasPathBase(props: any, ref: Ref<any>) {
-  const strokeColor = useMemo(() => processColorProp(props.strokeColor), [props.strokeColor]);
+  const strokeColor = useStrokeColor(props.strokeColor);
   useMemo(() => {
     if (__DEV__ && !(props.index instanceof Animated.Node)) {
       console.warn(`RCanvasPath received bad props 'index', expected Animated.Node`);
@@ -21,6 +20,7 @@ function RCanvasPathBase(props: any, ref: Ref<any>) {
 
   return (
     <NativeRCanvasPath
+      id={generatePathId()}
       {...props}
       ref={ref}
       strokeColor={strokeColor}

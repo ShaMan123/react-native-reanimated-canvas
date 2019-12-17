@@ -8,7 +8,7 @@ import RCanvasBase, { processColorProp } from './RCanvasBase';
 import { VIEW_MANAGER, MODULE } from './RCanvasModule';
 import { Commands, RCanvasProperties, RCanvasRef, PathIntersectionResponse } from './types';
 
-const { callback, and, set, cond, add, block, eq, event, Value, proc, neq, invoke, dispatch, concat, useCode, color, map, View, call, debug, onChange } = Animated;
+const { callback, and, set, cond, add, block, eq, event, Value, proc, neq, invoke, dispatch, concat, useCode, not, map, View, call, debug, onChange } = Animated;
 
 const pathIdMem = new Value(0);
 
@@ -29,8 +29,8 @@ export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER
 export const setPathWidth = proc((tag, id, width) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ width }))));
 
 export const isPointOnPath = proc((tag, x, y, topPath, error) => {
-  const cb = callback<[0, PathIntersectionResponse]>(error, map.fromEnd([topPath]));
-  const isPointOnPath = invoke(MODULE, 'isPointOnPath', tag, x, y, new Value(), cb);
+  const cb = callback<PathIntersectionResponse>(map.fromEnd([0, topPath]), 0);
+  const isPointOnPath = invoke(MODULE, 'isPointOnPath', tag, x, y, new Value(), cb, callback());
   return safeDispatch(
     tag,
     [
@@ -48,7 +48,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const ref = useRef<RCanvasRef>();
   const panRef = useRef<RCanvasRef>();
   const tag = useValue(0);
-  const n = useValue(0);
+  const id = useMemo(() => stringId(pathIdMem), [pathIdMem]);
   const x = useValue(0);
   const y = useValue(0);
   const isActive = useValue(0);
@@ -103,17 +103,17 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   useCode(() =>
     block([
       cond(
-        eq(state, State.BEGAN),
+        eq(state, State.ACTIVE),
         [
-          set(pathIdMem, add(pathIdMem, 1)),
-          startPath(tag, stringId(pathIdMem), strokeColor, strokeWidth),
-          set(isActive, 1)
-        ]
-      ),
-      cond(
-        and(eq(state, State.ACTIVE), isActive),
-        [
-          addPoint(tag, stringId(pathIdMem), x, y),
+          cond(
+            not(isActive),
+            [
+              set(pathIdMem, add(pathIdMem, 1)),
+              startPath(tag, id, strokeColor, strokeWidth),
+              set(isActive, 1),
+            ]
+          ),
+          addPoint(tag, id, x, y),
         ]
       ),
       cond(
@@ -132,7 +132,9 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     props.onLayout && props.onLayout(e);
   }, [tag, props.onLayout]);
 
-  useImperativeHandle(forwardedRef, () => _.assign(panRef.current, ref.current ? ref.current.module() : {}));
+  useImperativeHandle(forwardedRef, () => {
+    return _.assign(panRef.current, ref.current ? ref.current.module() : {})
+  });
 
   return (
     <PanGestureHandler

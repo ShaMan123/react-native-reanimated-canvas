@@ -1,8 +1,10 @@
 package com.autodidact.reanimatedcanvas;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -10,6 +12,7 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     private final static String NAME = "ReanimatedCanvasPathManager";
+    private final static String PROPS_ID = "id";
     private final static String PROPS_POINTS = "points";
     private final static String PROPS_ANIMATE = "animate";
     private final static String PROPS_ANIMATION_CONTROLLER = "index";
@@ -28,6 +31,11 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     @Override
     protected RCanvasPath createViewInstance(@NonNull ThemedReactContext reactContext) {
         return new RCanvasPath(reactContext);
+    }
+
+    @ReactProp(name = PROPS_ID)
+    public void setHardwareAccelerated(RCanvasPath view, String id) {
+        view.setPathId(id);
     }
 
     @ReactProp(name = RCanvasManager.PROPS_HARDWARE_ACCELERATED)
@@ -58,6 +66,11 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     @ReactProp(name = PROPS_ANIMATION_CONTROLLER)
     public void setPathAnimationController(RCanvasPath view, int index) {
         view.commitPoint(index);
+    }
+
+    @ReactProp(name = RCanvasManager.PROPS_HIT_SLOP)
+    public void setHitSlop(RCanvasPath view, @Nullable ReadableMap hitSlop) {
+        view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
     }
 
     @Override
