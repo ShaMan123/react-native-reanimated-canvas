@@ -4,22 +4,25 @@
     "type": "git",
     "url": "https://github.com/ShaMan123/react-native-reanimated-canvas"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a light-weight low-level responsive sketching component",
-  "author": "Terry Lin",
-  "contributors": [
-    "ShaMan123 (https://github.com/ShaMan123)"
-  ],
+  "author": "ShaMan123 (https://github.com/ShaMan123)",
+  "contributors": [],
   "main": "src/index.ts",
   "keywords": [
     "react-native",
     "react-native-sketch",
+    "react-native-sketch-canvas",
     "react-native-svg",
     "react",
     "native",
     "sketch",
+    "canvas",
     "svg",
-    "draw"
+    "draw",
+    "path",
+    "intersect",
+    "paint"
   ],
   "nativePackage": true,
   "license": "MIT",

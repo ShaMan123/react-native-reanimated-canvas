@@ -15,10 +15,11 @@ const VERSION_TAG = argv.tag || (isRelease ? 'latest' : 'snapshot');
 const VERSION_INC = _.defaultTo(argv._.shift(), 'patch');
 
 function run() {
+    /*
     if (!validateEnv()) {
         return;
     }
-
+*/
     setupGit();
     createNpmRc();
     versionTagAndPublish();
