@@ -1,4 +1,4 @@
-package com.autodidact.reanimatedcanvas;
+package io.autodidact.reanimatedcanvas;
 
 import androidx.core.util.Pools;
 
