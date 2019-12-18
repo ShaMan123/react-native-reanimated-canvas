@@ -128,7 +128,7 @@ export type RCanvasRef = {
    */
   startPath(x: number, y: number, id?: string): void
   /**
-   * add a point to the current path
+   * add a point to the current/specified path
    * use this method to customize touch handling or to mock drawing animations
    * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
    * [startPath, addPoint, endPath]
