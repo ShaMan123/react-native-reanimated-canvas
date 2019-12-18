@@ -18,7 +18,6 @@ export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObje
       onMoveShouldSetPanResponderCapture: grant,
       onPanResponderGrant: (evt, gestureState) => {
         const e = evt.nativeEvent;
-        console.log('dfjk', e)
         ref.current.startPath(e.locationX, e.locationY);
       },
       onPanResponderMove: (evt, gestureState) => {
