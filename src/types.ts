@@ -70,6 +70,7 @@ export interface RCanvasProps extends NativeTouchProps {
 
   /**
    * pass a rect or a number to apply all insets equally
+   * hitSlop is used for `isPointOnPath`
    */
   hitSlop?: ExtendedInsets | number
 
