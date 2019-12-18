@@ -1,10 +1,9 @@
 'use strict';
 
-import * as _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import _ from 'lodash';
+import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { findNodeHandle, LayoutChangeEvent, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { requestPermissions } from './handlePermissions';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
 import { Commands, PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, StrokeEndEvent, StrokeStartEvent } from './types';
 
@@ -224,13 +223,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     ]
   );
 
-  useEffect(() => {
-    requestPermissions(
-      props.permissionDialogTitle || '',
-      props.permissionDialogMessage || '',
-    );
-  }, []);
-
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     size.set({ width, height });
@@ -276,10 +268,6 @@ ForwardedRCanvasBase.defaultProps = {
   strokeWidth: 5,
   touchEnabled: true,
   hitSlop: 20,
-
-  permissionDialogTitle: '',
-  permissionDialogMessage: '',
-
   hardwareAccelerated: false,
   useNativeDriver: false
 } as RCanvasProperties;
