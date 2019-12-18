@@ -13,10 +13,12 @@ Due to these major changes a lot more can be done with this library, including i
 
 
 ## WIP V2 - BREAKING CHANGES
+```bash
+yarn add react-native-reanimated-canvas@next
+```
 
 
 ## Installation
--------------
 Install from `npm` or `yarn` (RN >= 0.60)
 ```bash
 npm install react-native-reanimated --save
@@ -54,12 +56,12 @@ export default function Canvas(props: RCanvasProps) {
 ```
 
 ## Properties, Methods and Types
---------------
+
 Take a look at [types.ts](./src/types.ts).
 
 
 ## Custom Touch Handling
---------------
+
 If you don't use `react-native-gesture-handler` or `react-native-reanimated` consider doing so.
 These are excellent, performant libraries.
 Non the less, a basic implementation of this library is exposed for such a case.
@@ -71,16 +73,15 @@ import RCanvasBase, { useCanvasPanResponder, useCanvasGestureHandler } from 'rea
 ```
 
 ## Performance
--------------
-1. For non-transparent path, both Android and iOS performances are good. Because when drawing non-transparent path, only last segment is drawn on canvas, no matter how long the path is, CPU usage is stable at about 20% and 15% in Android and iOS respectively. 
-1. For transparent path, CPU usage stays at around 25% in Android, however, in iOS, CPU usage grows to 100% :(.
+
+1. Transparent path needs to be checked.
 1. All touches are now handled in native
 
 ## Example
--------------
+
 Check full example app in the [Example](./CanvasExample) folder.
 
 
 ## Troubleshooting
--------------
+
 Feel free to submit issues and PRs.
