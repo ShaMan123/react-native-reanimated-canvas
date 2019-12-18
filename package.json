@@ -4,8 +4,8 @@
     "type": "git",
     "url": "https://github.com/ShaMan123/react-native-reanimated-canvas"
   },
-  "version": "1.0.1",
-  "description": "a light-weight low-level responsive sketching component",
+  "version": "1.0.5",
+  "description": "a light-weight, low-level, responsive sketching component",
   "author": "ShaMan123 (https://github.com/ShaMan123)",
   "contributors": [],
   "main": "src/index.ts",
@@ -34,10 +34,7 @@
     "react-native-gesture-handler": "^1.5.0",
     "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.4.4",
-    "typescript": "^3.7.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^24.0.22",
     "@types/lodash": "^4.14.146",
@@ -48,6 +45,7 @@
     "react-native-gesture-handler": "^1.5.0",
     "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd",
     "semver": "^6.2.0",
+    "typescript": "^3.7.3",
     "yargs": "^14.0.0"
   },
   "scripts": {
@@ -58,6 +56,7 @@
     "/src",
     "/android",
     "/ios",
+    "base",
     "react-native-reanimated-canvas.d.ts",
     "ReanimatedCanvas.podspec"
   ],
