@@ -1,10 +1,9 @@
 
 import React, { useMemo } from 'react';
 import Animated from 'react-native-reanimated';
-import { RAnimatedCanvasModule, generatePathId, RCanvasRef, StrokeEndEvent, StrokeStartEvent, StrokeEvent } from 'react-native-reanimated-canvas';
-import LegacyCanvas from './LegacyCanvas';
+import { RACanvasModule, RCanvasRef, StrokeEndEvent, StrokeEvent, StrokeStartEvent } from 'react-native-reanimated-canvas';
 import { styles, useRefGetter } from './common';
-import _ from 'lodash';
+import LegacyCanvas from './LegacyCanvas';
 const { Value, event, View, cond, neq, block, and, set, eq, debug, onChange } = Animated;
 
 
@@ -22,7 +21,7 @@ export default function SyncedCanvases() {
             neq(id, 0),
             [
               set(currentId, id),
-              RAnimatedCanvasModule.startPath(tagB, currentId, color, width),
+              RACanvasModule.startPath(tagB, currentId, color, width),
             ]
           )
         )
@@ -33,7 +32,7 @@ export default function SyncedCanvases() {
   const onStrokeA = useMemo(() =>
     event<StrokeEvent>([{
       nativeEvent: ({ x, y, id }) => block([
-        cond(and(eq(currentId, id), neq(id, -1)), RAnimatedCanvasModule.addPoint(tagB, id, x, y))
+        cond(and(eq(currentId, id), neq(id, -1)), RACanvasModule.addPoint(tagB, id, x, y))
       ])
     }]),
     []
@@ -42,7 +41,7 @@ export default function SyncedCanvases() {
   const onStrokeEndA = useMemo(() =>
     event<StrokeEndEvent>([{
       nativeEvent: ({ id }) => block([
-        RAnimatedCanvasModule.endPath(tagB, id),
+        RACanvasModule.endPath(tagB, id),
         set(currentId, -1)
       ])
     }]),

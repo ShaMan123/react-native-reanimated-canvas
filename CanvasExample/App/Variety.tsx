@@ -5,7 +5,7 @@ import { RectButton } from 'react-native-gesture-handler';
 import Animated, { Easing } from 'react-native-reanimated';
 import LegacyCanvas from './LegacyCanvas';
 import { styles } from './common';
-const { cond, eq, sub, add, divide, abs, call, set, Value, event, concat, timing, color, modulo, invoke, dispatch, diff, useCode, lessThan, greaterThan, or, Code, map, callback, round, neq, createAnimatedComponent, Text, View, ScrollView, and, proc, Clock, multiply, onChange, not, defined, clockRunning, block, startClock, stopClock, spring } = Animated;
+const { cond, sub, add, divide, abs, set, Value, timing, color, modulo, useCode, lessThan, round, Text, View, Clock, multiply, not, clockRunning, block, startClock } = Animated;
 
 function runTimingLoop(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
   const state = {
@@ -158,7 +158,7 @@ export default function Variety() {
               );
               setAnimate(!animate)
             }}>
-            <Text style={{ color: 'white' }}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
+            <Text style={[{ color: 'white' }]}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
           </RectButton>
         </LegacyCanvas>
         <HelloSimpsons animate />

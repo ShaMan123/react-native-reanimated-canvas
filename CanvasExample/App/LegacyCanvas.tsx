@@ -1,9 +1,9 @@
-import React, { Component, forwardRef, useCallback, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
-import { FlatList, View, processColor, Text, StyleSheet } from 'react-native';
-import RCanvas, { RCanvasProperties, RCanvasRef } from 'react-native-reanimated-canvas';
-import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
-import { styles } from './common';
+import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { FlatList, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
+import RCanvas, { RCanvasProperties, RCanvasRef } from 'react-native-reanimated-canvas';
+import { styles } from './common';
 
 const { divide, sqrt, multiply } = Animated;
 

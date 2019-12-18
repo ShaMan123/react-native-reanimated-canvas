@@ -4,10 +4,7 @@ export { RCanvasModule };
 export * from './hooks';
 export * from './types';
 export { default as RControlledCanvas, generatePathId } from './RCanvasBase';
-import * as RAnimatedCanvasModule from './RCanvas';
-export { RAnimatedCanvasModule };
+import * as RACanvasModule from './RACanvasModule';
+export { RACanvasModule };
 export { default as RCanvasPath } from './RCanvasPath';
 export { default } from './RCanvas';
-
-
-

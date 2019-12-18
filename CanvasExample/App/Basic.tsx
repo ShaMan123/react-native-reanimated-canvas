@@ -4,7 +4,7 @@ import LegacyCanvas from './LegacyCanvas';
 import { TapGestureHandler, BorderlessButton, LongPressGestureHandler, TapGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import { styles } from './common';
 import Animated, { Easing } from 'react-native-reanimated';
-import { RCanvasPath, RAnimatedCanvasModule, RCanvasModule, PathIntersectionResponse, PathData } from 'react-native-reanimated-canvas';
+import { RCanvasPath, RACanvasModule, RCanvasModule, PathIntersectionResponse, PathData } from 'react-native-reanimated-canvas';
 import { UIManager, StatusBar } from 'react-native';
 const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
 //StatusBar.setHidden(true)
@@ -158,7 +158,7 @@ export default function Basic() {
   const width = useMemo(() => new Value(0), []);
   useCode(() =>
     block([
-      RAnimatedCanvasModule.isPointOnPath(tag, x, y, path, error),
+      RACanvasModule.isPointOnPath(tag, x, y, path),
 
       intercept('didUpdateDimensions', { windowPhysicalPixels: { width } }),
 
@@ -175,7 +175,7 @@ export default function Basic() {
           path,
           cond(
             eq(bip, 0),
-            RAnimatedCanvasModule.getPath(tag, path, callback<PathData>({ width: strokeWidth })),
+            RACanvasModule.getPath(tag, path, callback<PathData>({ width: strokeWidth })),
           )
         ),
         onChange(
@@ -183,7 +183,7 @@ export default function Basic() {
           cond(
             greaterThan(strokeWidth, 0),
             [
-              RAnimatedCanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
+              RACanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
               set(bip, 1)
             ]
           )
@@ -193,7 +193,7 @@ export default function Basic() {
           cond(
             bip,
             [
-              runDelayed(RAnimatedCanvasModule.setPathWidth(tag, path, strokeWidth)),
+              runDelayed(RACanvasModule.setPathWidth(tag, path, strokeWidth)),
               set(bip, 0)
             ]
           )

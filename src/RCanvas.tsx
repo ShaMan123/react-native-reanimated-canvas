@@ -4,45 +4,11 @@ import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useR
 import { processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
+import { addPoint, endPath, pathIdMem, startPath, stringId } from './RACanvasModule';
 import RCanvasBase, { processColorProp } from './RCanvasBase';
-import { VIEW_MANAGER, MODULE } from './RCanvasModule';
-import { Commands, RCanvasProperties, RCanvasRef, PathIntersectionResponse, PathData } from './types';
+import { RCanvasProperties, RCanvasRef } from './types';
 
-const { callback, and, set, cond, add, block, eq, event, Value, proc, neq, invoke, dispatch, concat, useCode, not, map, View, call, debug, onChange } = Animated;
-
-const pathIdMem = new Value(0);
-
-export const stringId = proc((id) => concat('RACanvasPath', id));
-
-export const safeDispatch = proc((tag, node) => cond(neq(tag, 0), node));
-
-export const startPath = proc((tag, id, color, width) => {
-  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.startPath, tag, id, color, width));
-});
-
-export const addPoint = proc((tag, id, x, y) => {
-  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.addPoint, tag, x, y, id));
-});
-
-export const endPath = proc((tag, id) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endPath, tag)));
-
-export const setPathWidth = proc((tag, id, width) => safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ width }))));
-
-export const getPath = proc((tag, id, cb) => {
-  return safeDispatch(tag, invoke(MODULE, 'getPath', tag, id, 0, cb, callback()));
-});
-
-export const isPointOnPath = proc((tag, x, y, topPath, error) => {
-  const cb = callback<PathIntersectionResponse>(map.fromEnd([topPath]), 0);
-  const isPointOnPath = invoke(MODULE, 'isPointOnPath', tag, x, y, new Value(), cb, callback());
-  return safeDispatch(
-    tag,
-    [
-      onChange(x, isPointOnPath),
-      onChange(y, isPointOnPath),
-    ]
-  );
-});
+const { set, cond, add, block, eq, event, Value, useCode, not, View } = Animated;
 
 function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
