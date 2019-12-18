@@ -54,7 +54,21 @@ export default function Canvas(props: RCanvasProps) {
 ```
 
 ## Properties, Methods and Types
+--------------
 Take a look at [types.ts](./src/types.ts).
+
+
+## Custom Touch Handling
+--------------
+If you don't use `react-native-gesture-handler` or `react-native-reanimated` consider doing so.
+These are excellent, performant libraries.
+Non the less, a basic implementation of this library is exposed for such a case.
+Take a look at [JSTouchHandling](./CanvasExample/App/JSTouchHandling.tsx).
+You will have to set up touch handling yourself, you can use exposed hooks for common usage.
+
+```ts
+import RCanvasBase, { useCanvasPanResponder, useCanvasGestureHandler } from 'react-native-reanimated-canvas/base';
+```
 
 ## Performance
 -------------
