@@ -1,13 +1,12 @@
 'use strict';
 
-import React, { MutableRefObject, useCallback, useMemo } from 'react';
+import { MutableRefObject, useCallback, useMemo } from 'react';
 import { PanResponder } from 'react-native';
-import { RCanvasProperties } from './types';
+import { RCanvasProperties, RCanvasRef } from './types';
 
-export function useSketchCanvasResponder(props: RCanvasProperties, ref: MutableRefObject<any>) {
-  const { touchEnabled } = props;
+export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObject<RCanvasRef>) {
   const grant = useCallback((evt) =>
-    touchEnabled ? evt.nativeEvent.touches.length === 1 : false,  //gestureState.numberActiveTouches === 1;
+    touchEnabled && evt.nativeEvent.touches.length === 1,  //gestureState.numberActiveTouches === 1;
     [touchEnabled]
   );
 
@@ -19,6 +18,7 @@ export function useSketchCanvasResponder(props: RCanvasProperties, ref: MutableR
       onMoveShouldSetPanResponderCapture: grant,
       onPanResponderGrant: (evt, gestureState) => {
         const e = evt.nativeEvent;
+        console.log('dfjk', e)
         ref.current.startPath(e.locationX, e.locationY);
       },
       onPanResponderMove: (evt, gestureState) => {
@@ -35,28 +35,31 @@ export function useSketchCanvasResponder(props: RCanvasProperties, ref: MutableR
   return panResponder.panHandlers;
 }
 
-function useSketchCanvasHandler(props: RCanvasProperties, ref: MutableRefObject<any>) {
-  const { touchEnabled } = props;
-  /*
+export function useCanvasGestureHandler(props: RCanvasProperties, ref: MutableRefObject<RCanvasRef>) {
+  const { PanGestureHandlerStateChangeEvent, State } = require('react-native-gesture-handler');
   const onHandlerStateChange = useCallback((e: PanGestureHandlerStateChangeEvent) => {
-    if (e.nativeEvent.state === GHState.BEGAN) this.startPath(e.nativeEvent.x, e.nativeEvent.y);
-    if (e.nativeEvent.oldState === GHState.ACTIVE) this.endPath();
-  }
+    switch (e.nativeEvent.state) {
+      case State.BEGAN:
+        ref.current.startPath(e.nativeEvent.x, e.nativeEvent.y);
+        break;
+      case State.END:
+        ref.current.endPath();
+        break;
+    }
+    props.onHandlerStateChange && props.onHandlerStateChange(e);
+  }, [ref, props.onHandlerStateChange]);
 
-  onGestureEvent = (e) => {
-    this.addPoint(e.nativeEvent.x, e.nativeEvent.y);
-    this.props.onGestureEvent && this.props.onGestureEvent(e);
-  }
-  */
-
+  const onGestureEvent = useCallback((e) => {
+    ref.current.addPoint(e.nativeEvent.x, e.nativeEvent.y);
+    props.onGestureEvent && props.onGestureEvent(e);
+  }, [ref, props.onGestureEvent]);
 
   return useMemo(() => {
-
     return {
-      enabled: touchEnabled,
+      enabled: props.touchEnabled || props.enabled,
       maxPointers: 1,
       onGestureEvent,
       onHandlerStateChange
     }
-  }, [])
+  }, [props.touchEnabled, props.enabled, onHandlerStateChange, onGestureEvent]);
 }

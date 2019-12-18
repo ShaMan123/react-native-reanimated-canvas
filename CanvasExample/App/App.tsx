@@ -9,12 +9,14 @@ import Basic from './Basic';
 import Scrollable from './Scrollable';
 import Synced from './Synced';
 import Variety from './Variety';
+import JSTouchHandling from './JSTouchHandling';
 
 const SCREENS = {
   Basic: { screen: Basic, title: 'Basic' },
   Synced: { screen: Synced, title: 'Sync two canvases' },
   Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
   Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
+  JSTouchHandling: { screen: JSTouchHandling, title: 'Custom JS Touch Handling' },
 };
 
 _.map(SCREENS, ({ screen, title }) => _.set(screen, 'navigationOptions.title', title));
