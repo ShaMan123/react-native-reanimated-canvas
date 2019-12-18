@@ -3,12 +3,6 @@ import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, 
 import Animated from 'react-native-reanimated';
 import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
 
-/*
-declare module 'react-native-sketch-canvas' {
-
-}
-*/
-
 export enum Commands {
   startPath = 1,
   addPoint,
@@ -39,10 +33,7 @@ export type PathData = {
 
 export type TouchStates = 'draw' | 'touch' | 'none';
 
-export type PathIntersectionResponse = {
-  paths: string[],
-  topPath: string
-}
+export type PathIntersectionResponse = string[];
 
 export interface NativeStrokeEvent extends Point {
   id: string,
@@ -83,16 +74,6 @@ export interface RCanvasProps extends NativeTouchProps {
   hitSlop?: ExtendedInsets | number
 
   /**
-   * Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set
-   */
-  permissionDialogTitle?: string
-
-  /**
-   * Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set
-   */
-  permissionDialogMessage?: string
-
-  /**
    * Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true
    */
   hardwareAccelerated?: boolean
@@ -125,8 +106,13 @@ export type RCanvasRef = {
  * @param pathId Set to the pathId or undefined
  * @param callback If omitted the method returns a Promise
  */
-  isPointOnPath(x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-  isPointOnPath(x: number, y: number, pathId: never, callback: (error: any, result?: PathIntersectionResponse) => void): void
+  isPointOnPath<T extends string>(
+    x: number,
+    y: number,
+    pathId: T,
+    onSuccess: (result: T extends (never | null) ? PathIntersectionResponse : boolean) => void,
+    onFailure: (error: Error) => void
+  ): void
   isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
   isPointOnPath(x: number, y: number): Promise<PathIntersectionResponse>
 
