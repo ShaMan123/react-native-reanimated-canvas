@@ -4,7 +4,9 @@
 
 This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
 The android code has been heavily refactored to boost performance.
-Some features have been added and a lot of javascript has been removed making it more light weight and low-level, befitting `react-native-reanimated`.
+Some features have been added, some removed, making it more light weight and low-level, befitting `react-native-reanimated`.
+
+**NOTICE:** `iOS` is not yet supported.
 
 
 ## WIP V2 - BREAKING CHANGES
@@ -14,41 +16,36 @@ Some features have been added and a lot of javascript has been removed making it
 -------------
 Install from `npm` or `yarn` (RN >= 0.60)
 ```bash
+npm install react-native-reanimated --save
 npm install react-native-reanimated-canvas --save
 //  OR
+yarn add react-native-reanimated
 yarn add react-native-reanimated-canvas
-```
 
-### android
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  ...>
-+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-  ...
+//  For iOS
+cd ios && pod install
 ```
 
 ## Usage
 
-```javascript
+```ts
 import React, { Component } from 'react';
-import {
-  AppRegistry,
-  StyleSheet,
-  View,
-} from 'react-native';
+import RCanvas, { RCanvasProps, RCanavasPath } from 'react-native-reanimated-canvas';
 
-import AnimatedCanvas from 'react-native-reanimated-canvas';
-
-export default function(props) {
+export default function Canvas(props: RCanvasProps) {
   return (
-       <AnimatedCanvas
-            style={{ flex: 1 }}
-            strokeColor={'red'}
-            strokeWidth={7}
-          />
-    );
+    <RCanvas
+      style={{ flex: 1 }}
+      strokeColor='red'
+      strokeWidth={7}
+    >
+      <RCanvasPath
+        points={new Array(200).fill(0).map((v, i) => ({ x: i, y: i }))}
+        strokeWidth={20}
+        strokeColor='pink'
+      />
+    </RCanvas>
+  );
 }
 
 ```
@@ -63,46 +60,44 @@ export default function(props) {
 | onStrokeStart | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
 | onStrokeChanged | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
 | onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
-| onSketchSaved | `function` | An optional function which accpets 2 arguments `success` and `path`. If `success` is true, image is saved successfully and the saved image path might be in second argument. In Android, image path will always be returned. In iOS, image is saved to camera roll or file system, path will be set to null or image location respectively. |
-| onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
-| user | `string` | An identifier to identify who draws the path. Useful when undo between two users |
-| touchEnabled | `bool` | If false, disable touching. Default is true.  |
-| localSourceImage | `object` | `deprecated`, use `<Image />` |
-| hardwareAccelerated | `bool` | Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true |
-| permissionDialogTitle | `string` | Android Only: Provide a Dialog Title for the Image Saving PermissionDialog. Defaults to empty string if not set |
-| permissionDialogMessage | `string` | Android Only: Provide a Dialog Message for the Image Saving PermissionDialog. Defaults to empty string if not set |
+ onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
+| touchEnabled | `boolean | TouchState` | If false, disable touching. Default is true.  |
+| hardwareAccelerated | `boolean` | **Experimental** Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true |
 
 #### Methods
 -------------
 | Method | Description |
 | :------------ |:---------------|
 | clear() | Clear all the paths |
-| undo() | Delete the latest path. Can undo multiple times. |
-| addPath(path) | Add a path (see [below](#objects)) to canvas.  |
-| deletePath(id) | Delete a path with its `id` |
-| save(imageType, transparent, folder, filename, includeImage, cropToImageSize) | Save image to camera roll or filesystem. If `localSourceImage` is set and a background image is loaded successfully, set `includeImage` to true to include background image and set `cropToImageSize` to true to crop output image to background image.<br/>Android: Save image in `imageType` format with transparent background (if `transparent` sets to True) to **/sdcard/Pictures/`folder`/`filename`** (which is Environment.DIRECTORY_PICTURES).<br/>iOS: Save image in `imageType` format with transparent background (if `transparent` sets to True) to camera roll or file system. If `folder` and `filename` are set, image will save to **temporary directory/`folder`/`filename`** (which is NSTemporaryDirectory())  |
+| startPath(x: number, y: number, id?: string) |    start a new path<br/>
+   use this method to customize touch handling or to mock drawing animations<br/>
+   if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches<br/>
+   [startPath, addPoint, endPath]  |
+| addPoint(x: number, y: number, id?: string) |    add a point to the current/specified path<br/>
+   use this method to customize touch handling or to mock drawing animations<br/>
+   if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches<br/>
+   [startPath, addPoint, endPath] |
+| endPath() |    close the current path<br/>
+   use this method to customize touch handling or to mock drawing animations<br/>
+   if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches<br/>
+   [startPath, addPoint, endPath]  |
+| addPath(path: PathData) | Add a path (see [below](#PathData)) to canvas.  |
+| addPaths(path: PathData[]) | Add a path (see [below](#Properties)) to canvas.  |
+| deletePath(id: string) | Delete a path with its `id` |
+| deletePaths(ids: string[]) | Delete a path with its `id` |
 | getPaths() | Get the paths that drawn on the canvas |
-| getBase64(imageType, transparent, includeImage, cropToImageSize, callback) | Get the base64 of image and receive data in callback function, which called with 2 arguments. First one is error (null if no error) and second one is base64 result. |
-| isPointOnPath(x, y, pathId?, callback?) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise.
+| isPointOnPath(x: number, y: number, pathId?: string, onSuccess?: Function, onFailure?: Function) | Check if a point is part of a path. <br/>If `pathId` is passed, the method will return `true` or `false`. If it is omitted the method will return an array of `pathId`s that contain the point, defaulting to an empty array.<br/>If `callback` is omitted the method will return a promise.
 
-### Path object
-```javascript
+### PathData
+```ts
 {
-  drawer: 'user1',
-  size: { // the size of drawer's canvas
-    width: 480,
-    height: 640
-  },
-  path: {
-    id: 8979841, // path id
-    color: '#FF000000', // ARGB or RGB
-    width: 5,
-    data: [
-      "296.11,281.34",  // x,y
-      "293.52,284.64",
-      "290.75,289.73"
-    ]
-  }
+  id: 'RCanvasPath1', // path id
+  color: '#FF000000', // ARGB, RGB, rbgNumber
+  width: 5,
+  points: [
+    { x: 296.11, y:281.34 }, 
+    ...
+  ]
 }
 ```
 
@@ -114,7 +109,7 @@ export default function(props) {
 
 ## Example
 -------------
-Check full example app in the [Example](./CanvasExample) folder 
+Check full example app in the [Example](./CanvasExample) folder.
 
 
 ## Troubleshooting
