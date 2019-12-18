@@ -53,11 +53,11 @@ export default function Canvas(props: RCanvasProps) {
 
 ```
 
-#### Properties
+## Properties
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
-| ViewProps | `ViewProps` | pass any view prop you need |
+| hitSlop | `ViewProps` | pass any view prop you need |
 | strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
 | onStrokeStart | `event` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
@@ -67,12 +67,12 @@ export default function Canvas(props: RCanvasProps) {
 | touchEnabled | `boolean | TouchState` | If false, disable touching. Default is true.  |
 | hardwareAccelerated | `boolean` | **Experimental** Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true |
 
-#### Methods
+## Methods
 -------------
 | Method | Description |
 | :------------ |:---------------|
 | clear() | Clear all the paths |
-| startPath(x: number, y: number, id?: string) |    start a new path<br/>
+| startPath(x: number, y: number, id?: string) | start a new path<br/>
    use this method to customize touch handling or to mock drawing animations<br/>
    if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches<br/>
    [startPath, addPoint, endPath]  |
