@@ -94,12 +94,15 @@ function tryPublishAndTag(version) {
             console.log(`Released ${theCandidate}`);
             return;
         } catch (err) {
+            throw err;
+            /*
             const alreadyPublished = _.includes(err.toString(), 'You cannot publish over the previously published version');
             if (!alreadyPublished) {
                 throw err;
             }
             console.log(`previously published. retrying with increased ${VERSION_INC}...`);
             theCandidate = semver.inc(theCandidate, VERSION_INC);
+            */
         }
     }
 }
