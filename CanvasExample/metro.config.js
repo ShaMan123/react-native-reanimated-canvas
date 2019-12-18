@@ -9,21 +9,29 @@ const blacklist = require('metro-config/src/defaults/blacklist');
 const path = require('path');
 const pkg = require('./package.json');
 const _ = require('lodash');
+const { useLocalReanimatedModule, reanimatedLocalPath } = require('./dev.config');
+
+const watchFolders = [path.resolve(__dirname, '..')];
+const blacklisters = [];  //path.resolve(__dirname, '../node_modules'),
+const extraNodeModules = {};
+
+if (useLocalReanimatedModule) {
+  watchFolders.push(path.resolve(__dirname, '..', '../react-native-reanimated'));
+  blacklisters.concat(
+    path.resolve(__dirname, '..', '../react-native-reanimated/node_modules'),
+    path.resolve(__dirname, '..', '../react-native-reanimated/Example')
+  );
+  extraNodeModules['react-native-reanimated'] = reanimatedLocalPath;
+} else {
+  extraNodeModules['react-native-reanimated'] = path.resolve(__dirname, 'node_modules', 'react-native-reanimated');
+}
 
 const config = {
   resolver: {
-    blacklistRE: blacklist([
-      //path.resolve(__dirname, '../node_modules'),
-      path.resolve(__dirname, '..', '../react-native-reanimated/node_modules'),
-      path.resolve(__dirname, '..', '../react-native-reanimated/Example'),
-    ]),
-    //providesModuleNodeModules: _.keys(pkg.dependencies),
-    //extraNodeModules: _.mapValues({ ...pkg.dependencies, ...{ lodash: '' } }, (n) => path.resolve(__dirname, 'node_modules', n))
-    extraNodeModules: {
-      'react-native-reanimated': path.resolve(__dirname, '..', '../react-native-reanimated')
-    }
+    blacklistRE: blacklist(blacklisters),
+    extraNodeModules
   },
-  watchFolders: [path.resolve(__dirname, '..'), path.resolve(__dirname, '..', '../react-native-reanimated')],
+  watchFolders,
   transformer: {
     getTransformOptions: async () => ({
       transform: {

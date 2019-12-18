@@ -2,14 +2,21 @@
 
 const path = require('path');
 const root = path.resolve(__dirname, '..');
+const { useLocalReanimatedModule, reanimatedLocalPath } = require('./dev.config');
+
+const reanimatedModule = useLocalReanimatedModule ?
+  {
+    'react-native-reanimated': {
+      root: reanimatedLocalPath
+    }
+  } :
+  {};
 
 module.exports = {
   dependencies: {
     'react-native-reanimated-canvas': {
       root,
     },
-    'react-native-reanimated': {
-      root: path.resolve(root, '../react-native-reanimated')
-    }
-  },
+    ...reanimatedModule
+  }
 };
