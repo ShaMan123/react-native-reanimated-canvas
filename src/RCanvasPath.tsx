@@ -13,8 +13,8 @@ const NativeRCanvasPath = createAnimatedComponent(requireNativeComponent(PATH_VI
 function RCanvasPathBase(props: any, ref: Ref<any>) {
   const strokeColor = useStrokeColor(props.strokeColor);
   useMemo(() => {
-    if (__DEV__ && !(props.index instanceof Animated.Node)) {
-      console.warn(`RCanvasPath received bad props 'index', expected Animated.Node`);
+    if (__DEV__ && props.index && !(props.index instanceof Animated.Node)) {
+      console.warn(`RCanvasPath received bad 'index' prop, expected Animated.Node`);
     }
   }, [props.index]);
 
