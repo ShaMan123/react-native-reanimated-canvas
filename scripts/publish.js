@@ -88,6 +88,9 @@ function getCurrentBranchName() {
 
 function tryPublishAndTag(version) {
     let theCandidate = version;
+    tagAndPublish(theCandidate);
+    console.log(`Released ${theCandidate}`);
+    /*
     for (let retry = 0; retry < 5; retry++) {
         try {
             tagAndPublish(theCandidate);
@@ -95,16 +98,17 @@ function tryPublishAndTag(version) {
             return;
         } catch (err) {
             throw err;
-            /*
+            
             const alreadyPublished = _.includes(err.toString(), 'You cannot publish over the previously published version');
             if (!alreadyPublished) {
                 throw err;
             }
             console.log(`previously published. retrying with increased ${VERSION_INC}...`);
             theCandidate = semver.inc(theCandidate, VERSION_INC);
-            */
+            
         }
     }
+    */
 }
 
 function tagAndPublish(newVersion) {
