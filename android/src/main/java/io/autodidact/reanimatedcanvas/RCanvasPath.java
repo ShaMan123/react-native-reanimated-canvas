@@ -105,7 +105,7 @@ public class RCanvasPath extends View {
         }
     }
 
-    private static Boolean isTranslucent(int strokeColor) {
+    private static boolean isTranslucent(int strokeColor) {
         return ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
     }
 
@@ -329,7 +329,6 @@ public class RCanvasPath extends View {
         path.quadTo(pPoint.x, pPoint.y, mid2.x, mid2.y);
     }
 
-    //  see: https://stackoverflow.com/questions/11184397/path-intersection-in-android
     @TargetApi(19)
     boolean isPointOnPath(final PointF point) {
         if (mPoints.size() == 0) {
