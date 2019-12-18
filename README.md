@@ -13,6 +13,9 @@ Due to these major changes a lot more can be done with this library, including i
 
 
 ## WIP V2 - BREAKING CHANGES
+```bash
+yarn add react-native-reanimated-canvas@next
+```
 
 
 ## Installation
