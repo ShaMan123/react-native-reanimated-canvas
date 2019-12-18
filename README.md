@@ -1,10 +1,13 @@
 # react-native-reanimated-canvas
 
-### A light-weight low-level responsive sketching component
+### A light-weight, low-level, responsive sketching component
 
 This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
 The android code has been heavily refactored to boost performance.
+
 Some features have been added, some removed, making it more light weight and low-level, befitting `react-native-reanimated`.
+
+Due to these major changes a lot more can be done with this library, including integration with other libraries and component such as `react-native-svg`.
 
 **NOTICE:** `iOS` is not yet supported.
 
@@ -54,13 +57,13 @@ export default function Canvas(props: RCanvasProps) {
 -------------
 | Prop  | Type | Description |
 | :------------ |:---------------:| :---------------| 
-| style | `object` | Styles to be applied on canvas component |
+| ViewProps | `ViewProps` | pass any view prop you need |
 | strokeColor | `string` | Set the color of stroke, which can be #RRGGBB or #RRGGBBAA. If strokeColor is set to #00000000, it will automatically become an eraser. <br/>NOTE: Once an eraser path is sent to Android, Android View will disable hardware acceleration automatically. It might reduce the canvas performance afterward. |
 | strokeWidth | `number` | The thickness of stroke |
-| onStrokeStart | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
-| onStrokeChanged | `function` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
-| onStrokeEnd | `function` | An optional function called when user's finger leaves the canvas (end drawing) |
- onPathsChange | `function` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
+| onStrokeStart | `event` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger touches the canvas (starts to draw) |
+| onStrokeChanged | `event` | An optional function which accpets 2 arguments `x` and `y`. Called when user's finger moves |
+| onStrokeEnd | `event` | An optional function called when user's finger leaves the canvas (end drawing) |
+ onPathsChange | `event` | An optional function which accpets 1 argument `pathsCount`, which indicates the number of paths. Useful for UI controls. (Thanks to toblerpwn) |
 | touchEnabled | `boolean | TouchState` | If false, disable touching. Default is true.  |
 | hardwareAccelerated | `boolean` | **Experimental** Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true |
 
