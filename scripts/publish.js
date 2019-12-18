@@ -20,8 +20,8 @@ function run() {
         return;
     }
 */
-    setupGit();
-    createNpmRc();
+    //  setupGit();
+    //  createNpmRc();
     versionTagAndPublish();
 }
 
