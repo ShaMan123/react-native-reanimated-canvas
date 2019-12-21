@@ -5,6 +5,7 @@ import android.graphics.RectF;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -14,9 +15,11 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIImplementation;
 import com.facebook.react.uimanager.UIManagerCanvasHelper;
 import com.facebook.react.uimanager.UIManagerModule;
@@ -203,8 +206,13 @@ public class RCanvas extends ReactViewGroup {
                         //uiImplementation.manageChildren(map.keyAt(i), null, null, null, null, map.valueAt(i));
                     }
                     for (ReactShadowNode node: nodesToRemove) {
-                        UIManagerCanvasHelper.stubShadowNodeRegistry(uiImplementation, node);
+                        //UIManagerCanvasHelper.stubShadowNodeRegistry(uiImplementation, node);
+                        RCanvasPathManager.blacklist.add(node.getReactTag());
+                        node.dispose();
+                        node.setIsLayoutOnly(true);
+
                     }
+
                     //eventHandler.emitUpdate();
                 }
             };
