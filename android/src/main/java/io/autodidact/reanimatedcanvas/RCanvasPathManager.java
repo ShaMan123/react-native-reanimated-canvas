@@ -12,10 +12,21 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 
 public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     private final static String NAME = "ReanimatedCanvasPathManager";
+    /*
     private final static String PROPS_ID = "id";
     private final static String PROPS_POINTS = "points";
     private final static String PROPS_ANIMATE = "animate";
     private final static String PROPS_ANIMATION_CONTROLLER = "index";
+
+
+     */
+
+    @interface Props {
+        String ID = "id";
+        String POINTS = "points";
+        String ANIMATE = "animate";
+        String ANIMATION_CONTROLLER = "index";
+    }
 
     public RCanvasPathManager() {
         super();
@@ -33,42 +44,42 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
         return new RCanvasPath(reactContext);
     }
 
-    @ReactProp(name = PROPS_ID)
+    @ReactProp(name = Props.ID)
     public void setHardwareAccelerated(RCanvasPath view, String id) {
         view.setPathId(id);
     }
 
-    @ReactProp(name = RCanvasManager.PROPS_HARDWARE_ACCELERATED)
+    @ReactProp(name = RCanvasManager.Props.HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvasPath view, boolean useAcceleration) {
         view.setHardwareAcceleration(useAcceleration);
     }
 
-    @ReactProp(name = RCanvasManager.PROPS_STROKE_COLOR)
+    @ReactProp(name = RCanvasManager.Props.STROKE_COLOR)
     public void setStrokeColor(RCanvasPath view, int color) {
         view.setStrokeColor(color);
     }
 
-    @ReactProp(name = RCanvasManager.PROPS_STROKE_WIDTH)
+    @ReactProp(name = RCanvasManager.Props.STROKE_WIDTH)
     public void setStrokeWidth(RCanvasPath view, float width) {
         view.setStrokeWidth(PixelUtil.toPixelFromDIP(width));
     }
 
-    @ReactProp(name = PROPS_POINTS)
+    @ReactProp(name = Props.POINTS)
     public void setPoints(RCanvasPath view, ReadableArray points) {
         view.preCommitPoints(Utility.processPointArray(points));
     }
 
-    @ReactProp(name = PROPS_ANIMATE)
+    @ReactProp(name = Props.ANIMATE)
     public void setShouldAnimatePath(RCanvasPath view, Boolean animate) {
         view.shouldAnimatePath(animate);
     }
 
-    @ReactProp(name = PROPS_ANIMATION_CONTROLLER)
+    @ReactProp(name = Props.ANIMATION_CONTROLLER)
     public void setPathAnimationController(RCanvasPath view, int index) {
         view.commitPoint(index);
     }
 
-    @ReactProp(name = RCanvasManager.PROPS_HIT_SLOP)
+    @ReactProp(name = RCanvasManager.Props.HIT_SLOP)
     public void setHitSlop(RCanvasPath view, @Nullable ReadableMap hitSlop) {
         view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
     }

@@ -1,5 +1,7 @@
 package io.autodidact.reanimatedcanvas;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -15,15 +17,17 @@ public class RCanvasPackage implements ReactPackage {
     public RCanvasPackage() {
     }
 
+    @NonNull
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+    public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
             new RCanvasModule(reactContext)
         );
     }
 
+    @NonNull
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
+    public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
                 new RCanvasManager(),
                 new RCanvasPathManager()

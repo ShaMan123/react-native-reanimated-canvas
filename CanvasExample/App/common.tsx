@@ -1,8 +1,6 @@
 
-import React, { MutableRefObject, PropsWithChildren, useCallback, useContext, useMemo, useReducer, useRef } from 'react';
-import { Alert, Button, Image, Modal, StyleSheet, Text, View } from 'react-native';
-import { RCanvasRef } from '../../src/types';
-import _ from 'lodash';
+import { useCallback, useRef } from 'react';
+import { StyleSheet } from 'react-native';
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);

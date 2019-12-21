@@ -147,7 +147,7 @@ LegacyCanvas.defaultProps = {
   closeComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Close</Text></View >,
   clearComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Clear</Text></View >,
   eraseComponent: <View style={styles.functionButton}><Text style={{ color: 'white' }}>Eraser</Text></View >,
-  strokeComponent: (color) => (
+  strokeComponent: (color: any) => (
     <View style={[{ backgroundColor: color }, styles.strokeColorButton]} />
   ),
   strokeSelectedComponent: (color: string, index: number) => {

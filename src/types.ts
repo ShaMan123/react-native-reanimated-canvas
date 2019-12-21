@@ -4,14 +4,20 @@ import Animated from 'react-native-reanimated';
 import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
 
 export enum Commands {
-  startPath = 1,
-  addPoint,
-  endPath,
+  alloc = 1,
+  drawPoint,
+  endInteraction,
   clear,
   addPaths,
-  deletePaths,
-  changePath,
+  removePaths,
   setAttributes
+}
+
+export enum Methods {
+  isPointOnPath = 'isPointOnPath',
+  save = 'save',
+  restore = 'restore',
+  getPaths = 'getPaths'
 }
 
 export type Size = {
@@ -26,8 +32,8 @@ export type Point = {
 
 export type PathData = {
   id: string
-  color: string
-  width: number
+  strokeColor: string
+  strokeWidth: number
   points: Point[]
 }
 
@@ -39,11 +45,18 @@ export interface NativeStrokeEvent extends Point {
   id: string,
 }
 
+export interface NativeUpdateEvent {
+  strokeColor: number,
+  strokeWidth: number
+  paths: { [id: string]: PathData },
+}
+
 export type NativeTouchEvent = PathIntersectionResponse & Point;
 export type StrokeStartEvent = NativeSyntheticEvent<PathData>;
 export type StrokeEvent = NativeSyntheticEvent<NativeStrokeEvent>;
 export type StrokeEndEvent = NativeSyntheticEvent<PathData>;
 export type PathsChangeEvent = NativeSyntheticEvent<{ paths: string[] }>;
+export type UpdateEvent = NativeSyntheticEvent<NativeUpdateEvent>
 
 interface NativeTouchProps {
   /** set to true to handle touches with the native driver */
@@ -80,7 +93,7 @@ export interface RCanvasProps extends NativeTouchProps {
   hardwareAccelerated?: boolean
 
   onStrokeStart?: (e: StrokeStartEvent) => void
-  onStrokeChange?: (e: SketchEvent) => void
+  onStrokeChange?: (e: StrokeEvent) => void
   onStrokeEnd?: (e: StrokeEndEvent) => void
   onPathsChange?: (e: PathsChangeEvent) => void,
 }
@@ -88,15 +101,51 @@ export interface RCanvasProps extends NativeTouchProps {
 export type RCanvasProperties = React.PropsWithChildren<ViewProps & PanGestureHandlerProperties & RCanvasProps>;
 
 export type RCanvasRef = {
+
+  /**
+   * allocate a new path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * [startPath, addPoint, endPath]
+   * @param id when omitted a unique id is generated using `generatePathId()` and returned from the method
+   */
+  alloc(id?: string, strokeColor?: string | number, strokeWidth?: number): string
+  /**
+   * draw a point to the current/specified path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * [startPath, addPoint, endPath]
+   * 
+   * @param x
+   * @param y
+   * @param id the path's id
+   */
+  drawPoint(id: string, point: Point): void
+  /**
+   * end current interaction for path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * Must call this method when interaction ends
+   * [startPath, addPoint, endPath]
+   * @param id 
+   */
+  endInteraction(id: string): void
+
   clear(): void
-  undo(): null | string
 
   getPaths(): PathData[]
-  currentPath(): PathData
+
+  getPath(id: string): PathData | null
+
   addPath(data: PathData): void
+
   addPaths(paths: PathData[]): void
-  deletePath(id: string): void
-  deletePaths(pathIds: string[]): void
+
+  removePath(path: PathData): void
+  removePath(id: string): void
+
+  removePaths(pathIds: (string | PathData)[]): void
+
   setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 
   dispatchCommand(command: Commands, data?: any[]): void
@@ -118,34 +167,17 @@ export type RCanvasRef = {
   isPointOnPath(x: number, y: number): Promise<PathIntersectionResponse>
 
   /**
-   * start a new path
-   * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
-   * [startPath, addPoint, endPath]
-   * 
-   * @param x
-   * @param y
-   * @param id the path's id
+   * save paths' state
+   * @param onSuccess 
+   * @param onFailure 
    */
-  startPath(x: number, y: number, id?: string): void
-  /**
-   * add a point to the current/specified path
-   * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
-   * [startPath, addPoint, endPath]
-   * 
-   * @param x
-   * @param y
-   * @param id the path's id
-   */
-  addPoint(x: number, y: number, id?: string): void
-  /**
-   * close the current path
-   * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
-   * [startPath, addPoint, endPath]
-   * */
-  endPath(): void
+  save(): Promise<number>
+  save(
+    onSuccess?: (saveCount: number) => void,
+    onFailure?: (error: Error) => void
+  ): void
+
+  restore(saveCount?: number): Promise<void>
 
   getNode(): RCanvasRef
 

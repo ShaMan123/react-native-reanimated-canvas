@@ -9,17 +9,36 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.EventDispatcher;
 
+import java.util.Map;
+
 public class RCanvasEventHandler {
-    public final static String STROKE_START = "onStrokeStart";
-    public final static String STROKE_CHANGED = "onStrokeChange";
-    public final static String STROKE_END = "onStrokeEnd";
-    public final static String ON_PRESS = "onPress";
-    public final static String ON_LONG_PRESS = "onLongPress";
-    public final static String ON_PATHS_CHANGE = "onPathsChange";
+    @interface JSEventNames {
+        String STROKE_START = "onStrokeStart";
+        String STROKE_CHANGED = "onStrokeChange";
+        String STROKE_END = "onStrokeEnd";
+        String ON_PRESS = "onPress";
+        String ON_LONG_PRESS = "onLongPress";
+        String ON_PATHS_CHANGE = "onPathsChange";
+        String ON_UPDATE = "onUpdate";
+    }
+
+    public static Map<String, Object> getExportedCustomDirectEventTypeConstants() {
+        return MapBuilder.<String, Object>builder()
+                .put(JSEventNames.STROKE_START, MapBuilder.of("registrationName", JSEventNames.STROKE_START))
+                .put(JSEventNames.STROKE_CHANGED, MapBuilder.of("registrationName", JSEventNames.STROKE_CHANGED))
+                .put(JSEventNames.STROKE_END, MapBuilder.of("registrationName", JSEventNames.STROKE_END))
+                .put(JSEventNames.ON_PRESS, MapBuilder.of("registrationName", JSEventNames.ON_PRESS))
+                .put(JSEventNames.ON_LONG_PRESS, MapBuilder.of("registrationName", JSEventNames.ON_LONG_PRESS))
+                .put(JSEventNames.ON_PATHS_CHANGE, MapBuilder.of("registrationName", JSEventNames.ON_PATHS_CHANGE))
+                .put(JSEventNames.ON_UPDATE, MapBuilder.of("registrationName", JSEventNames.ON_UPDATE))
+                .build();
+    }
 
     private RCanvas mView;
     private TouchState mTouchState;
@@ -35,11 +54,12 @@ public class RCanvasEventHandler {
     public RCanvasEventHandler(RCanvas view){
         mView = view;
         mEventDispatcher = ((ReactContext) view.getContext()).getNativeModule(UIManagerModule.class).getEventDispatcher();
-        detector =  new GestureDetector(mView.getContext(), new GestureListener()){
+        final GestureListener gestureListener = new GestureListener();
+        detector =  new GestureDetector(mView.getContext(), gestureListener) {
             @Override
             public boolean onTouchEvent(MotionEvent ev) {
-                if(ev.getAction() == MotionEvent.ACTION_UP && mView.getCurrentPath() != null) {
-                    mView.endPath();
+                if(ev.getAction() == MotionEvent.ACTION_UP) {
+                    gestureListener.endPath();
                 }
                 return super.onTouchEvent(ev);
             }
@@ -84,10 +104,19 @@ public class RCanvasEventHandler {
 
     private class GestureListener implements GestureDetector.OnGestureListener {
         private boolean isLongPress;
+        private String pathId;
+
+        private void endPath() {
+            if (pathId != null) {
+                mView.endInteraction(pathId);
+                pathId = null;
+            }
+        }
+
         @Override
         public boolean onDown(MotionEvent event) {
             int action = event.getAction();
-            if(mView.getCurrentPath() != null) mView.endPath();
+            endPath();
             prevTouchAction = action;
             isLongPress = false;
             return true;
@@ -101,7 +130,7 @@ public class RCanvasEventHandler {
         @Override
         public void onLongPress(MotionEvent motionEvent) {
             isLongPress = true;
-            if(mShouldFireOnLongPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), ON_LONG_PRESS);
+            if(mShouldFireOnLongPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), JSEventNames.ON_LONG_PRESS);
         }
 
         @Override
@@ -115,21 +144,19 @@ public class RCanvasEventHandler {
             PointF point = new PointF(event.getX(), event.getY());
 
             if(prevTouchAction == MotionEvent.ACTION_DOWN){
-                mView.startPath();
-                emitStrokeStart();
+                pathId = mView.init();
+                emitStrokeStart(pathId);
             }
 
-            RCanvasPath mCurrentPath = mView.getCurrentPath();
-
             if(shouldFail(event)) {
-                if(mCurrentPath != null) mView.endPath();
+                endPath();
                 event.setAction(MotionEvent.ACTION_CANCEL);
                 prevTouchAction = action;
                 return false;
             }
 
-            if(mCurrentPath != null){
-                mView.addPoint(point);
+            if (pathId != null){
+                mView.drawPoint(pathId, point);
             }
 
             prevTouchAction = action;
@@ -139,11 +166,12 @@ public class RCanvasEventHandler {
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
             if(mShouldFireOnPressEvent) {
-                if(!isLongPress) emitPress(motionEvent.getX(), motionEvent.getY(), ON_PRESS);
+                if(!isLongPress) emitPress(motionEvent.getX(), motionEvent.getY(), JSEventNames.ON_PRESS);
                 return true;
             }
             return false;
         }
+
     }
 
     private boolean shouldFail(MotionEvent event){
@@ -155,36 +183,32 @@ public class RCanvasEventHandler {
         mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
     }
 
-    public void emitStrokeStart(){
-        emit(STROKE_START, mView.getCurrentPath().toWritableMap(false));
+    public void emitStrokeStart(String pathId) {
+        emit(JSEventNames.STROKE_START, mView.getPath(pathId).toWritableMap(false));
     }
 
-    public void maybeEmitStrokeChange(PointF p){
-        maybeEmitStrokeChange(p.x, p.y);
-    }
-
-    public void maybeEmitStrokeChange(float x, float y) {
+    public void maybeEmitStrokeChange(String pathId, PointF point) {
         if (mShouldFireOnStrokeChangedEvent) {
             WritableMap e = Arguments.createMap();
-            e.putDouble("x", PixelUtil.toDIPFromPixel(x));
-            e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-            e.merge(mView.getCurrentPath().toWritableMap(false));
-            emit(STROKE_CHANGED, e);
+            e.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
+            e.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
+            e.merge(mView.getPath(pathId).toWritableMap(false));
+            emit(JSEventNames.STROKE_CHANGED, e);
         }
     }
 
-    public void emitStrokeEnd(){
-        emit(STROKE_END, mView.getCurrentPath().toWritableMap());
+    public void emitStrokeEnd(String pathId){
+        emit(JSEventNames.STROKE_END, mView.getPath(pathId).toWritableMap());
     }
 
     public void emitPathsChange(){
         WritableMap event = Arguments.createMap();
         WritableArray paths = Arguments.createArray();
-        for (RCanvasPath path: mView.getPaths()) {
+        for (RCanvasPath path: mView.paths()) {
             paths.pushString(path.getPathId());
         }
         event.putArray("paths", paths);
-        emit(RCanvasEventHandler.ON_PATHS_CHANGE, event);
+        emit(JSEventNames.ON_PATHS_CHANGE, event);
     }
 
     public void emitPress(float x, float y, String eventName){
@@ -196,4 +220,16 @@ public class RCanvasEventHandler {
         emit(eventName, e);
     }
 
+    void emitUpdate() {
+        WritableNativeMap event = new WritableNativeMap();
+        WritableNativeMap data = new WritableNativeMap();
+        for (RCanvasPath path: mView.paths()) {
+            data.putMap(path.getPathId(), path.toWritableMap());
+        }
+        event.putMap("paths", data);
+        RCanvas.CanvasState currentState = mView.mStateStack.peek();
+        event.putInt("strokeColor", currentState.strokeColor);
+        event.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
+        emit(JSEventNames.ON_UPDATE, data);
+    }
 }

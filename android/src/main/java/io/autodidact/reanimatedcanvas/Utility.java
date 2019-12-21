@@ -47,17 +47,19 @@ public final class Utility {
         return new StringBuilder("aSketchCanvasPath").append(i).toString();
     }
 
+    static PointF processPoint(ReadableMap point) {
+        return new PointF(
+                PixelUtil.toPixelFromDIP(point.getDouble("x")),
+                PixelUtil.toPixelFromDIP(point.getDouble("y"))
+        );
+    }
+
     static ArrayList<PointF> processPointArray(ReadableArray points){
         ArrayList<PointF> processedPoints;
         processedPoints = new ArrayList<>(points.size());
         for (int i=0; i < points.size(); i++) {
             ReadableMap p = points.getMap(i);
-            processedPoints.add(
-                    new PointF(
-                            PixelUtil.toPixelFromDIP(p.getDouble("x")),
-                            PixelUtil.toPixelFromDIP(p.getDouble("y"))
-                    )
-            );
+            processedPoints.add(processPoint(p));
         }
         return processedPoints;
     }

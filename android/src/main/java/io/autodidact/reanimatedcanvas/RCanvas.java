@@ -2,11 +2,12 @@ package io.autodidact.reanimatedcanvas;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.facebook.react.bridge.JSApplicationCausedNativeException;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -17,15 +18,16 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Stack;
+
+import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 
 public class RCanvas extends ReactViewGroup {
 
-    private ArrayList<RCanvasPath> mPaths = new ArrayList<RCanvasPath>();
-    private RCanvasPath mCurrentPath = null;
+    private ArrayList<RCanvasPath> mPaths = new ArrayList<>();
 
     private boolean mHardwareAccelerated = false;
-    private int mStrokeColor;
-    private float mStrokeWidth;
     protected RectF mHitSlop = new RectF();
 
     private final RCanvasEventHandler eventHandler;
@@ -35,46 +37,36 @@ public class RCanvas extends ReactViewGroup {
 
     private boolean mChangedChildren = false;
 
+    protected Stack<CanvasState> mStateStack;
+
+    static class CanvasState {
+        int strokeColor;
+        float strokeWidth;
+
+        CanvasState(int strokeColor, float strokeWidth) {
+            this();
+            this.strokeColor = strokeColor;
+            this.strokeWidth = strokeWidth;
+        }
+
+        CanvasState() {}
+    }
+
     public RCanvas(ThemedReactContext context) {
         super(context);
         eventHandler = new RCanvasEventHandler(this);
         mIntersectionHelper = new PathIntersectionHelper(this);
-        prepareNextPath();
+        mStateStack = new Stack<>();
+        mStateStack.push(new CanvasState());
+        allocNext();
     }
 
     public RCanvasEventHandler getEventHandler(){
         return eventHandler;
     }
+
     public PathIntersectionHelper getIntersectionHelper(){
         return mIntersectionHelper;
-    }
-
-    private void prepareNextPath() { prepareNextPath(false); }
-
-    private void prepareNextPath(Boolean invalidate) {
-        mNextPath = new RCanvasPath(((ReactContext) getContext()));
-        addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        if (invalidate) {
-            postInvalidateOnAnimation();
-        }
-    }
-
-    protected void addPath(RCanvasPath path) {
-        mPaths.add(path);
-        path.setHitSlop(mHitSlop);
-        mChangedChildren = true;
-    }
-
-    protected void removePath(RCanvasPath path) {
-        mPaths.remove(path);
-        mChangedChildren = true;
-    }
-
-    protected void finalizeUpdate() {
-        if (mChangedChildren) {
-            mChangedChildren = false;
-            eventHandler.emitPathsChange();
-        }
     }
 
     public void setHardwareAcceleration(boolean useHardwareAcceleration) {
@@ -82,122 +74,131 @@ public class RCanvas extends ReactViewGroup {
         Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
 
-    public void setStrokeColor(int color){
-        mStrokeColor = color;
+    public void setStrokeColor(int color) {
+        CanvasState currentState = mStateStack.peek();
+        currentState.strokeColor = color;
     }
 
-    public void setStrokeWidth(float width){
-        mStrokeWidth = width;
+    public void setStrokeWidth(float width) {
+        CanvasState currentState = mStateStack.peek();
+        currentState.strokeWidth = width;
+    }
+
+    public int save() {
+        mStateStack.push(mStateStack.peek());
+        for (RCanvasPath path: paths()) {
+            path.save();
+        }
+        return mStateStack.size() - 1;
+    }
+
+    public void restore() {
+        restore(mStateStack.size() - 1);
+    }
+
+    public void restore(int saveCount) {
+        if (saveCount == -1) {
+            saveCount = mStateStack.size() - 1;
+        } else if (saveCount >= mStateStack.size() || saveCount < 0) {
+            throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: bad save count %d", TAG, saveCount));
+        }
+
+        mStateStack.setSize(saveCount);
+        for (RCanvasPath path: paths()) {
+            path.restore(saveCount);
+        }
+
+        postInvalidateOnAnimation();
+        eventHandler.emitUpdate();
     }
 
     public void setHitSlop(RectF hitSlop){
         mHitSlop = hitSlop;
-        for (RCanvasPath path: mPaths) {
+        for (RCanvasPath path: paths()) {
             path.setHitSlop(mHitSlop);
         }
     }
 
-    @Nullable public RCanvasPath getCurrentPath(){
-        return mCurrentPath;
-    }
-
-    public void setCurrentPath(String id){
-        mCurrentPath = getPath(id);
-    }
-
-    public RCanvasPath getPath(String id){
-        for (RCanvasPath path: mPaths) {
-            if (path.getPathId().equals(id)) {
+    public RCanvasPath getPath(String id) {
+        for (RCanvasPath path: paths()) {
+            if (path.getPathId() != null && path.getPathId().equals(id)) {
                 return path;
             }
         }
 
-        throw new JSApplicationIllegalArgumentException(String.format("%s failed to find path#%s", RCanvasManager.TAG, id));
+        throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s failed to find path#%s", TAG, id));
     }
 
-    public int getPathIndex(String pathId){
-        for (int i=0; i < mPaths.size(); i++) {
-            if(pathId.equals(mPaths.get(i).getPathId())) {
+    public int getPathIndex(String pathId) {
+        ArrayList<RCanvasPath> paths = paths();
+        RCanvasPath path;
+        for (int i = 0; i < paths.size(); i++) {
+            path = paths.get(i);
+            if(path.getPathId() != null && path.getPathId().equals(pathId)) {
                 return i;
             }
         }
         return -1;
     }
 
-    public ArrayList<RCanvasPath> getPaths() {
-        return mPaths;
+    public ArrayList<RCanvasPath> paths() {
+        return new ArrayList<>(mPaths);
     }
 
-    public void setAttributes(String id, ReadableMap attributes) {
-        RCanvasPath path = getPath(id);
-        if (attributes.hasKey("color")) {
-            path.setStrokeColor(attributes.getInt("color"));
-        }
-        if (attributes.hasKey("width")) {
-            path.setStrokeWidth(PixelUtil.toPixelFromDIP(attributes.getInt("width")));
-        }
+    private void allocNext() {
+        mNextPath = new RCanvasPath((ReactContext) getContext());
+        addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+    }
 
-        path.postInvalidateOnAnimation();
+    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
+        CanvasState currentState = mStateStack.peek();
+        strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
+        strokeWidth = strokeWidth == null ? currentState.strokeWidth : strokeWidth;
+        mNextPath.init(pathId, strokeColor, strokeWidth, mHitSlop);
+        mPaths.add(mNextPath);
+        Log.d(TAG, "init: " + mPaths.size() + " " + mPaths.get(mPaths.size() - 1).getPathId() + "  " + getPath(pathId));
+        Log.d(TAG, "init2: " +getPath(pathId).getPathId());
+        allocNext();
         postInvalidateOnAnimation();
+        eventHandler.emitStrokeStart(pathId);
+    }
+
+    public String init() {
+        CanvasState currentState = mStateStack.peek();
+        String pathId = Utility.generateId();
+        init(pathId, currentState.strokeColor, currentState.strokeWidth);
+        return pathId;
+    }
+
+    public void drawPoint(String pathId, PointF point) {
+        UiThreadUtil.assertOnUiThread();
+        getPath(pathId).addPoint(point);
+        postInvalidateOnAnimation();
+        eventHandler.maybeEmitStrokeChange(pathId, point);
+    }
+
+    public void endInteraction(String pathId) {
+        UiThreadUtil.assertOnUiThread();
+        eventHandler.emitStrokeEnd(pathId);
     }
 
     public void clear() {
-        for (RCanvasPath path: mPaths) {
+        ArrayList<RCanvasPath> paths = paths();
+        for (RCanvasPath path: paths) {
             removeView(path);
         }
         mPaths.clear();
-        mCurrentPath = null;
+        allocNext();
         postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
     }
 
-    public void startPath() {
-        startPath(Utility.generateId(), mStrokeColor, mStrokeWidth);
-    }
-
-    public void startPath(String id, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
-        strokeColor = strokeColor == null ? mStrokeColor : strokeColor;
-        strokeWidth = strokeWidth == null ? mStrokeWidth : strokeWidth;
-        mCurrentPath = mNextPath;
-        mCurrentPath.init(id, strokeColor, strokeWidth, mHitSlop);
-        mPaths.add(mCurrentPath);
-
-        eventHandler.emitStrokeStart();
-    }
-
-    public void addPoint(float x, float y, @Nullable String pathId) {
-        @Nullable RCanvasPath current = mCurrentPath;
-        if (current == null && pathId == null) {
-            throw new JSApplicationCausedNativeException(
-                    String.format("%s is trying to add point(%f, %f) on null object reference", RCanvasManager.TAG, x, y)
-            );
-        } else if (current != null && (pathId == null || current.getPathId().equals(pathId))) {
-            addPoint(x, y);
+    private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+        if (getPathIndex(id) == -1) {
+            allocNext();
+            mNextPath.init(id, strokeColor, strokeWidth, mHitSlop, points);
         } else {
-            setCurrentPath(pathId);
-            addPoint(x, y);
-            mCurrentPath = current;
-        }
-
-        postInvalidateOnAnimation();
-    }
-
-    public void addPoint(float x, float y) {
-        addPoint(new PointF(x, y));
-    }
-
-    public void addPoint(PointF point) {
-        UiThreadUtil.assertOnUiThread();
-        mCurrentPath.addPoint(point);
-        eventHandler.maybeEmitStrokeChange(point);
-    }
-
-    public void endPath() {
-        UiThreadUtil.assertOnUiThread();
-        if (mCurrentPath != null) {
-            eventHandler.emitStrokeEnd();
-            mCurrentPath = null;
-            prepareNextPath();
+            throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: path#%s already exists", TAG, id));
         }
     }
 
@@ -216,46 +217,66 @@ public class RCanvas extends ReactViewGroup {
         eventHandler.emitPathsChange();
     }
 
-    private void addPath(String id, int strokeColor, float strokeWidth, ArrayList<PointF> points) {
-        boolean exist = false;
-        for(RCanvasPath data: mPaths) {
-            if (data.getPathId().equals(id)) {
-                exist = true;
-                break;
+    public void removePaths(String[] arr) {
+        for (String id: arr) {
+            for (RCanvasPath path: paths()) {
+                if (id.equals(path.getPathId())) {
+                    removeView(path);
+                    mPaths.remove(path);
+                }
             }
         }
 
-        if (!exist) {
-            prepareNextPath();
-            mNextPath.init(id, strokeColor, strokeWidth, mHitSlop, points);
-            mPaths.add(mNextPath);
-        } else {
-            throw new JSApplicationIllegalArgumentException(String.format("%s: path#%s already exists", RCanvasManager.TAG, id));
-        }
+        postInvalidateOnAnimation();
+        eventHandler.emitPathsChange();
     }
 
-    public void deletePaths(ReadableArray array) {
+    public void removePaths(ReadableArray array) {
         String[] arr = new String[array.size()];
         for (int i = 0; i < array.size(); i++) {
             arr[i] = array.getString(i);
         }
-        deletePaths(arr);
+        removePaths(arr);
     }
 
-    public void deletePaths(String[] arr) {
-        for (String id: arr) {
-            for (RCanvasPath path: mPaths) {
-                if (id.equals(path.getPathId())) {
-                    if (mCurrentPath.equals(path)){
-                        endPath();
-                    }
-                    mPaths.remove(path);
-                    removeView(path);
-                }
-            }
+    public void setAttributes(String id, ReadableMap attributes) {
+        RCanvasPath path = getPath(id);
+        if (attributes.hasKey("strokeColor")) {
+            path.setStrokeColor(attributes.getInt("strokeColor"));
         }
+        if (attributes.hasKey("strokeWidth")) {
+            path.setStrokeWidth(PixelUtil.toPixelFromDIP(attributes.getInt("strokeWidth")));
+        }
+
+        path.postInvalidateOnAnimation();
         postInvalidateOnAnimation();
-        eventHandler.emitPathsChange();
+    }
+
+    @Override
+    public void onViewAdded(View child) {
+        super.onViewAdded(child);
+        if (child instanceof RCanvasPath && mPaths.indexOf(child) == -1) {
+            RCanvasPath path = (RCanvasPath) child;
+            mPaths.add(path);
+            path.setHitSlop(mHitSlop);
+            mChangedChildren = true;
+        }
+    }
+
+    @Override
+    public void onViewRemoved(View child) {
+        super.onViewRemoved(child);
+        if (child instanceof RCanvasPath && mPaths.indexOf(child) == -1) {
+            mPaths.remove(child);
+            mChangedChildren = true;
+        }
+    }
+
+    protected void finalizeUpdate() {
+        if (mChangedChildren) {
+            mChangedChildren = false;
+            eventHandler.emitPathsChange();
+        }
     }
 
     @Override

@@ -1,14 +1,14 @@
 
 import _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
-import { processColor } from 'react-native';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
-import { addPoint, endPath, pathIdMem, startPath, stringId } from './RACanvasModule';
-import RCanvasBase, { processColorProp } from './RCanvasBase';
+import Animated, { add, and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
+import { alloc, drawPoint, endInteraction, pathIdMem, stringId } from './RACanvasModule';
+import RCanvasBase from './RCanvasBase';
 import { RCanvasProperties, RCanvasRef } from './types';
+import { useEventProp } from './util';
 
-const { set, cond, add, block, eq, event, Value, useCode, not, View } = Animated;
+const { View } = Animated;
 
 function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
@@ -22,14 +22,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const x = useValue(0);
   const y = useValue(0);
   const isActive = useValue(0);
-  const strokeColor = useValue(() => {
-    const color = props.strokeColor;
-    return color instanceof Animated.Node ? 0 : processColor(color || 'black');
-  });
-  const strokeWidth = useValue(() => {
-    const width = props.strokeWidth;
-    return width instanceof Animated.Node ? 0 : (width || 5);
-  });
+  const stub = useValue();
   const state = useValue(State.UNDETERMINED);
   const oldState = useValue(State.UNDETERMINED);
 
@@ -60,15 +53,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     ]
   );
 
-  useCode(() =>
-    set(strokeColor, processColorProp(props.strokeColor)),
-    [props.strokeColor]
-  );
 
-  useCode(() =>
-    set(strokeWidth, props.strokeWidth as Animated.Adaptable<number>),
-    [props.strokeWidth]
-  );
 
   useCode(() =>
     block([
@@ -79,28 +64,27 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
             not(isActive),
             [
               set(pathIdMem, add(pathIdMem, 1)),
-              startPath(tag, id, strokeColor, strokeWidth),
+              alloc(tag, id, stub, stub),
               set(isActive, 1),
             ]
           ),
-          addPoint(tag, id, x, y),
+          drawPoint(tag, id, x, y),
         ]
       ),
       cond(
-        eq(oldState, State.ACTIVE),
+        and(isActive, eq(oldState, State.ACTIVE)),
         [
-          endPath(tag, pathIdMem),
+          endInteraction(tag, id),
           set(isActive, 0)
         ]
       )
     ]),
-    [tag, state, oldState, x, y, isActive, strokeColor, strokeWidth]
+    [tag, state, oldState, x, y, isActive]
   )
 
   const onLayout = useCallback((e) => {
     tag.setValue(e.nativeEvent.target);
-    props.onLayout && props.onLayout(e);
-  }, [tag, props.onLayout]);
+  }, [tag]);
 
   useImperativeHandle(forwardedRef, () => {
     return _.assign(panRef.current, ref.current ? ref.current.module() : {})
@@ -120,7 +104,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
         <RCanvasBase
           {...props}
           ref={ref}
-          onLayout={onLayout}
+          onLayout={useEventProp(onLayout, props.onLayout)}
         />
       </View>
     </PanGestureHandler>

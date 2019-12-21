@@ -3,12 +3,15 @@
 import { MutableRefObject, useCallback, useMemo } from 'react';
 import { PanResponder } from 'react-native';
 import { RCanvasProperties, RCanvasRef } from './types';
+import { generatePathId, useRefGetter } from './util';
 
 export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObject<RCanvasRef>) {
   const grant = useCallback((evt) =>
     touchEnabled && evt.nativeEvent.touches.length === 1,  //gestureState.numberActiveTouches === 1;
     [touchEnabled]
   );
+
+  const currentPathId = useRefGetter<string>();
 
   const panResponder = useMemo(() =>
     PanResponder.create({
@@ -17,41 +20,45 @@ export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObje
       onMoveShouldSetPanResponder: grant,
       onMoveShouldSetPanResponderCapture: grant,
       onPanResponderGrant: (evt, gestureState) => {
-        const e = evt.nativeEvent;
-        ref.current.startPath(e.locationX, e.locationY);
+        currentPathId.set(generatePathId());
+        ref.current.alloc(currentPathId.value());
       },
       onPanResponderMove: (evt, gestureState) => {
-        ref.current.addPoint(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
+        const { locationX: x, locationY: y } = evt.nativeEvent
+        ref.current.drawPoint(currentPathId.value(), { x, y });
       },
       onPanResponderRelease: (evt, gestureState) => {
-        ref.current.endPath();
+        ref.current.endInteraction(currentPathId.value());
       },
       onShouldBlockNativeResponder: (evt, gestureState) => {
         return true;
       }
-    }), [grant, ref]);
+    }), [grant, ref, currentPathId]);
 
   return panResponder.panHandlers;
 }
 
 export function useCanvasGestureHandler(props: RCanvasProperties, ref: MutableRefObject<RCanvasRef>) {
   const { PanGestureHandlerStateChangeEvent, State } = require('react-native-gesture-handler');
+  const currentPathId = useRefGetter<string>();
   const onHandlerStateChange = useCallback((e: PanGestureHandlerStateChangeEvent) => {
     switch (e.nativeEvent.state) {
       case State.BEGAN:
-        ref.current.startPath(e.nativeEvent.x, e.nativeEvent.y);
+        currentPathId.set(generatePathId());
+        ref.current.alloc(currentPathId.value());
         break;
       case State.END:
-        ref.current.endPath();
+        ref.current.endInteraction(currentPathId.value());
         break;
     }
     props.onHandlerStateChange && props.onHandlerStateChange(e);
-  }, [ref, props.onHandlerStateChange]);
+  }, [ref, props.onHandlerStateChange, currentPathId]);
 
   const onGestureEvent = useCallback((e) => {
-    ref.current.addPoint(e.nativeEvent.x, e.nativeEvent.y);
+    const { x, y } = e.nativeEvent
+    ref.current.drawPoint(currentPathId.value(), { x, y });
     props.onGestureEvent && props.onGestureEvent(e);
-  }, [ref, props.onGestureEvent]);
+  }, [ref, props.onGestureEvent, currentPathId]);
 
   return useMemo(() => {
     return {

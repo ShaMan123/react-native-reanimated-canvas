@@ -25,7 +25,7 @@ public class PathIntersectionHelper {
     }
 
     private ArrayList<RCanvasPath> getPaths() {
-        return mView.getPaths();
+        return mView.paths();
     }
 
     private int getIndex(String pathId) {

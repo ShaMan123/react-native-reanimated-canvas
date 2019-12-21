@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 import { RACanvasModule, RCanvasRef, StrokeEndEvent, StrokeEvent, StrokeStartEvent } from 'react-native-reanimated-canvas';
 import { styles, useRefGetter } from './common';
 import LegacyCanvas from './LegacyCanvas';
+import { concat } from 'lodash';
 const { Value, event, View, cond, neq, block, and, set, eq, debug, onChange } = Animated;
 
 
@@ -15,13 +16,13 @@ export default function SyncedCanvases() {
 
   const onStrokeStartA = useMemo(() =>
     event<StrokeStartEvent>([{
-      nativeEvent: ({ id, width, color }) =>
+      nativeEvent: ({ id, strokeColor, strokeWidth }) =>
         onChange(id,
           cond(
             neq(id, 0),
             [
               set(currentId, id),
-              RACanvasModule.startPath(tagB, currentId, color, width),
+              RACanvasModule.alloc(tagB, currentId, strokeColor, strokeWidth),
             ]
           )
         )
@@ -32,7 +33,7 @@ export default function SyncedCanvases() {
   const onStrokeA = useMemo(() =>
     event<StrokeEvent>([{
       nativeEvent: ({ x, y, id }) => block([
-        cond(and(eq(currentId, id), neq(id, -1)), RACanvasModule.addPoint(tagB, id, x, y))
+        cond(and(eq(currentId, id), neq(id, -1)), RACanvasModule.drawPoint(tagB, id, x, y))
       ])
     }]),
     []
@@ -40,10 +41,12 @@ export default function SyncedCanvases() {
 
   const onStrokeEndA = useMemo(() =>
     event<StrokeEndEvent>([{
-      nativeEvent: ({ id }) => block([
-        RACanvasModule.endPath(tagB, id),
-        set(currentId, -1)
-      ])
+      nativeEvent: {
+        id: id => block([
+          cond(neq(id, 0), RACanvasModule.endInteraction(tagB, id)),
+          set(currentId, -1)
+        ])
+      }
     }]),
     []
   );
@@ -57,7 +60,9 @@ export default function SyncedCanvases() {
         onStrokeEnd={onStrokeEndA}
       />
       <LegacyCanvas
-        onLayout={(e) => tagB.setValue(e.nativeEvent.target)}
+        onLayout={(e) => {
+          tagB.setValue(e.nativeEvent.target);
+        }}
         ref={_b}
         onStrokeEnd={(e) => {
           const path = e.nativeEvent;

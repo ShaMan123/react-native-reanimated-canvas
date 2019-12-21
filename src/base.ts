@@ -1,7 +1,9 @@
 
 import * as RCanvasModule from './RCanvasModule';
-export { RCanvasModule };
-export * from './hooks';
-export * from './types';
-export { default, generatePathId } from './RCanvasBase';
+export * from './CustomJSTouchHandling';
+export { default } from './RCanvasBase';
 export { default as RCanvasPath } from './RCanvasPath';
+export * from './types';
+export { generatePathId } from './util';
+export { RCanvasModule };
+

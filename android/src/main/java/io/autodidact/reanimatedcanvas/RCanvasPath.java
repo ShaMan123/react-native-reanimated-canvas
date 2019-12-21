@@ -22,12 +22,11 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class RCanvasPath extends View {
-    protected final ArrayList<PointF> mPoints;
+    private Stack<PathState> mPathStateStack;
     private String mPathId;
-    private int mStrokeColor;
-    private float mStrokeWidth;
     private RectF mHitSlop;
     private boolean mOverriddenHitSlop = false;
 
@@ -38,10 +37,36 @@ public class RCanvasPath extends View {
     private Boolean mReceivedPoints = false;
     private Boolean mShouldAnimatePath = false;
 
+    private static class PathState {
+        ArrayList<PointF> points;
+        int strokeColor;
+        float strokeWidth;
+
+        PathState(PathState pathState) {
+            this(pathState.strokeColor, pathState.strokeWidth, pathState.points);
+        }
+
+        PathState(int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+            this(strokeColor, strokeWidth);
+            this.points.addAll(points);
+        }
+
+        PathState(int strokeColor, float strokeWidth) {
+            this();
+            this.strokeColor = strokeColor;
+            this.strokeWidth = strokeWidth;
+        }
+
+        PathState() {
+            points = new ArrayList<>();
+        }
+    }
+
     public RCanvasPath(ReactContext context) {
         super(context);
         mPath = new Path();
-        mPoints = new ArrayList<>();
+        mPathStateStack = new Stack<>();
+        mPathStateStack.push(new PathState());
         mHitSlop = new RectF();
         //setHardwareAcceleration(false);
     }
@@ -67,24 +92,47 @@ public class RCanvasPath extends View {
     }
 
     public int getStrokeColor() {
-        return mStrokeColor;
+        return mPathStateStack.peek().strokeColor;
     }
 
     public void setStrokeColor(int color) {
-        mStrokeColor = color;
-        boolean isErase = mStrokeColor == Color.TRANSPARENT;
-        getPaint().setColor(mStrokeColor);
-        getPaint().setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+        PathState currentState = mPathStateStack.peek();
+        currentState.strokeColor = color;
+        boolean isErase = currentState.strokeColor == Color.TRANSPARENT;
+        Paint paint = getPaint();
+        paint.setColor(currentState.strokeColor);
+        paint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
         postInvalidateOnAnimation();
     }
 
     public float getStrokeWidth() {
-        return  mStrokeWidth;
+        return mPathStateStack.peek().strokeWidth;
     }
 
     public void setStrokeWidth(float width) {
-        mStrokeWidth = width;
-        getPaint().setStrokeWidth(mStrokeWidth);
+        PathState currentState = mPathStateStack.peek();
+        currentState.strokeWidth = width;
+        getPaint().setStrokeWidth(currentState.strokeWidth);
+        postInvalidateOnAnimation();
+    }
+
+    /**
+     * save and restore are managed by parent RCanvas
+     */
+    public int save() {
+        mPathStateStack.push(new PathState(mPathStateStack.peek()));
+        return mPathStateStack.size() - 1;
+    }
+
+    public void restore() {
+        restore(mPathStateStack.size() - 1);
+    }
+
+    /**
+     * save and restore are managed by parent RCanvas
+     */
+    public void restore(int saveCount) {
+        mPathStateStack.setSize(saveCount);
         postInvalidateOnAnimation();
     }
 
@@ -114,6 +162,7 @@ public class RCanvasPath extends View {
     }
 
     public void addPoint(PointF p) {
+        ArrayList<PointF> mPoints = mPathStateStack.peek().points;
         mPoints.add(p);
         int pointsCount = mPoints.size();
 
@@ -133,6 +182,8 @@ public class RCanvasPath extends View {
 
     public void setPoints(@Nullable ArrayList<PointF> points) {
         if (points != null) {
+            ArrayList<PointF> mPoints = mPathStateStack.peek().points;
+            mPoints.clear();
             mPoints.addAll(points);
             mPath.set(evaluatePath());
             postInvalidateOnAnimation();
@@ -194,6 +245,8 @@ public class RCanvasPath extends View {
     }
 
     protected void drawPoint(int pointIndex) {
+        PathState currentState = mPathStateStack.peek();
+        ArrayList<PointF> mPoints = currentState.points;
         int pointsCount = mPoints.size();
         if (pointIndex < 0) {
             pointIndex += pointsCount;
@@ -229,11 +282,13 @@ public class RCanvasPath extends View {
             PointF a = mPoints.get(pointIndex);
 
             // Draw a single point
-            mPath.addCircle(a.x, a.y, mStrokeWidth, Path.Direction.CCW);
+            mPath.addCircle(a.x, a.y, currentState.strokeWidth, Path.Direction.CCW);
         }
     }
 
     protected void draw(Canvas canvas, int pointIndex) {
+        PathState currentState = mPathStateStack.peek();
+        ArrayList<PointF> mPoints = currentState.points;
         int pointsCount = mPoints.size();
         if (pointIndex < 0) {
             pointIndex += pointsCount;
@@ -273,11 +328,11 @@ public class RCanvasPath extends View {
 
     protected Paint getPaint() {
         if (mPaint == null) {
-            boolean isErase = mStrokeColor == Color.TRANSPARENT;
-
+            PathState currentsState = mPathStateStack.peek();
+            boolean isErase = currentsState.strokeColor == Color.TRANSPARENT;
             mPaint = new Paint();
-            mPaint.setColor(mStrokeColor);
-            mPaint.setStrokeWidth(mStrokeWidth);
+            mPaint.setColor(currentsState.strokeColor);
+            mPaint.setStrokeWidth(currentsState.strokeWidth);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeCap(Paint.Cap.ROUND);
             mPaint.setStrokeJoin(Paint.Join.ROUND);
@@ -288,14 +343,16 @@ public class RCanvasPath extends View {
     }
 
     private Path evaluatePath() {
-        int pointsCount = mPoints.size();
+        PathState currentState = mPathStateStack.peek();
+        ArrayList<PointF> points = currentState.points;
+        int pointsCount = points.size();
         Path path = new Path();
 
         for(int pointIndex=0; pointIndex<pointsCount; pointIndex++) {
             if (pointsCount >= 3 && pointIndex >= 2) {
-                PointF a = mPoints.get(pointIndex - 2);
-                PointF b = mPoints.get(pointIndex - 1);
-                PointF c = mPoints.get(pointIndex);
+                PointF a = points.get(pointIndex - 2);
+                PointF b = points.get(pointIndex - 1);
+                PointF c = points.get(pointIndex);
                 PointF prevMid = midPoint(a, b);
                 PointF currentMid = midPoint(b, c);
 
@@ -303,8 +360,8 @@ public class RCanvasPath extends View {
                 path.moveTo(prevMid.x, prevMid.y);
                 path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
             } else if (pointsCount >= 2 && pointIndex >= 1) {
-                PointF a = mPoints.get(pointIndex - 1);
-                PointF b = mPoints.get(pointIndex);
+                PointF a = points.get(pointIndex - 1);
+                PointF b = points.get(pointIndex);
                 PointF mid = midPoint(a, b);
 
                 // Draw a line to the middle of mPoints a and b
@@ -312,7 +369,7 @@ public class RCanvasPath extends View {
                 path.moveTo(a.x, a.y);
                 path.lineTo(mid.x, mid.y);
             } else if (pointsCount >= 1) {
-                PointF a = mPoints.get(pointIndex);
+                PointF a = points.get(pointIndex);
 
                 // Draw a single point
                 path.moveTo(a.x, a.y);
@@ -322,7 +379,7 @@ public class RCanvasPath extends View {
         return path;
     }
 
-    private void addPointToPath(Path path, PointF tPoint, PointF pPoint, PointF point) {
+    private static void addPointToPath(Path path, PointF tPoint, PointF pPoint, PointF point) {
         PointF mid1 = new PointF((pPoint.x + tPoint.x) * 0.5f, (pPoint.y + tPoint.y) * 0.5f);
         PointF mid2 = new PointF((point.x + pPoint.x) * 0.5f, (point.y + pPoint.y) * 0.5f);
         path.moveTo(mid1.x, mid1.y);
@@ -331,7 +388,7 @@ public class RCanvasPath extends View {
 
     @TargetApi(19)
     boolean isPointOnPath(final PointF point) {
-        if (mPoints.size() == 0) {
+        if (mPathStateStack.peek().points.size() == 0) {
             return false;
         }
         return PathIntersectionHelper
@@ -346,12 +403,13 @@ public class RCanvasPath extends View {
     public WritableMap toWritableMap(Boolean includePoints){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
+        PathState currentState = mPathStateStack.peek();
         path.putString("id", mPathId);
-        path.putInt("color", mStrokeColor);
-        path.putDouble("width", PixelUtil.toDIPFromPixel(mStrokeWidth));
+        path.putInt("strokeColor", currentState.strokeColor);
+        path.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
 
         if (includePoints) {
-            for(PointF point: mPoints){
+            for(PointF point: currentState.points){
                 arr.pushMap(Utility.toWritablePoint(point));
             }
             path.putArray("points", arr);

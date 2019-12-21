@@ -3,8 +3,8 @@
 import React, { Ref, useMemo } from 'react';
 import { requireNativeComponent } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { generatePathId, useStrokeColor } from './RCanvasBase';
 import { PATH_VIEW_MANAGER } from './RCanvasModule';
+import { generatePathId, useStrokeColor } from './util';
 
 const { createAnimatedComponent } = Animated;
 

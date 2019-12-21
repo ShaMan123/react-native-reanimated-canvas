@@ -1,11 +1,10 @@
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
-import LegacyCanvas from './LegacyCanvas';
-import { TapGestureHandler, BorderlessButton, LongPressGestureHandler, TapGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
-import { styles } from './common';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BorderlessButton, LongPressGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import Animated, { Easing } from 'react-native-reanimated';
-import { RCanvasPath, RACanvasModule, RCanvasModule, PathIntersectionResponse, PathData } from 'react-native-reanimated-canvas';
-import { UIManager, StatusBar } from 'react-native';
+import { PathData, RACanvasModule, RCanvasPath, RCanvasRef } from 'react-native-reanimated-canvas';
+import { styles } from './common';
+import LegacyCanvas from './LegacyCanvas';
 const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
 //StatusBar.setHidden(true)
 function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
@@ -94,18 +93,25 @@ function runDelayed(node: Animated.Node<any>, delay: Animated.Adaptable<number> 
 }
 
 export default function Basic() {
+  const ref = useRef<RCanvasRef>();
   const tap = useRef();
   const button = useRef();
   const longPress = useRef();
   const clock = useMemo(() => new Clock(), []);
 
   const [show, setShow] = useState(true);
+
   useEffect(() => {
-    const p = setTimeout(() => {
+    const p = setInterval(() => {
+      ref.current && ref.current.save();
       setShow(!show);
-    }, 2500);
+      const k = setTimeout(() => {
+        //ref.current && ref.current.restore();
+      }, 1000);
+    }, 2000);
+
     return () => clearImmediate(p);
-  }, [])
+  }, [show])
 
   const animator = useMemo(() => new Value(0), []);
   const points = useMemo(() => new Array(200).fill(0).map((v, i) => ({ x: i, y: i })), []);
@@ -175,7 +181,7 @@ export default function Basic() {
           path,
           cond(
             eq(bip, 0),
-            RACanvasModule.getPath(tag, path, callback<PathData>({ width: strokeWidth })),
+            RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
           )
         ),
         onChange(
@@ -222,6 +228,7 @@ export default function Basic() {
               ref={button}
             >
               <LegacyCanvas
+                ref={ref}
                 onLayout={(e) => {
                   tag.setValue(e.nativeEvent.target)
                   setPip(e.nativeEvent.target)
@@ -236,14 +243,19 @@ export default function Basic() {
                   animate
                   index={index}
                 />
+                <RCanvasPath
+                  points={points.slice(50, 150)}
+                  strokeWidth={20}
+                  strokeColor='blue'
+                  animate
+                  index={min(index, 99)}
+                />
                 {
                   show &&
                   <RCanvasPath
                     points={points.slice(50, 150)}
                     strokeWidth={20}
-                    strokeColor='blue'
-                    animate
-                    index={min(index, 99)}
+                    strokeColor='gold'
                   />
                 }
 

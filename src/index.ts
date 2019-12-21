@@ -1,9 +1,11 @@
 
-import * as RCanvasModule from './RCanvasModule';
-export { RCanvasModule };
-export * from './types';
-export { default as RControlledCanvas, generatePathId } from './RCanvasBase';
 import * as RACanvasModule from './RACanvasModule';
-export { RACanvasModule };
-export { default as RCanvasPath } from './RCanvasPath';
+import * as RCanvasModule from './RCanvasModule';
 export { default } from './RCanvas';
+export { default as RControlledCanvas } from './RCanvasBase';
+export { default as RCanvasPath } from './RCanvasPath';
+export * from './types';
+export { generatePathId } from './util';
+export { RCanvasModule };
+export { RACanvasModule };
+
