@@ -70,58 +70,42 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
 
     @ReactProp(name = Props.ID)
     public void setPathId(RCanvasPath view, String id) {
-        if (shouldUpdateView(view)) {
-            view.setPathId(id);
-        }
+        view.setPathId(id);
     }
 
     @ReactProp(name = RCanvasManager.Props.HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvasPath view, boolean useAcceleration) {
-        if (shouldUpdateView(view)) {
-            view.setHardwareAcceleration(useAcceleration);
-        }
+        view.setHardwareAcceleration(useAcceleration);
     }
 
     @ReactProp(name = RCanvasManager.Props.STROKE_COLOR)
     public void setStrokeColor(RCanvasPath view, int color) {
-        if (shouldUpdateView(view)) {
-            view.setStrokeColor(color);
-        }
+        view.setStrokeColor(color);
     }
 
     @ReactProp(name = RCanvasManager.Props.STROKE_WIDTH)
     public void setStrokeWidth(RCanvasPath view, float width) {
-        if (shouldUpdateView(view)) {
-            view.setStrokeWidth(PixelUtil.toPixelFromDIP(width));
-        }
+        view.setStrokeWidth(PixelUtil.toPixelFromDIP(width));
     }
 
     @ReactProp(name = Props.POINTS)
     public void setPoints(RCanvasPath view, ReadableArray points) {
-        if (shouldUpdateView(view)) {
-            view.preCommitPoints(Utility.processPointArray(points));
-        }
+        view.preCommitPoints(Utility.processPointArray(points));
     }
 
     @ReactProp(name = Props.ANIMATE)
     public void setShouldAnimatePath(RCanvasPath view, Boolean animate) {
-        if (shouldUpdateView(view)) {
-            view.shouldAnimatePath(animate);
-        }
+        view.shouldAnimatePath(animate);
     }
 
     @ReactProp(name = Props.ANIMATION_CONTROLLER)
     public void setPathAnimationController(RCanvasPath view, int index) {
-        if (shouldUpdateView(view)) {
-            view.commitPoint(index);
-        }
+        view.commitPoint(index);
     }
 
     @ReactProp(name = RCanvasManager.Props.HIT_SLOP)
     public void setHitSlop(RCanvasPath view, @Nullable ReadableMap hitSlop) {
-        if (shouldUpdateView(view)) {
-            view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
-        }
+        view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
     }
 
     @Override
