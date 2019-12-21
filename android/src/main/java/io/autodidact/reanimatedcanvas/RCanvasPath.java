@@ -220,7 +220,9 @@ public class RCanvasPath extends View {
         if (mTempPoints != null) {
             UiThreadUtil.assertOnUiThread();
             addPoint(mTempPoints.get(index));
-            ((ViewGroup) getParent()).postInvalidateOnAnimation();
+            if (getParent() != null) {
+                ((ViewGroup) getParent()).postInvalidateOnAnimation();
+            }
             if (index == mTempPoints.size() - 1) {
                 mTempPoints = null;
                 mShouldAnimatePath = false;
