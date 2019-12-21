@@ -1,6 +1,7 @@
 package io.autodidact.reanimatedcanvas;
 
 import android.graphics.PointF;
+import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -9,9 +10,11 @@ import androidx.annotation.StringDef;
 
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.common.MapBuilder;
+import com.facebook.react.uimanager.LayoutShadowNode;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -99,7 +102,6 @@ public class RCanvasManager extends ReactViewManager {
 
     @Override
     public void onDropViewInstance(@NonNull ReactViewGroup view) {
-        //if (BuildConfig.DEBUG) Log.i(TAG, "Tearing down RCanvas " +  view.toString());
         ((RCanvas) view).tearDown();
     }
 
@@ -109,7 +111,6 @@ public class RCanvasManager extends ReactViewManager {
         ((RCanvas) view).finalizeUpdate();
     }
 
-/*
     @Override
     public void addView(ReactViewGroup parent, View child, int index) {
         super.addView(parent, child, index);
@@ -126,7 +127,7 @@ public class RCanvasManager extends ReactViewManager {
             ((RCanvas) parent).finalizePathRemoval((RCanvasPath) child);
         }
     }
-*/
+
     @ReactProp(name = Props.HARDWARE_ACCELERATED)
     public void setHardwareAccelerated(RCanvas viewContainer, boolean useAcceleration) {
         viewContainer.setHardwareAcceleration(useAcceleration);

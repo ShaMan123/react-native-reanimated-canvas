@@ -22,6 +22,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Stack;
 
 public class RCanvasPath extends View {
@@ -29,6 +31,7 @@ public class RCanvasPath extends View {
     private String mPathId;
     private RectF mHitSlop;
     private boolean mOverriddenHitSlop = false;
+    protected final boolean hasViewManager;
 
     private Paint mPaint;
     private Path mPath;
@@ -63,11 +66,16 @@ public class RCanvasPath extends View {
     }
 
     public RCanvasPath(ReactContext context) {
+        this(context, false);
+    }
+
+    public RCanvasPath(ReactContext context, boolean hasViewManager) {
         super(context);
         mPath = new Path();
         mPathStateStack = new Stack<>();
         mPathStateStack.push(new PathState());
         mHitSlop = new RectF();
+        this.hasViewManager = hasViewManager;
         //setHardwareAcceleration(false);
     }
 
@@ -416,5 +424,18 @@ public class RCanvasPath extends View {
         }
 
         return path;
+    }
+
+    @Override
+    public String toString() {
+        HashMap<String, Object> props = new HashMap<>();
+        PathState currentState = mPathStateStack.peek();
+        props.put("id", mPathId);
+        props.put("strokeColor", currentState.strokeColor);
+        props.put("strokeWidth", currentState.strokeWidth);
+        props.put("nativeStrokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
+        props.put("points", currentState.points);
+        props.put("hasViewManager", hasViewManager);
+        return String.format(Locale.ENGLISH, "RCanvasPath(%s)", props);
     }
 }

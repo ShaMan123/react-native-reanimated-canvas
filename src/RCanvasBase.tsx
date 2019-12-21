@@ -36,10 +36,12 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     const pathIds = e.nativeEvent.paths;
     invalidPaths.set(_.concat(invalidPaths.value(), _.differenceWith(pathIds, paths.value(), (a, b) => a === b.id)));
     paths.set(_.intersectionWith(paths.value(), pathIds, (a, b) => a.id === b));
+    console.log(e.nativeEvent, invalidPaths.value())
     forceUpdate();
   }, [paths]);
 
   const onUpdate = useCallback((e: UpdateEvent) => {
+    console.log('incoming update', e.nativeEvent);
     paths.set(_.values(e.nativeEvent.paths));
     updateContext.set(new Date());
     let needsUpdate = false;
@@ -109,9 +111,12 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       strokeColor={strokeColor.value()}
       hitSlop={hitSlop}
     >
-      <View style={StyleSheet.absoluteFill}>
+      <View
+        style={StyleSheet.absoluteFill}
+      >
         {React.Children.map(props.children, (child: ReactElement) => {
           const isInvalid = _.find(invalidPaths.value(), (id) => child && id === child.key);
+          console.log(child && child.key, isInvalid, invalidPaths.value())
           return isInvalid ? null : child;
         })}
       </View>

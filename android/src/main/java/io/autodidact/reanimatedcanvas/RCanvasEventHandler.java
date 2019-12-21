@@ -180,7 +180,7 @@ public class RCanvasEventHandler {
     }
 
     public void emit(String eventName, WritableMap eventData){
-        mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
+        //mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
     }
 
     public void emitStrokeStart(String pathId) {
@@ -230,6 +230,6 @@ public class RCanvasEventHandler {
         RCanvas.CanvasState currentState = mView.mStateStack.peek();
         event.putInt("strokeColor", currentState.strokeColor);
         event.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
-        emit(JSEventNames.ON_UPDATE, data);
+        emit(JSEventNames.ON_UPDATE, event);
     }
 }

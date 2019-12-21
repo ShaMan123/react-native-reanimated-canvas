@@ -1,11 +1,12 @@
 package io.autodidact.reanimatedcanvas;
 
 import android.graphics.Color;
+import android.graphics.PointF;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
-public class RCanvasPoint {
+public class RCanvasPoint extends PointF {
     public final int x;
     public final int y;
     public final int color;

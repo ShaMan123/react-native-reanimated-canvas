@@ -3,8 +3,8 @@ package io.autodidact.reanimatedcanvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -13,8 +13,13 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.UiThreadUtil;
+import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.uimanager.PixelUtil;
+import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIImplementation;
+import com.facebook.react.uimanager.UIManagerCanvasHelper;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.views.view.ReactViewGroup;
 
 import java.util.ArrayList;
@@ -150,14 +155,99 @@ public class RCanvas extends ReactViewGroup {
         addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
 
+    private void removePaths(final ArrayList<RCanvasPath> paths) {
+        final ArrayList<RCanvasPath> managedPaths = new ArrayList<>();
+        final ArrayList<RCanvasPath> unmanagedPaths = new ArrayList<>();
+        for (RCanvasPath path: paths) {
+            Log.d(TAG, "removePaths: " + path);
+            if (path.hasViewManager) {
+                managedPaths.add(path);
+            } else {
+                unmanagedPaths.add(path);
+            }
+        }
+
+        for (RCanvasPath path: paths) {
+            removeView(path);
+        }
+
+        mPaths.removeAll(paths);
+
+        if (managedPaths.size() > 0) {
+            final ReactContext context = (ReactContext) getContext();
+            final UIImplementation uiImplementation = context.getNativeModule(UIManagerModule.class).getUIImplementation();
+
+            Runnable action = new Runnable() {
+                @Override
+                public void run() {
+                    //Log.d(TAG, "path id react tag: " + uiImplementation.resolveShadowNode(managedPaths.get(0).getId()).getReactTag());
+                    ReactShadowNode shadowNode;
+                    SparseArray<WritableNativeArray> map = new SparseArray<>();
+                    WritableNativeArray indicesToRemove;
+                    ArrayList<ReactShadowNode> nodesToRemove = new ArrayList<>();
+                    for (int i = 0; i < getChildCount(); i++) {
+                        for (RCanvasPath path: managedPaths) {
+                            if (getChildAt(i).equals(path)) {
+                                shadowNode = uiImplementation.resolveShadowNode(path.getId());
+                                nodesToRemove.add(shadowNode);
+                                if (shadowNode != null && shadowNode.getParent() != null) {
+                                    int tag = shadowNode.getParent().getReactTag();
+                                    indicesToRemove = map.get(tag, new WritableNativeArray());
+                                    indicesToRemove.pushInt(i);
+                                    map.put(tag, indicesToRemove);
+                                }
+                            }
+                        }
+                    }
+                    for (int i = 0; i < map.size(); i++) {
+                        //uiImplementation.manageChildren(map.keyAt(i), null, null, null, null, map.valueAt(i));
+                    }
+                    for (ReactShadowNode node: nodesToRemove) {
+                        UIManagerCanvasHelper.stubShadowNodeRegistry(uiImplementation, node);
+                    }
+                    //eventHandler.emitUpdate();
+                }
+            };
+
+            if (context.isOnNativeModulesQueueThread()) {
+                action.run();
+            } else {
+                context.runOnNativeModulesQueueThread(action);
+            }
+            /*
+            context.getNativeModule(UIManagerModule.class)
+                    .prependUIBlock(new UIBlock() {
+                        @Override
+                        public void execute(NativeViewHierarchyManager nativeViewHierarchyManager) {
+                            final int[] indicesToRemove = new int[managedPaths.size()];
+
+                            //int tag = context.getNativeModule(UIManagerModule.class).getUIImplementation().resolveShadowNode(path.getId()).getReactTag();
+                            //tagsToRemove[0] = tag;
+
+                            int k = 0;
+                            for (int i = 0; i < getChildCount(); i++) {
+                                for (View view: managedPaths) {
+                                    if (getChildAt(i).equals(view)) {
+                                        indicesToRemove[k] = i;
+                                        k++;
+                                    }
+                                }
+                            }
+                            nativeViewHierarchyManager.manageChildren(getId(), indicesToRemove, null, null, null);
+                        }
+                    });
+
+             */
+        }
+
+    }
+
     public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
         CanvasState currentState = mStateStack.peek();
         strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? currentState.strokeWidth : strokeWidth;
         mNextPath.init(pathId, strokeColor, strokeWidth, mHitSlop);
         mPaths.add(mNextPath);
-        Log.d(TAG, "init: " + mPaths.size() + " " + mPaths.get(mPaths.size() - 1).getPathId() + "  " + getPath(pathId));
-        Log.d(TAG, "init2: " +getPath(pathId).getPathId());
         allocNext();
         postInvalidateOnAnimation();
         eventHandler.emitStrokeStart(pathId);
@@ -183,11 +273,7 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void clear() {
-        ArrayList<RCanvasPath> paths = paths();
-        for (RCanvasPath path: paths) {
-            removeView(path);
-        }
-        mPaths.clear();
+        removePaths(paths());
         allocNext();
         postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
@@ -218,15 +304,16 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void removePaths(String[] arr) {
-        for (String id: arr) {
-            for (RCanvasPath path: paths()) {
+        ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>();
+        for (RCanvasPath path: paths()) {
+            for (String id: arr) {
                 if (id.equals(path.getPathId())) {
-                    removeView(path);
-                    mPaths.remove(path);
+                    pathsToRemove.add(path);
+                    break;
                 }
             }
         }
-
+        removePaths(pathsToRemove);
         postInvalidateOnAnimation();
         eventHandler.emitPathsChange();
     }
@@ -251,15 +338,12 @@ public class RCanvas extends ReactViewGroup {
         path.postInvalidateOnAnimation();
         postInvalidateOnAnimation();
     }
-
+/*
     @Override
     public void onViewAdded(View child) {
         super.onViewAdded(child);
         if (child instanceof RCanvasPath && mPaths.indexOf(child) == -1) {
-            RCanvasPath path = (RCanvasPath) child;
-            mPaths.add(path);
-            path.setHitSlop(mHitSlop);
-            mChangedChildren = true;
+            finalizePathAddition((RCanvasPath) child);
         }
     }
 
@@ -270,6 +354,17 @@ public class RCanvas extends ReactViewGroup {
             mPaths.remove(child);
             mChangedChildren = true;
         }
+    }
+    */
+    protected void finalizePathAddition(RCanvasPath path) {
+        mPaths.add(path);
+        path.setHitSlop(mHitSlop);
+        mChangedChildren = true;
+    }
+
+    protected void finalizePathRemoval(RCanvasPath path) {
+        mPaths.remove(path);
+        mChangedChildren = true;
     }
 
     protected void finalizeUpdate() {
