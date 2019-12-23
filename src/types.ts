@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { NativeSyntheticEvent, StyleProp, ViewProperties, ViewProps, ViewStyle, View, Insets } from "react-native";
-import Animated from 'react-native-reanimated';
+import { Insets, NativeSyntheticEvent, ViewProps } from "react-native";
 import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
 
 export enum Commands {
   alloc = 1,

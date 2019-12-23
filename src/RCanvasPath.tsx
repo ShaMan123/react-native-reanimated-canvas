@@ -6,9 +6,7 @@ import Animated from 'react-native-reanimated';
 import { PATH_VIEW_MANAGER } from './RCanvasModule';
 import { generatePathId, useStrokeColor } from './util';
 
-const { createAnimatedComponent } = Animated;
-
-const NativeRCanvasPath = createAnimatedComponent(requireNativeComponent(PATH_VIEW_MANAGER));
+const NativeRCanvasPath = Animated.createAnimatedComponent(requireNativeComponent(PATH_VIEW_MANAGER));
 
 function RCanvasPathBase(props: any, ref: Ref<any>) {
   const strokeColor = useStrokeColor(props.strokeColor);
