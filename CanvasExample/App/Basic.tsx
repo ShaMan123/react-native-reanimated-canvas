@@ -2,10 +2,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BorderlessButton, LongPressGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent, RectButton } from 'react-native-gesture-handler';
 import Animated, { Easing } from 'react-native-reanimated';
-import { PathData, RACanvasModule, RCanvasPath, RCanvasRef } from 'react-native-reanimated-canvas';
+import { PathData, RACanvasModule, RCanvasPath, RCanvasRef, generatePathId } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
 import { Text } from 'react-native';
+import _ from 'lodash';
 const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
 //StatusBar.setHidden(true)
 function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
@@ -170,11 +171,7 @@ export default function Basic() {
   const width = useMemo(() => new Value(0), []);
   useCode(() =>
     block([
-      RACanvasModule.isPointOnPath(tag, x, y, path),
-
-      intercept('didUpdateDimensions', { windowPhysicalPixels: { width } }),
-
-      call([path, x, y], console.log)
+      RACanvasModule.isPointOnPath(tag, x, y, path)
     ]),
     [x, y]
   );
@@ -187,7 +184,7 @@ export default function Basic() {
           path,
           cond(
             eq(bip, 0),
-            RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
+            //RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
           )
         ),
         onChange(
@@ -251,15 +248,15 @@ export default function Basic() {
                     points={points}
                     strokeWidth={20}
                     strokeColor='pink'
-                  //animate
-                  //index={index}
+                    animate
+                    index={index}
                   />
                   <RCanvasPath
                     points={show ? points.slice(50, 150) : points.slice(20, 100)}
                     strokeWidth={20}
                     strokeColor='blue'
-                  //animate
-                  //index={min(index, 99)}
+                    animate
+                    index={min(index, 99)}
                   />
                   {
                     show &&
