@@ -14,7 +14,7 @@ function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
 }
 
-function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
+function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGestureHandler>) {
   const ref = useRef<RCanvasRef>();
   const panRef = useRef<RCanvasRef>();
   const tag = useValue(0);
@@ -85,19 +85,21 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   }, [tag]);
 
   useImperativeHandle(forwardedRef, () => {
-    return _.assign(panRef.current, ref.current ? ref.current.module() : {})
+    return ref.current ? _.assign(panRef.current, ref.current.module()) : null;
   });
+
+  const { style, ...passProps } = props;
 
   return (
     <PanGestureHandler
-      {..._.omit(props, 'style')}
+      {...passProps}
       ref={panRef}
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}
       maxPointers={1}
       shouldCancelWhenOutside={false}
     >
-      <View style={styles.default}>
+      <View style={styles.default} collapsable={false}>
         <RCanvasBase
           {...props}
           ref={ref}
