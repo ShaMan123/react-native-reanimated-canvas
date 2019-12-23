@@ -1,10 +1,11 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BorderlessButton, LongPressGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
+import { BorderlessButton, LongPressGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent, RectButton } from 'react-native-gesture-handler';
 import Animated, { Easing } from 'react-native-reanimated';
 import { PathData, RACanvasModule, RCanvasPath, RCanvasRef } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
+import { Text } from 'react-native';
 const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
 //StatusBar.setHidden(true)
 function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
@@ -105,11 +106,14 @@ export default function Basic() {
     const p = setInterval(async () => {
       if (!ref.current) return;
       const saveCount = await ref.current.save();
-      setShow(!show);
+      //setShow(!show);
+      /*
+      
       const k = setTimeout(() => {
         console.log(saveCount)
         //ref.current.restore(saveCount);
       }, 4000);
+      */
     }, 2000);
 
     return () => clearImmediate(p);
@@ -212,63 +216,68 @@ export default function Basic() {
   );
 
   return (
-    <TapGestureHandler
-      ref={tap}
-      waitFor={[button, longPress]}
-      onHandlerStateChange={onTap}
-    //enabled={false}
-    >
-      <View collapsable={false} style={styles.default}>
-        <LongPressGestureHandler
-          waitFor={button}
-          //enabled={false}
-          onHandlerStateChange={onTap}
-        >
-          <View collapsable={false} style={styles.default}>
-            <BorderlessButton
-              style={styles.default}
-              ref={button}
-            >
-              <LegacyCanvas
-                ref={ref}
-                onLayout={(e) => {
-                  tag.setValue(e.nativeEvent.target)
-                  setPip(e.nativeEvent.target)
-                }}
-                defaultStrokeWidth={20}
-                hitSlop={20}
+    <>
+      <RectButton onPress={() => ref.current && ref.current.restore()}>
+        <Text style={{ minHeight: 50, marginVertical: 20 }}>RESTORE</Text>
+      </RectButton>
+      <TapGestureHandler
+        ref={tap}
+        waitFor={[button, longPress]}
+        onHandlerStateChange={onTap}
+      //enabled={false}
+      >
+        <View collapsable={false} style={styles.default}>
+
+          <LongPressGestureHandler
+            waitFor={button}
+            //enabled={false}
+            onHandlerStateChange={onTap}
+          >
+            <View collapsable={false} style={styles.default}>
+              <BorderlessButton
+                style={styles.default}
+                ref={button}
               >
-                <RCanvasPath
-                  points={points}
-                  strokeWidth={20}
-                  strokeColor='pink'
-                  animate
-                  index={index}
-                />
-                <RCanvasPath
-                  points={show ? points.slice(50, 150) : points.slice(20, 100)}
-                  strokeWidth={20}
-                  strokeColor='blue'
-                  animate
-                  index={min(index, 99)}
-                />
-                {
-                  show &&
+                <LegacyCanvas
+                  ref={ref}
+                  onLayout={(e) => {
+                    tag.setValue(e.nativeEvent.target)
+                    setPip(e.nativeEvent.target)
+                  }}
+                  defaultStrokeWidth={20}
+                  hitSlop={20}
+                >
                   <RCanvasPath
-                    points={points.slice(50, 150)}
+                    points={points}
                     strokeWidth={20}
-                    strokeColor='gold'
+                    strokeColor='pink'
+                  //animate
+                  //index={index}
                   />
-                }
+                  <RCanvasPath
+                    points={show ? points.slice(50, 150) : points.slice(20, 100)}
+                    strokeWidth={20}
+                    strokeColor='blue'
+                  //animate
+                  //index={min(index, 99)}
+                  />
+                  {
+                    show &&
+                    <RCanvasPath
+                      points={points.slice(50, 150)}
+                      strokeWidth={20}
+                      strokeColor='gold'
+                    />
+                  }
 
-              </LegacyCanvas>
-            </BorderlessButton>
-          </View>
-        </LongPressGestureHandler>
+                </LegacyCanvas>
+              </BorderlessButton>
+            </View>
+          </LongPressGestureHandler>
 
-      </View>
+        </View>
 
-    </TapGestureHandler >
-
+      </TapGestureHandler >
+    </>
   )
 }

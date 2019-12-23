@@ -7,11 +7,13 @@ import { View, Text } from 'react-native';
 import { PanGestureHandler, RectButton } from 'react-native-gesture-handler';
 
 
-export default function CustomTouchHandling(props: any) {
+export default function CustomTouchHandling() {
   const refA = useRef<RCanvasRef>();
   const refB = useRef<RCanvasRef>();
   const refC = useRef<RCanvasRef>();
   const [show, setShow] = useState(true);
+  const [mixed, setMixed] = useState(false);
+
   useEffect(() => {
     const p = setTimeout(() => {
       setShow(!show);
@@ -47,20 +49,20 @@ export default function CustomTouchHandling(props: any) {
 
   const PRElements = (
     <View style={styles.container}>
-      {React.cloneElement(base, { ref: refA, ...useCanvasPanResponder(true, refB) })}
-      {React.cloneElement(base, { ref: refB, ...useCanvasPanResponder(true, refA) })}
+      {React.cloneElement(base, { ref: refA, ...useCanvasPanResponder(true, mixed ? refB : refA) })}
+      {React.cloneElement(base, { ref: refB, ...useCanvasPanResponder(true, mixed ? refA : refB) })}
     </View>
   );
 
   const GHElements = (
     <View style={styles.container}>
       <PanGestureHandler
-        {...useCanvasGestureHandler({ enabled: true }, refB)}
+        {...useCanvasGestureHandler({ enabled: true }, mixed ? refB : refA)}
       >
         {React.cloneElement(base, { ref: refA })}
       </PanGestureHandler>
       <PanGestureHandler
-        {...useCanvasGestureHandler({ enabled: true }, refA)}
+        {...useCanvasGestureHandler({ enabled: true }, mixed ? refA : refB)}
       >
         {React.cloneElement(base, { ref: refB })}
       </PanGestureHandler>
@@ -71,8 +73,12 @@ export default function CustomTouchHandling(props: any) {
     <>
       {gh ? GHElements : PRElements}
       <RectButton onPress={() => ghGo(!gh)} rippleColor="blue">
-        <Text style={{ minHeight: 50, textAlign: 'center', textAlignVertical: 'center' }}>{`Change to ${gh ? 'PanResponder' : 'PanGestureHandler'} Touch Handling`}</Text>
+        <Text style={styles.caption}>{`Change to ${gh ? 'PanResponder' : 'PanGestureHandler'} Touch Handling`}</Text>
+      </RectButton>
+      <RectButton onPress={() => setMixed(!mixed)} rippleColor="blue">
+        <Text style={styles.caption}>{mixed ? 'RESTORE' : 'MIX UP'}</Text>
       </RectButton>
     </>
   )
 }
+

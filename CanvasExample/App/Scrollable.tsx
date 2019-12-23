@@ -30,6 +30,7 @@ export default function Example() {
       renderItem={renderItem}
       keyExtractor={(item, index) => `WilliWoonka${index}`}
       renderScrollComponent={(props) => <ScrollView {...props} ref={ref} waitFor={refs} />}
+      ListHeaderComponent={<Text>swipe 2 fingers to scroll</Text>}
     />
   );
 

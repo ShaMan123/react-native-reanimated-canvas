@@ -18,7 +18,7 @@ const SCREENS = {
   Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
   Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
   ScrollableCanvas: { screen: ScrollableCanvas, title: 'ScrollableCanvas' },
-  JSTouchHandling: { screen: JSTouchHandling, title: 'Custom JS Touch Handling' },
+  JSTouchHandling: { screen: JSTouchHandling, title: 'Custom JS Touch Handling (Backward Compatibility)' },
 };
 
 _.map(SCREENS, ({ screen, title }) => _.set(screen, 'navigationOptions.title', title));

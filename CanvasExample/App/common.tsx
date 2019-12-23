@@ -101,5 +101,6 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
   },
-  centerContent: { alignItems: 'center', justifyContent: 'center' }
+  centerContent: { alignItems: 'center', justifyContent: 'center' },
+  caption: { minHeight: 50, textAlign: 'center', textAlignVertical: 'center' }
 });
