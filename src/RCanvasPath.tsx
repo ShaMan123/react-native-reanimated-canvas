@@ -5,10 +5,11 @@ import { requireNativeComponent } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { PATH_VIEW_MANAGER } from './RCanvasModule';
 import { generatePathId, useStrokeColor } from './util';
+import { RCanvasPathProperties } from './types';
 
 const NativeRCanvasPath = Animated.createAnimatedComponent(requireNativeComponent(PATH_VIEW_MANAGER));
 
-function RCanvasPathBase(props: any, ref: Ref<any>) {
+function RCanvasPathBase(props: RCanvasPathProperties, ref: Ref<any>) {
   const strokeColor = useStrokeColor(props.strokeColor);
   useMemo(() => {
     if (__DEV__ && props.index && !(props.index instanceof Animated.Node)) {
@@ -18,7 +19,6 @@ function RCanvasPathBase(props: any, ref: Ref<any>) {
 
   return (
     <NativeRCanvasPath
-      id={generatePathId()}
       {...props}
       ref={ref}
       strokeColor={strokeColor}

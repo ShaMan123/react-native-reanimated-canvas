@@ -14,10 +14,8 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   //const [ignored, forceUpdate] = useReducer<never>((x: number) => x + 1, 0);
   const hitSlop = useHitSlop(props.hitSlop);
   const node = useRefGetter(null as any, (current) => current && current.getNode());
-  const currentPathId = useRefGetter<string>();
   const paths = useRefGetter([] as PathData[]);
   const updateContext = useRefGetter(new Date());
-  const invalidPaths = useRefGetter([] as string[]);
 
   const strokeColor = useRefGetter(processColorProp(props.strokeColor));
   const strokeWidth = useRefGetter(props.strokeWidth);
@@ -115,10 +113,8 @@ const ForwardedRCanvasBase = forwardRef(RCanvasBase);
 ForwardedRCanvasBase.defaultProps = {
   strokeColor: 'black',
   strokeWidth: 5,
-  touchEnabled: true,
   hitSlop: 20,
-  hardwareAccelerated: false,
-  useNativeDriver: false
+  renderToHardwareTextureAndroid: false
 } as RCanvasProperties;
 ForwardedRCanvasBase.displayName = 'Forwarded(RCanvasBase)'
 

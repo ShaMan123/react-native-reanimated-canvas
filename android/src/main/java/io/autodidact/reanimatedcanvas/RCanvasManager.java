@@ -11,6 +11,7 @@ import androidx.annotation.StringDef;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -27,7 +28,6 @@ public class RCanvasManager extends ReactViewManager {
     static final String TAG = "RCanvas";
 
     @interface Props {
-        String HARDWARE_ACCELERATED = "hardwareAccelerated";
         String STROKE_COLOR = "strokeColor";
         String STROKE_WIDTH = "strokeWidth";
         String HIT_SLOP = "hitSlop";
@@ -77,9 +77,9 @@ public class RCanvasManager extends ReactViewManager {
         }
     }
 
-    @ReactProp(name = Props.HARDWARE_ACCELERATED)
-    public void setHardwareAccelerated(RCanvasHandler viewContainer, boolean useAcceleration) {
-        viewContainer.setHardwareAcceleration(useAcceleration);
+    @Override
+    public void setRenderToHardwareTexture(@NonNull ReactViewGroup view, boolean useHWTexture) {
+        view.setLayerType(useHWTexture ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_SOFTWARE, null);
     }
 
     @ReactProp(name = Props.STROKE_COLOR)

@@ -23,7 +23,7 @@ public final class Utility {
     private static int i = 0;
     static String generateId(){
         i++;
-        return new StringBuilder("aSketchCanvasPath").append(i).toString();
+        return new StringBuilder("NativeRCanvasPath").append(i).toString();
     }
 
     static PointF processPoint(ReadableMap point) {
@@ -65,14 +65,6 @@ public final class Utility {
                 ((float) rect.getDouble("right")),
                 ((float) rect.getDouble("bottom"))
         );
-    }
-
-    static void setHardwareAcceleration(View view, Boolean useHardwareAcceleration){
-        if(useHardwareAcceleration) {
-            view.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        } else{
-            view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
     }
 
     public static float getDeviceScale(){

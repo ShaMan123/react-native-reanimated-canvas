@@ -76,7 +76,7 @@ interface ExtendedInsets extends Insets {
   vertical?: number
 }
 
-export interface RCanvasProps {
+export interface RCanvasCommonProps {
   strokeColor?: string | Animated.Adaptable<number>
   strokeWidth?: Animated.Adaptable<number>
 
@@ -87,13 +87,40 @@ export interface RCanvasProps {
   hitSlop?: ExtendedInsets | number
 
   /**
-   * Android Only: set hardware acceleration. Defaults to false. If you prefer performance over functionality try setting to true
+   * 
+   * *************************************************************************
+   * Reanimated Canvas
+   * *************************************************************************
+   * Defaults to `false`, ensuresing all functionality works.
+   * Might take a toll on performance.
+   * If strange things are stirring set this prop to `false`.
    */
-  hardwareAccelerated?: boolean
-
-
-  onChange?: (e: ChangeEvent) => void,
+  renderToHardwareTextureAndroid?: boolean
 }
+
+export interface RCanvasPathProps extends RCanvasCommonProps {
+  /**
+   * **********************
+   * Experimental
+   * **********************
+   * Use with `animate = true`
+   * Pass an animated node to animate path drawing
+   */
+  index?: Animated.Node<number>,
+  /**
+   * **********************
+   * Experimental
+   * **********************
+   * Use with `index`
+   */
+  animate?: boolean
+}
+
+export interface RCanvasProps extends RCanvasCommonProps {
+  onChange?: (e: ChangeEvent) => void
+}
+
+export type RCanvasPathProperties = ViewProps & RCanvasPathProps;
 
 export type RCanvasProperties = React.PropsWithChildren<ViewProps & PanGestureHandlerProperties & RCanvasProps>;
 
@@ -102,7 +129,7 @@ export type RCanvasRef = {
   /**
    * allocate a new path
    * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
    * [startPath, addPoint, endPath]
    * @param id when omitted a unique id is generated using `generatePathId()` and returned from the method
    */
@@ -110,7 +137,7 @@ export type RCanvasRef = {
   /**
    * draw a point to the current/specified path
    * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
    * [startPath, addPoint, endPath]
    * 
    * @param x
@@ -121,7 +148,7 @@ export type RCanvasRef = {
   /**
    * end current interaction for path
    * use this method to customize touch handling or to mock drawing animations
-   * if customizing touch handling, be sure to pass `touchEnabled = false` to avoid duplicate drawing/touches
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
    * Must call this method when interaction ends
    * [startPath, addPoint, endPath]
    * @param id 

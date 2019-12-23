@@ -1,5 +1,7 @@
 package io.autodidact.reanimatedcanvas;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -41,9 +43,9 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPathHandler> {
         view.setPathId(id);
     }
 
-    @ReactProp(name = RCanvasManager.Props.HARDWARE_ACCELERATED)
-    public void setHardwareAccelerated(RCanvasPathHandler view, boolean useAcceleration) {
-        view.setHardwareAcceleration(useAcceleration);
+    @Override
+    public void setRenderToHardwareTexture(@NonNull RCanvasPathHandler view, boolean useHWTexture) {
+        view.setLayerType(useHWTexture ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_SOFTWARE, null);
     }
 
     @ReactProp(name = RCanvasManager.Props.STROKE_COLOR)

@@ -111,12 +111,7 @@ public class RCanvasPath extends View {
             }
         }
         mPathStateStack.setSize(saveCount + 1);
-        postInvalidateOnAnimation();
         return isDirty;
-    }
-
-    protected void setHardwareAcceleration(boolean useHardwareAcceleration) {
-        Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
 
     void setHitSlop(RectF hitSlop){

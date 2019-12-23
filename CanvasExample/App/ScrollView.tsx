@@ -18,7 +18,7 @@ export default function Example() {
       stickyHeaderIndices={[0]}
     >
       <Text>swipe 2 fingers to scroll</Text>
-      <RCanvas style={{ width: '100%', height: 2000 }} />
+      <RCanvas style={{ width: '100%', height: 2000 }} renderToHardwareTextureAndroid />
     </ScrollView>
   );
 

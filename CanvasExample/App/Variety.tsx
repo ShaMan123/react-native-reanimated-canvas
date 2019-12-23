@@ -124,10 +124,8 @@ export default function Variety() {
   const [animate, setAnimate] = useState(true);
 
   return (
-    <View style={styles.container}>
-
+    <View style={styles.container} renderToHardwareTextureAndroid>
       <ImageBackground
-        renderToHardwareTextureAndroid
         source={{ uri: simpsonsImage }}
         style={styles.default}
       >
@@ -135,31 +133,35 @@ export default function Variety() {
           defaultStrokeWidth={25}
           strokeColor='#00000000'
           waitFor={ref}
+          renderToHardwareTextureAndroid
         >
-          <Image source={{ uri: simpsonsImage }} style={[styles.default, styles.centerContent]} />
-          <View style={styles.abs100}>
-            <HelloSimpsons animate={animate} />
-          </View>
-          <Text
-            style={{ elevation: 5, maxHeight: 20, backgroundColor: 'pink', textAlign: 'center', opacity: 0.75 }}
-          >
-            I'm elevated. I should be erasable, shouldn't I?
+          <View style={styles.default} renderToHardwareTextureAndroid>
+            <Image source={{ uri: simpsonsImage }} style={[styles.default, styles.centerContent]} />
+            <View style={styles.abs100}>
+              <HelloSimpsons animate={animate} />
+            </View>
+            <Text
+              style={{ elevation: 5, maxHeight: 20, backgroundColor: 'pink', textAlign: 'center', opacity: 0.75 }}
+            >
+              I'm elevated. I should be erasable, shouldn't I?
             </Text>
-          <RectButton
-            ref={ref}
-            rippleColor="red"
-            style={[styles.functionButton, StyleSheet.absoluteFill, { width: 200, top: 50 }, { alignContent: 'center' }]}
-            onPress={() => {
-              ToastAndroid.show(
-                !animate ?
-                  'Notice fps -> use hardwareAccelerated' :
-                  'I\'m pressed, are you impressed? Try erasing me',
-                2500
-              );
-              setAnimate(!animate)
-            }}>
-            <Text style={[{ color: 'white' }]}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
-          </RectButton>
+            <RectButton
+              ref={ref}
+              rippleColor="red"
+              style={[styles.functionButton, StyleSheet.absoluteFill, { width: 200, top: 50 }, { alignContent: 'center' }]}
+              onPress={() => {
+                ToastAndroid.show(
+                  !animate ?
+                    'Notice fps -> use hardwareAccelerated' :
+                    'I\'m pressed, are you impressed? Try erasing me',
+                  2500
+                );
+                setAnimate(!animate)
+              }}>
+              <Text style={[{ color: 'white' }]}>{!animate ? `Animate Text` : `Stop Animation`}</Text>
+            </RectButton>
+          </View>
+
         </LegacyCanvas>
         <HelloSimpsons animate />
       </ImageBackground>

@@ -22,7 +22,6 @@ public class RCanvas extends ReactViewGroup {
 
     protected ArrayList<RCanvasPath> mPaths = new ArrayList<>();
     protected ArrayList<String> mInteractionContainer = new ArrayList<>();
-    private boolean mHardwareAccelerated = false;
     protected RectF mHitSlop = new RectF();
     private RCanvasPath mNextPath;
     protected Stack<RCanvasState> mStateStack;
@@ -39,11 +38,6 @@ public class RCanvas extends ReactViewGroup {
 
     public PathIntersectionHelper getIntersectionHelper(){
         return mIntersectionHelper;
-    }
-
-    public void setHardwareAcceleration(boolean useHardwareAcceleration) {
-        mHardwareAccelerated = useHardwareAcceleration;
-        Utility.setHardwareAcceleration(this, useHardwareAcceleration);
     }
 
     public void setStrokeColor(int color) {
@@ -80,7 +74,7 @@ public class RCanvas extends ReactViewGroup {
             }
         }
 
-        invalidate();
+        postInvalidateOnAnimation();
         return changedPaths;
     }
 
@@ -166,7 +160,7 @@ public class RCanvas extends ReactViewGroup {
 
     public void clear() {
         removePaths(filterPaths(paths(), false));
-        invalidate();
+        postInvalidateOnAnimation();
     }
 
     protected void removePaths(final ArrayList<RCanvasPath> paths) {

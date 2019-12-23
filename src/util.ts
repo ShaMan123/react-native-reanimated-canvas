@@ -1,10 +1,10 @@
 'use strict';
 
-import { useMemo, useRef, useCallback } from 'react';
 import _ from 'lodash';
-import Animated from 'react-native-reanimated';
+import { useCallback, useMemo, useRef } from 'react';
 import { processColor } from 'react-native';
-import { RCanvasProperties } from './base';
+import Animated from 'react-native-reanimated';
+import { RCanvasProperties } from './types';
 
 export function generatePathId() {
   return _.uniqueId('RCanvasPath');

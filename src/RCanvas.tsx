@@ -98,14 +98,13 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGes
       onHandlerStateChange={onHandlerStateChange}
       maxPointers={1}
       shouldCancelWhenOutside={false}
+      renderToHardwareTextureAndroid={false}
     >
-      <View style={styles.default} collapsable={false}>
-        <RCanvasBase
-          {...props}
-          ref={ref}
-          onLayout={useEventProp(onLayout, props.onLayout)}
-        />
-      </View>
+      <RCanvasBase
+        {...props}
+        ref={ref}
+        onLayout={useEventProp(onLayout, props.onLayout)}
+      />
     </PanGestureHandler>
   );
 }
@@ -118,8 +117,5 @@ const styles = {
 
 const ForwardedRCanvas = forwardRef(RCanvas);
 ForwardedRCanvas.displayName = 'Forwarded(RCanvas)';
-ForwardedRCanvas.defaultProps = {
-  useNativeDriver: false,
-  hardwareAccelerated: true
-} as RCanvasProperties;
+ForwardedRCanvas.defaultProps = RCanvasBase.defaultProps as RCanvasProperties;
 export default ForwardedRCanvas;
