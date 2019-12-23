@@ -19,21 +19,19 @@ export enum Methods {
   getPaths = 'getPaths'
 }
 
-export type Size = {
-  width: number
-  height: number
-}
-
 export type Point = {
   x: number,
   y: number
 }
 
-export type PathData = {
-  id: string
-  strokeColor: string
+export interface PathDataBase {
+  strokeColor: string | number
   strokeWidth: number
-  points: Point[]
+  points?: Point[]
+}
+
+export interface PathData extends PathDataBase {
+  id: string
 }
 
 export type PathIntersectionResponse = string[];
@@ -136,7 +134,7 @@ export type RCanvasRef = {
 
   getPath(id: string): PathData | null
 
-  update(paths: { [id: string]: PathData | null }): void
+  update(paths: { [id: string]: PathDataBase | null }): void
 
   setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 
