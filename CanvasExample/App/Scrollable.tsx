@@ -7,10 +7,6 @@ import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
 
 export default function Example() {
-  const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [defaultScroll, setScroller] = useState(false);
-  const onStrokeStart = useCallback(() => defaultScroll && setScrollEnabled(false), [defaultScroll, setScrollEnabled]);
-  const onStrokeEnd = useCallback(() => defaultScroll && setScrollEnabled(true), [defaultScroll, setScrollEnabled]);
   const ref = useRef();
   const refs = useMemo(() => new Array(5).map((v, i) => React.createRef()), [])
   const renderItem = useCallback(({ item, index }: { item: React.RefObject<any>, index: number }) => {
@@ -18,19 +14,14 @@ export default function Example() {
     return (
       <LegacyCanvas
         containerStyle={styles.page}
-        useNativeDriver={useNativeDriver}
         ref={item}
-        onStrokeStart={onStrokeStart}
-        onStrokeEnd={onStrokeEnd}
         //waitFor={ref}
         //activeOffsetY={1}
         shouldCancelWhenOutside
       >
-        <Text>{`Page ${index + 1}`}</Text>
-        {useNativeDriver && <Text>useNativeDrive = true</Text>}
       </LegacyCanvas>
     );
-  }, [onStrokeStart, onStrokeEnd, ref]);
+  }, [ref]);
 
   return (
     <FlatList
@@ -38,7 +29,7 @@ export default function Example() {
       data={refs}
       renderItem={renderItem}
       keyExtractor={(item, index) => `WilliWoonka${index}`}
-      renderScrollComponent={(props) => <ScrollView {...props} ref={ref} simultaneousHandlers={refs} />}
+      renderScrollComponent={(props) => <ScrollView {...props} ref={ref} waitFor={refs} />}
     />
   );
 

@@ -10,12 +10,14 @@ import Scrollable from './Scrollable';
 import Synced from './Synced';
 import Variety from './Variety';
 import JSTouchHandling from './JSTouchHandling';
+import ScrollableCanvas from './ScrollView';
 
 const SCREENS = {
   Basic: { screen: Basic, title: 'Basic' },
   Synced: { screen: Synced, title: 'Sync two canvases' },
   Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
   Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
+  ScrollableCanvas: { screen: ScrollableCanvas, title: 'ScrollableCanvas' },
   JSTouchHandling: { screen: JSTouchHandling, title: 'Custom JS Touch Handling' },
 };
 
