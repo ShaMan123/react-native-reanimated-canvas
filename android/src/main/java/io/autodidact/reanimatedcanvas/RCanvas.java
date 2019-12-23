@@ -80,7 +80,7 @@ public class RCanvas extends ReactViewGroup {
             }
         }
 
-        postInvalidateOnAnimation();
+        invalidate();
         return changedPaths;
     }
 
@@ -89,6 +89,10 @@ public class RCanvas extends ReactViewGroup {
         for (RCanvasPath path: paths()) {
             path.setHitSlop(mHitSlop);
         }
+    }
+
+    public ArrayList<RCanvasPath> paths() {
+        return new ArrayList<>(mPaths);
     }
 
     public RCanvasPath getPath(String id) {
@@ -113,10 +117,6 @@ public class RCanvas extends ReactViewGroup {
         return -1;
     }
 
-    public ArrayList<RCanvasPath> paths() {
-        return new ArrayList<>(mPaths);
-    }
-
     private void allocNext() {
         mNextPath = new RCanvasPath((ReactContext) getContext());
         addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -136,8 +136,6 @@ public class RCanvas extends ReactViewGroup {
         RCanvasPath path = init(pathId);
         path.setStrokeColor(strokeColor);
         path.setStrokeWidth(strokeWidth);
-
-        postInvalidateOnAnimation();
     }
 
     protected RCanvasPath init(String pathId) {
@@ -167,14 +165,8 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public void clear() {
-        ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>();
-        for (RCanvasPath path: paths()) {
-            if (mInteractionContainer.indexOf(path.getPathId()) == -1) {
-                pathsToRemove.add(path);
-            }
-        }
-        removePaths(pathsToRemove);
-        postInvalidateOnAnimation();
+        removePaths(filterPaths(paths(), false));
+        invalidate();
     }
 
     protected void removePaths(final ArrayList<RCanvasPath> paths) {
@@ -182,6 +174,16 @@ public class RCanvas extends ReactViewGroup {
         for (RCanvasPath path: paths) {
             removeView(path);
         }
+    }
+
+    protected ArrayList<RCanvasPath> filterPaths(final ArrayList<RCanvasPath> paths, final boolean pathInteractionInProgress) {
+        ArrayList<RCanvasPath> filteredList = new ArrayList<>();
+        for (RCanvasPath path: paths) {
+            if ((mInteractionContainer.indexOf(path.getPathId()) > -1) == pathInteractionInProgress) {
+                filteredList.add(path);
+            }
+        }
+        return filteredList;
     }
 
     public void tearDown(){
