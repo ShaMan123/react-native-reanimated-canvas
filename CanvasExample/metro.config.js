@@ -21,7 +21,8 @@ const GH = 'react-native-gesture-handler';
 const extraNodeModules = { [REANIMATED]: resolveReanimatedPath(), [GH]: resolveGestureHandlerPath(false) };
 
 console.log('Bundling metro with dev config\n', { useLocalReanimatedModule, reanimatedLocalPath, useBaseImplementation, extraNodeModules });
-console.log('\nAfter changing `useLocalReanimatedModule` you must rebuild the project\n\n');
+console.log('\nAfter changing `dev.config.json` you should reset metro cache');
+console.log('After changing `useLocalReanimatedModule` you must rebuild the project\n\n');
 
 if (useBaseImplementation) {
   blacklisters.concat(
