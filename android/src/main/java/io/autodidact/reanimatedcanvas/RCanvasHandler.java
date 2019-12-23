@@ -74,7 +74,7 @@ public class RCanvasHandler extends RCanvas {
             pathId = entry.getKey();
 
             if (!exists) {
-                addPath(pathId);
+                init(pathId);
                 setAttributes(pathId, (ReadableMap) entry.getValue(), false);
             } else if (!remove) {
                 setAttributes(pathId, (ReadableMap) entry.getValue(), false);
@@ -137,7 +137,7 @@ public class RCanvasHandler extends RCanvas {
 
     protected void finalizeUpdate() {
         if (added.size() > 0 || removed.size() > 0) {
-            mEventDispatcher.emitChange(added, null, removed);
+            mEventDispatcher.emitChange(added.size() > 0 ? added : null, null, removed.size() > 0 ? removed : null);
             added.clear();
             removed.clear();
         }
