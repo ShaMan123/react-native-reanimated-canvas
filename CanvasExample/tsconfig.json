@@ -42,7 +42,7 @@
         "../react-native-reanimated-canvas.d.ts"
       ],
       "react-native-reanimated-canvas/base": [
-        "../base.ts",
+        "../base",
         "../react-native-reanimated-canvas.d.ts"
       ]
     }, /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */

@@ -9,9 +9,8 @@ declare module 'react-native-reanimated-canvas' {
   export var RCanvasProps: Types.RCanvasProps;
   export var RCanvasProperties: Types.RCanvasProperties;
   export var RCanvasRef: Types.RCanvasRef;
-  export var TouchStates: Types.TouchStates;
   export var PathData: Types.PathData;
-  export var NativeStrokeEvent: Types.NativeStrokeEvent;
+  export var ChangeEvent: Types.ChangeEvent;
 }
 
 declare module 'react-native-reanimated-canvas/base' {
@@ -19,7 +18,6 @@ declare module 'react-native-reanimated-canvas/base' {
   export var RCanvasProps: Types.RCanvasProps;
   export var RCanvasProperties: Types.RCanvasProperties;
   export var RCanvasRef: Types.RCanvasRef;
-  export var TouchStates: Types.TouchStates;
   export var PathData: Types.PathData;
-  export var NativeStrokeEvent: Types.NativeStrokeEvent;
+  export var ChangeEvent: Types.ChangeEvent;
 }
