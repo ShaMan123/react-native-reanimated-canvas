@@ -20,16 +20,12 @@ import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 public class RCanvas extends ReactViewGroup {
 
     protected ArrayList<RCanvasPath> mPaths = new ArrayList<>();
-
+    protected ArrayList<String> mInteractionContainer = new ArrayList<>();
     private boolean mHardwareAccelerated = false;
     protected RectF mHitSlop = new RectF();
-
-
-    private final PathIntersectionHelper mIntersectionHelper;
-
     private RCanvasPath mNextPath;
-
     protected Stack<RCanvasState> mStateStack;
+    private final PathIntersectionHelper mIntersectionHelper;
 
     public RCanvas(ThemedReactContext context) {
         super(context);
@@ -37,6 +33,7 @@ public class RCanvas extends ReactViewGroup {
         mStateStack = new Stack<>();
         mStateStack.push(new RCanvasState());
         allocNext();
+        save();
     }
 
     public PathIntersectionHelper getIntersectionHelper(){
@@ -147,17 +144,25 @@ public class RCanvas extends ReactViewGroup {
 
     public void drawPoint(String pathId, PointF point) {
         UiThreadUtil.assertOnUiThread();
+        if (mInteractionContainer.indexOf(pathId) == -1) {
+            mInteractionContainer.add(pathId);
+        }
         getPath(pathId).addPoint(point);
         postInvalidateOnAnimation();
     }
 
     public void endInteraction(String pathId) {
-
+        mInteractionContainer.remove(pathId);
     }
 
     public void clear() {
-        removePaths(paths());
-        allocNext();
+        ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>();
+        for (RCanvasPath path: paths()) {
+            if (mInteractionContainer.indexOf(path.getPathId()) == -1) {
+                pathsToRemove.add(path);
+            }
+        }
+        removePaths(pathsToRemove);
         postInvalidateOnAnimation();
     }
 
