@@ -4,6 +4,7 @@ import { MutableRefObject, useCallback, useMemo } from 'react';
 import { PanResponder } from 'react-native';
 import { RCanvasProperties, RCanvasRef } from './types';
 import { generatePathId, useRefGetter } from './util';
+import { PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 
 export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObject<RCanvasRef>) {
   const grant = useCallback((evt) =>
@@ -39,7 +40,6 @@ export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObje
 }
 
 export function useCanvasGestureHandler(props: RCanvasProperties, ref: MutableRefObject<RCanvasRef>) {
-  const { PanGestureHandlerStateChangeEvent, State } = require('react-native-gesture-handler');
   const currentPathId = useRefGetter<string>();
   const onHandlerStateChange = useCallback((e: PanGestureHandlerStateChangeEvent) => {
     switch (e.nativeEvent.state) {
@@ -62,10 +62,10 @@ export function useCanvasGestureHandler(props: RCanvasProperties, ref: MutableRe
 
   return useMemo(() => {
     return {
-      enabled: props.touchEnabled || props.enabled,
+      enabled: props.enabled,
       maxPointers: 1,
       onGestureEvent,
       onHandlerStateChange
     }
-  }, [props.touchEnabled, props.enabled, onHandlerStateChange, onGestureEvent]);
+  }, [props.enabled, onHandlerStateChange, onGestureEvent]);
 }

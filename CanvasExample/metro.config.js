@@ -6,24 +6,33 @@
  */
 
 const blacklist = require('metro-config/src/defaults/blacklist');
+const { mergeConfig } = require('metro-config');
 const path = require('path');
 const pkg = require('./package.json');
+const baseConfig = require('../base/metro.config');
 const _ = require('lodash');
-const { useLocalReanimatedModule, reanimatedLocalPath } = require('./dev.config');
+const { useLocalReanimatedModule, reanimatedLocalPath, useBaseImplementation, resolveReanimatedPath, resolveGestureHandlerPath } = require('./dev.config');
 
 const watchFolders = [path.resolve(__dirname, '..')];
 const blacklisters = [];  //path.resolve(__dirname, '../node_modules'),
-const extraNodeModules = {};
 
-if (useLocalReanimatedModule) {
-  watchFolders.push(path.resolve(__dirname, '..', '../react-native-reanimated'));
+const REANIMATED = 'react-native-reanimated';
+const GH = 'react-native-gesture-handler';
+const extraNodeModules = { [REANIMATED]: resolveReanimatedPath(), [GH]: resolveGestureHandlerPath(false) };
+
+console.log('Bundling metro with dev config\n', { useLocalReanimatedModule, reanimatedLocalPath, useBaseImplementation, extraNodeModules });
+console.log('\nAfter changing `useLocalReanimatedModule` you must rebuild the project\n\n');
+
+if (useBaseImplementation) {
   blacklisters.concat(
-    path.resolve(__dirname, '..', '../react-native-reanimated/node_modules'),
-    path.resolve(__dirname, '..', '../react-native-reanimated/Example')
+    path.resolve(__dirname, 'node_modules', REANIMATED),
   );
-  extraNodeModules['react-native-reanimated'] = reanimatedLocalPath;
-} else {
-  extraNodeModules['react-native-reanimated'] = path.resolve(__dirname, 'node_modules', 'react-native-reanimated');
+} else if (useLocalReanimatedModule) {
+  watchFolders.push(path.resolve(__dirname, '..', '..', REANIMATED));
+  blacklisters.concat(
+    path.resolve(__dirname, '..', '..', REANIMATED, 'node_modules'),
+    path.resolve(__dirname, '..', '..', REANIMATED, 'Example')
+  );
 }
 
 const config = {
@@ -43,4 +52,4 @@ const config = {
 };
 
 
-module.exports = config;
+module.exports = useBaseImplementation ? mergeConfig(config, baseConfig) : config;

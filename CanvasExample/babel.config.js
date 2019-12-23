@@ -1,4 +1,4 @@
-const { useLocalReanimatedModule, reanimatedLocalPath } = require('./dev.config');
+const DEVConfig = require('./dev.config');
 
 module.exports = {
   presets: ['module:metro-react-native-babel-preset'],
@@ -8,8 +8,8 @@ module.exports = {
       'module-resolver',
       {
         alias: {
-          'react-native-reanimated': useLocalReanimatedModule ? reanimatedLocalPath : './node_modules/react-native-reanimated',
-          'react-native-gesture-handler': './node_modules/react-native-gesture-handler',
+          'react-native-reanimated': DEVConfig.resolveReanimatedPath(),
+          'react-native-gesture-handler': DEVConfig.resolveGestureHandlerPath(false),
           react: './node_modules/react',
           'react-native': './node_modules/react-native',
           '@babel': './node_modules/@babel',
@@ -18,6 +18,6 @@ module.exports = {
           invariant: './node_modules/invariant',
         },
       },
-    ],
+    ]
   ]
 };
