@@ -1,31 +1,17 @@
 package io.autodidact.reanimatedcanvas;
 
-import android.util.Log;
-import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.ReactStylesDiffMap;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
-import java.util.ArrayList;
-
 public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     final static String NAME = "ReanimatedCanvasPathManager";
-    /*
-    private final static String PROPS_ID = "id";
-    private final static String PROPS_POINTS = "points";
-    private final static String PROPS_ANIMATE = "animate";
-    private final static String PROPS_ANIMATION_CONTROLLER = "index";
-
-
-     */
 
     @interface Props {
         String ID = "id";
@@ -48,25 +34,6 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     @Override
     protected RCanvasPath createViewInstance(@NonNull ThemedReactContext reactContext) {
         return new RCanvasPath(reactContext);
-    }
-
-    private static final ArrayList<Integer> blacklist = new ArrayList<>();
-
-    static void addToBlackList(int reactTag) {
-        blacklist.add(reactTag);
-    }
-
-    @Override
-    public void updateProperties(@NonNull RCanvasPath viewToUpdate, ReactStylesDiffMap props) {
-        if (blacklist.indexOf(viewToUpdate.getId()) == -1) {
-            super.updateProperties(viewToUpdate, props);
-        }
-    }
-
-    @Override
-    public void onDropViewInstance(@NonNull RCanvasPath view) {
-        super.onDropViewInstance(view);
-        Log.d(RCanvasManager.TAG, "onDropViewInstance:!!!!!!!!! ");
     }
 
     @ReactProp(name = Props.ID)
@@ -113,5 +80,8 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     protected void onAfterUpdateTransaction(@NonNull RCanvasPath view) {
         super.onAfterUpdateTransaction(view);
         view.onAfterUpdateTransaction();
+        if (view.getParent() != null && view.getParent() instanceof RCanvasHandler) {
+            ((RCanvasHandler) view.getParent()).finalizeUpdate(view);
+        }
     }
 }

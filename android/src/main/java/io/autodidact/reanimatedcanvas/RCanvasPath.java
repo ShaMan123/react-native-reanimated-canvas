@@ -38,7 +38,6 @@ public class RCanvasPath extends View {
     protected ArrayList<PointF> mTempPoints;
     private boolean mReceivedPoints = false;
     private boolean mShouldAnimatePath = false;
-    private boolean mDisabled = false;
 
     public RCanvasPath(ReactContext context) {
         super(context);
@@ -54,12 +53,6 @@ public class RCanvasPath extends View {
         setStrokeColor(strokeColor);
         setStrokeWidth(strokeWidth);
         setHitSlop(hitSlop);
-    }
-
-    public void destroy() {
-        mDisabled = true;
-        mPathStateStack.clear();
-        mPath = null;
     }
 
     public String getPathId() {
@@ -230,11 +223,11 @@ public class RCanvasPath extends View {
                 commitPoints();
             }
         }
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (mDisabled) return;
         super.onDraw(canvas);
         canvas.drawPath(mPath, getPaint());
         /*

@@ -1,6 +1,5 @@
 package io.autodidact.reanimatedcanvas;
 
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import androidx.annotation.Nullable;
@@ -17,13 +16,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
-
 public class RCanvasHandler extends RCanvas {
 
-    private boolean mChangedChildren = false;
     private final ArrayList<Integer> reactTagRegistry = new ArrayList<>();
     private final RCanvasEventDispatcher mEventDispatcher;
+    private final ArrayList<RCanvasPath> added = new ArrayList<>();
+    private final ArrayList<RCanvasPath> removed = new ArrayList<>();
 
     public RCanvasHandler(ThemedReactContext context) {
         super(context);
@@ -126,23 +124,29 @@ public class RCanvasHandler extends RCanvas {
     protected void finalizePathAddition(RCanvasPath path) {
         mPaths.add(path);
         path.setHitSlop(mHitSlop);
-        mChangedChildren = true;
+        added.add(path);
         reactTagRegistry.add(path.getId());
     }
 
     protected void finalizePathRemoval(RCanvasPath path) {
         mPaths.remove(path);
-        mChangedChildren = true;
+        removed.add(path);
         Number tag = path.getId();
         reactTagRegistry.remove(tag);
     }
 
     protected void finalizeUpdate() {
-        Log.d(TAG, "finalizeUpdate: ");
-        if (mChangedChildren) {
-            mChangedChildren = false;
-            //emit
+        if (added.size() > 0 || removed.size() > 0) {
+            mEventDispatcher.emitChange(added, null, removed);
+            added.clear();
+            removed.clear();
         }
+    }
+
+    protected void finalizeUpdate(RCanvasPath path) {
+        ArrayList<RCanvasPath> changed = new ArrayList<>();
+        changed.add(path);
+        mEventDispatcher.emitChange(null, changed, null);
     }
 
     @Override

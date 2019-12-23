@@ -102,12 +102,14 @@ export default function Basic() {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const p = setInterval(() => {
-      ref.current && ref.current.save();
+    const p = setInterval(async () => {
+      if (!ref.current) return;
+      const saveCount = await ref.current.save();
       setShow(!show);
       const k = setTimeout(() => {
-        //ref.current && ref.current.restore();
-      }, 1000);
+        console.log(saveCount)
+        //ref.current.restore(saveCount);
+      }, 4000);
     }, 2000);
 
     return () => clearImmediate(p);
@@ -244,7 +246,7 @@ export default function Basic() {
                   index={index}
                 />
                 <RCanvasPath
-                  points={points.slice(50, 150)}
+                  points={show ? points.slice(50, 150) : points.slice(20, 100)}
                   strokeWidth={20}
                   strokeColor='blue'
                   animate

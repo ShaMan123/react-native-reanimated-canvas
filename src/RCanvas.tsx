@@ -53,8 +53,6 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     ]
   );
 
-
-
   useCode(() =>
     block([
       cond(
@@ -94,7 +92,6 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
     <PanGestureHandler
       {..._.omit(props, 'style')}
       ref={panRef}
-      enabled={!props.useNativeDriver}
       onGestureEvent={onGestureEvent}
       onHandlerStateChange={onHandlerStateChange}
       maxPointers={1}
@@ -118,6 +115,7 @@ const styles = {
 };
 
 const ForwardedRCanvas = forwardRef(RCanvas);
+ForwardedRCanvas.displayName = 'Forwarded(RCanvas)';
 ForwardedRCanvas.defaultProps = {
   useNativeDriver: false,
   hardwareAccelerated: true

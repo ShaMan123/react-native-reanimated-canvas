@@ -23,54 +23,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
 public class RCanvasManager extends ReactViewManager {
-    public static final String NAME = "ReanimatedCanvasManager";
-    public static final String TAG = "ReactRCanvas";
-
-    private static final int ALLOC = 1;
-    private static final int DRAW_POINT = 2;
-    private static final int END_INTERACTION = 3;
-    private static final int CLEAR = 4;
-    private static final int UPDATE = 5;
-    private static final int SET_PATH_ATTRIBUTES = 6;
-
-    private static final String COMMAND_ALLOC = "alloc";
-    private static final String COMMAND_DRAW_POINT = "drawPoint";
-    private static final String COMMAND_END_INTERACTION = "endInteraction";
-    private static final String COMMAND_CLEAR = "clear";
-    private static final String COMMAND_UPDATE = "update";
-    private static final String COMMAND_SET_PATH_ATTRIBUTES = "setAttributes";
-    
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ALLOC, DRAW_POINT, END_INTERACTION, CLEAR, UPDATE, SET_PATH_ATTRIBUTES})
-    @interface Commands {}
-
-    @Retention(RetentionPolicy.SOURCE)
-    @StringDef({COMMAND_ALLOC, COMMAND_DRAW_POINT, COMMAND_END_INTERACTION, COMMAND_CLEAR, COMMAND_UPDATE, COMMAND_SET_PATH_ATTRIBUTES})
-    @interface StringCommands {}
-
-    private @Commands int resolveCommand(@StringCommands String command) {
-        switch (command) {
-            case COMMAND_ALLOC: return ALLOC;
-            case COMMAND_DRAW_POINT: return DRAW_POINT;
-            case COMMAND_END_INTERACTION: return END_INTERACTION;
-            case COMMAND_CLEAR: return CLEAR;
-            case COMMAND_UPDATE: return UPDATE;
-            case COMMAND_SET_PATH_ATTRIBUTES: return SET_PATH_ATTRIBUTES;
-            default:
-                throw new JSApplicationIllegalArgumentException(
-                        String.format(
-                                "Unsupported command %s received by %s.",
-                                command,
-                                getClass().getSimpleName())
-                );
-        }
-    }
+    static final String NAME = "ReanimatedCanvasManager";
+    static final String TAG = "RCanvas";
 
     @interface Props {
         String HARDWARE_ACCELERATED = "hardwareAccelerated";
         String STROKE_COLOR = "strokeColor";
         String STROKE_WIDTH = "strokeWidth";
-        String TOUCH_ENABLED = "touchEnabled";
         String HIT_SLOP = "hitSlop";
     }
 
@@ -139,6 +98,60 @@ public class RCanvasManager extends ReactViewManager {
         ((RCanvasHandler) view).setHitSlop(Utility.parseHitSlop(hitSlop));
     }
 
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+            Commands.ALLOC,
+            Commands.DRAW_POINT,
+            Commands.END_INTERACTION,
+            Commands.CLEAR,
+            Commands.UPDATE,
+            Commands.SET_PATH_ATTRIBUTES
+    })
+    @interface Commands {
+        int ALLOC = 1;
+        int DRAW_POINT = 2;
+        int END_INTERACTION = 3;
+        int CLEAR = 4;
+        int UPDATE = 5;
+        int SET_PATH_ATTRIBUTES = 6;
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            StringCommands.COMMAND_ALLOC,
+            StringCommands.COMMAND_DRAW_POINT,
+            StringCommands.COMMAND_END_INTERACTION,
+            StringCommands.COMMAND_CLEAR,
+            StringCommands.COMMAND_UPDATE,
+            StringCommands.COMMAND_SET_PATH_ATTRIBUTES
+    })
+    @interface StringCommands {
+        String COMMAND_ALLOC = "alloc";
+        String COMMAND_DRAW_POINT = "drawPoint";
+        String COMMAND_END_INTERACTION = "endInteraction";
+        String COMMAND_CLEAR = "clear";
+        String COMMAND_UPDATE = "update";
+        String COMMAND_SET_PATH_ATTRIBUTES = "setAttributes";
+    }
+
+    private @Commands int resolveCommand(@StringCommands String command) {
+        switch (command) {
+            case StringCommands.COMMAND_ALLOC: return Commands.ALLOC;
+            case StringCommands.COMMAND_DRAW_POINT: return Commands.DRAW_POINT;
+            case StringCommands.COMMAND_END_INTERACTION: return Commands.END_INTERACTION;
+            case StringCommands.COMMAND_CLEAR: return Commands.CLEAR;
+            case StringCommands.COMMAND_UPDATE: return Commands.UPDATE;
+            case StringCommands.COMMAND_SET_PATH_ATTRIBUTES: return Commands.SET_PATH_ATTRIBUTES;
+            default:
+                throw new JSApplicationIllegalArgumentException(
+                        String.format(
+                                "Unsupported command %s received by %s.",
+                                command,
+                                getClass().getSimpleName())
+                );
+        }
+    }
 /*
     @Override
     public void receiveCommand(ReactViewGroup root, String commandId, @Nullable ReadableArray args) {
@@ -149,34 +162,34 @@ public class RCanvasManager extends ReactViewManager {
     public void receiveCommand(@NonNull ReactViewGroup root, @Commands int command, @Nullable ReadableArray args) {
         RCanvasHandler view = ((RCanvasHandler) root);
         switch (command) {
-            case ALLOC: {
+            case Commands.ALLOC: {
                 String id = args.getString(0);
                 Integer strokeColor = !args.isNull(1) ? args.getInt(1) : null;
                 Float strokeWidth = !args.isNull(2) ? PixelUtil.toPixelFromDIP(args.getDouble(2)) : null;
                 view.init(id, strokeColor, strokeWidth);
                 return;
             }
-            case DRAW_POINT: {
+            case Commands.DRAW_POINT: {
                 String id = args.getString(0);
                 float x = PixelUtil.toPixelFromDIP(args.getDouble(1));
                 float y = PixelUtil.toPixelFromDIP(args.getDouble(2));
                 view.drawPoint(id, new PointF(x, y));
                 return;
             }
-            case END_INTERACTION: {
+            case Commands.END_INTERACTION: {
                 String id = args.getString(0);
                 view.endInteraction(id);
                 return;
             }
-            case CLEAR: {
+            case Commands.CLEAR: {
                 view.clear();
                 return;
             }
-            case UPDATE: {
+            case Commands.UPDATE: {
                 view.handleUpdate(args.getMap(0));
                 return;
             }
-            case SET_PATH_ATTRIBUTES: {
+            case Commands.SET_PATH_ATTRIBUTES: {
                 String id = args.getString(0);
                 ReadableMap attributes = args.getMap(1);
                 view.setAttributes(id, attributes, true);
@@ -196,12 +209,12 @@ public class RCanvasManager extends ReactViewManager {
     @Override
     public Map<String, Integer> getCommandsMap() {
         return MapBuilder.<String, Integer>builder()
-                .put(COMMAND_ALLOC, ALLOC)
-                .put(COMMAND_DRAW_POINT, DRAW_POINT)
-                .put(COMMAND_END_INTERACTION, END_INTERACTION)
-                .put(COMMAND_CLEAR, CLEAR)
-                .put(COMMAND_UPDATE, UPDATE)
-                .put(COMMAND_SET_PATH_ATTRIBUTES, SET_PATH_ATTRIBUTES)
+                .put(StringCommands.COMMAND_ALLOC, Commands.ALLOC)
+                .put(StringCommands.COMMAND_DRAW_POINT, Commands.DRAW_POINT)
+                .put(StringCommands.COMMAND_END_INTERACTION, Commands.END_INTERACTION)
+                .put(StringCommands.COMMAND_CLEAR, Commands.CLEAR)
+                .put(StringCommands.COMMAND_UPDATE, Commands.UPDATE)
+                .put(StringCommands.COMMAND_SET_PATH_ATTRIBUTES, Commands.SET_PATH_ATTRIBUTES)
                 .build();
 
     }

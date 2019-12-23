@@ -31,7 +31,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const module = useModule(node.ref);
 
   const onChange = useCallback((e: ChangeEvent) => {
-    console.log('incoming update', e.nativeEvent);
     const { state, paths: changedPaths, added, changed, removed } = e.nativeEvent;
     let updatedPaths = _.differenceWith(paths.value(), _.concat(changed, removed), (a, b) => a.id === b);
     updatedPaths = _.concat(updatedPaths, _.values(_.pick(changedPaths, _.concat(added, changed))) as PathData[]);
@@ -109,6 +108,6 @@ ForwardedRCanvasBase.defaultProps = {
   hardwareAccelerated: false,
   useNativeDriver: false
 } as RCanvasProperties;
-ForwardedRCanvasBase.displayName = '() => RCanvasBase'
+ForwardedRCanvasBase.displayName = 'Forwarded(RCanvasBase)'
 
 export default ForwardedRCanvasBase;
