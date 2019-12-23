@@ -49,7 +49,6 @@
     "yargs": "^14.0.0"
   },
   "scripts": {
-    "prepublish": "node scripts/prepareExample.js",
     "publish:next": "node scripts/publish.js --tag next",
     "publish:latest": "node scripts/publish.js"
   },
