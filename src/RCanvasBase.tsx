@@ -1,16 +1,14 @@
 'use strict';
 
 import _ from 'lodash';
-import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useState, useReducer, ReactElement } from 'react';
-import { findNodeHandle, LayoutChangeEvent, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
+import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo } from 'react';
+import { findNodeHandle, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
-import { PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, ChangeEvent } from './types';
-import { generatePathId, useEventProp, useHitSlop, useRefGetter, processColorProp } from './util';
+import { ChangeEvent, PathData, RCanvasProperties, RCanvasRef, PathDataBase } from './types';
+import { generatePathId, processColorProp, useEventProp, useHitSlop, useRefGetter } from './util';
 
-const { createAnimatedComponent } = Animated;
-
-const RNativeCanvas = createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
+const RNativeCanvas = Animated.createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
 
 function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   //const [ignored, forceUpdate] = useReducer<never>((x: number) => x + 1, 0);
@@ -49,6 +47,20 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
       ...module,
+      update(data: { [id: string]: PathDataBase | null }) {
+        const parsedPaths = _.mapValues(_.cloneDeep(data), (path, id) => {
+          if (path) {
+            if (path.strokeColor) path.strokeColor = processColor(path.strokeColor);
+            //@ts-ignore
+            if (!path.id) path.id = id;
+          }
+          return path as PathData | null;
+        });
+
+        const filteredPaths = _.filter(paths.value(), (path) => !_.has(data, path.id));
+        paths.set(_.concat(filteredPaths, _.compact(_.values(parsedPaths))))
+        module.update(parsedPaths);
+      },
       getPaths() {
         return paths.value();
       },

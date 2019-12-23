@@ -36,8 +36,7 @@ export function clear(tag: number) {
 }
 
 export function update(tag: number, paths: { [id: string]: PathData | null }) {
-  const parsedPaths = _.mapValues(_.cloneDeep(paths), (path) => path && path.strokeColor && _.set(path, 'strokeColor', processColor(path.strokeColor)));
-  dispatchCommand(tag, Commands.update, [parsedPaths]);
+  dispatchCommand(tag, Commands.update, [paths]);
 }
 
 export function setPathAttributes(tag: number, pathId: string, attr: { width: number, color: string | number }) {
