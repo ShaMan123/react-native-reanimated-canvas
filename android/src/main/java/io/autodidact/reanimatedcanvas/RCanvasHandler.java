@@ -63,8 +63,7 @@ public class RCanvasHandler extends RCanvas {
         ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>();
         Iterator<Map.Entry<String, Object>> iterator = paths.getEntryIterator();
         Map.Entry<String, Object> entry;
-        boolean exists;
-        boolean remove;
+        boolean exists, remove;
         String pathId;
 
         while (iterator.hasNext()) {
@@ -73,12 +72,12 @@ public class RCanvasHandler extends RCanvas {
             remove = entry.getValue() == null;
             pathId = entry.getKey();
 
-            if (!exists) {
+            if (!remove && !exists) {
                 init(pathId);
                 setAttributes(pathId, (ReadableMap) entry.getValue(), false);
             } else if (!remove) {
                 setAttributes(pathId, (ReadableMap) entry.getValue(), false);
-            } else {
+            } else if (exists) {
                 pathsToRemove.add(getPath(pathId));
             }
 
@@ -167,7 +166,6 @@ public class RCanvasHandler extends RCanvas {
                 }
             }
         }
-
 
         if (tagsToRemove.size() > 0) {
             Utility.runOnNativeModulesThread((ReactContext) getContext(), new Runnable() {
