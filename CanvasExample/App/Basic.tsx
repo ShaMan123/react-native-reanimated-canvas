@@ -181,7 +181,7 @@ export default function Basic() {
           path,
           cond(
             eq(bip, 0),
-            RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
+            //RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
           )
         ),
         onChange(

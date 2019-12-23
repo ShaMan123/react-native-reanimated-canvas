@@ -31,6 +31,10 @@ export const setPathWidth = proc((tag, id, strokeWidth) => {
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ strokeWidth })));
 });
 
+export const clear = proc((tag) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.clear, tag));
+});
+
 export const getPaths = proc((tag, id, cb) => {
   return safeDispatch(tag, invoke(MODULE, Methods.getPaths, tag, id, 0, cb, callback()));
 });

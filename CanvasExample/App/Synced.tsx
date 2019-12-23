@@ -68,7 +68,6 @@ export default function SyncedCanvases() {
           const path = e.nativeEvent;
           const has = a().getPaths().findIndex((p) => p.id === path.id) > -1;
           //console.log(a().getPaths().map(({ id }) => id), b().getPaths().map(({ id }) => id), has)
-          //!has && a().addPath(_.set(_.cloneDeep(path), 'id', `@${path.id}`));
           //a().startPath(0, 0);
           //a().addPoint(500, 11)
           //a().endPath();

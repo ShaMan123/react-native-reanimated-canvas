@@ -8,8 +8,7 @@ export enum Commands {
   drawPoint,
   endInteraction,
   clear,
-  addPaths,
-  removePaths,
+  update,
   setAttributes
 }
 
@@ -37,30 +36,35 @@ export type PathData = {
   points: Point[]
 }
 
-export type TouchStates = 'draw' | 'touch' | 'none';
-
 export type PathIntersectionResponse = string[];
 
 export interface NativeStrokeEvent extends Point {
   id: string,
 }
 
-export interface NativeUpdateEvent {
-  strokeColor: number,
-  strokeWidth: number
-  paths: { [id: string]: PathData },
+export interface NativeChangeEvent {
+  state: {
+    strokeColor: number,
+    strokeWidth: number
+  },
+  paths: { [id: string]: PathData | null },
+  added: string[],
+  changed: string[],
+  removed: string[]
 }
 
 export type NativeTouchEvent = PathIntersectionResponse & Point;
 export type StrokeStartEvent = NativeSyntheticEvent<PathData>;
 export type StrokeEvent = NativeSyntheticEvent<NativeStrokeEvent>;
 export type StrokeEndEvent = NativeSyntheticEvent<PathData>;
-export type PathsChangeEvent = NativeSyntheticEvent<{ paths: string[] }>;
-export type UpdateEvent = NativeSyntheticEvent<NativeUpdateEvent>
+export type ChangeEvent = NativeSyntheticEvent<NativeChangeEvent>
 
 interface NativeTouchProps {
   /** set to true to handle touches with the native driver */
   useNativeDriver?: boolean
+  onStrokeStart?: (e: StrokeStartEvent) => void
+  onStrokeChange?: (e: StrokeEvent) => void
+  onStrokeEnd?: (e: StrokeEndEvent) => void
   /** fires only if `useNativeDriver` is set to `true` */
   onPress?: (e: NativeTouchEvent) => void
   /** fires only if `useNativeDriver` is set to `true` */
@@ -74,12 +78,9 @@ interface ExtendedInsets extends Insets {
   vertical?: number
 }
 
-export interface RCanvasProps extends NativeTouchProps {
-  style?: StyleProp<ViewStyle>
+export interface RCanvasProps {
   strokeColor?: string | Animated.Adaptable<number>
   strokeWidth?: Animated.Adaptable<number>
-  paths?: PathData[]
-  touchEnabled?: boolean | TouchStates
 
   /**
    * pass a rect or a number to apply all insets equally
@@ -92,10 +93,8 @@ export interface RCanvasProps extends NativeTouchProps {
    */
   hardwareAccelerated?: boolean
 
-  onStrokeStart?: (e: StrokeStartEvent) => void
-  onStrokeChange?: (e: StrokeEvent) => void
-  onStrokeEnd?: (e: StrokeEndEvent) => void
-  onPathsChange?: (e: PathsChangeEvent) => void,
+
+  onChange?: (e: ChangeEvent) => void,
 }
 
 export type RCanvasProperties = React.PropsWithChildren<ViewProps & PanGestureHandlerProperties & RCanvasProps>;
@@ -137,14 +136,7 @@ export type RCanvasRef = {
 
   getPath(id: string): PathData | null
 
-  addPath(data: PathData): void
-
-  addPaths(paths: PathData[]): void
-
-  removePath(path: PathData): void
-  removePath(id: string): void
-
-  removePaths(pathIds: (string | PathData)[]): void
+  update(paths: { [id: string]: PathData | null }): void
 
   setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 

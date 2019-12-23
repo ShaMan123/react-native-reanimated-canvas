@@ -35,35 +35,9 @@ export function clear(tag: number) {
   dispatchCommand(tag, Commands.clear);
 }
 
-export function addPath(tag: number, path: PathData) {
-  dispatchCommand(tag, Commands.addPaths, [path]);
-}
-
-export function addPaths(tag: number, paths: PathData[]) {
-  if (paths.length === 0) return;
-  const data = _.map(paths, (d) => {
-    return [
-      d.id,
-      processColor(d.strokeColor),    //typeof d.strokeColor === 'number' ? d.strokeColor : processColor(d.strokeColor),
-      d.strokeWidth,
-      d.points
-    ];
-  });
-
-  dispatchCommand(tag, Commands.addPaths, data);
-}
-
-export function removePath(tag: number, pathId: string): void
-export function removePath(tag: number, path: PathData): void
-export function removePath(tag: number, arg: string | PathData) {
-  removePaths(tag, [arg]);
-}
-
-export function removePaths(tag: number, pathIds: string[]): void
-export function removePaths(tag: number, paths: PathData[]): void
-export function removePaths(tag: number, args: (string | PathData)[]): void
-export function removePaths(tag: number, args: (string | PathData)[]) {
-  dispatchCommand(tag, Commands.removePaths, _.map(args, (val) => typeof val === 'string' ? val : val.id));
+export function update(tag: number, paths: { [id: string]: PathData | null }) {
+  const parsedPaths = _.mapValues(_.cloneDeep(paths), (path) => path && path.strokeColor && _.set(path, 'strokeColor', processColor(path.strokeColor)));
+  dispatchCommand(tag, Commands.update, [parsedPaths]);
 }
 
 export function setPathAttributes(tag: number, pathId: string, attr: { width: number, color: string | number }) {
@@ -132,11 +106,11 @@ function promisify<R, E>(method: (onSuccess: (result: R) => void, onFailure: (er
 }
 
 type ModuleMethods = 'isPointOnPath' | 'save' | 'restore';
-type ViewManagerCommands = 'dispatchCommand' | 'startPath' | 'addPoint' | 'endPath' | 'clear' | 'addPath' | 'addPaths' | 'removePath' | 'removePaths' | 'setPathAttributes';
+type ViewManagerCommands = 'dispatchCommand' | 'startPath' | 'addPoint' | 'endPath' | 'clear' | 'update' | 'setPathAttributes';
 
 export function useModule(ref: MutableRefObject<RCanvasRef>)/*: Pick<RCanvasRef, ModuleMethods | ViewManagerCommands>*/ {
   return useMemo(() => {
-    const methods = { dispatchCommand, alloc, drawPoint, endInteraction, clear, addPath, addPaths, removePath, removePaths, setPathAttributes, isPointOnPath, save, restore };
+    const methods = { dispatchCommand, alloc, drawPoint, endInteraction, clear, update, setPathAttributes, isPointOnPath, save, restore };
     //@ts-ignore
     return _.mapValues(methods, (m) => (...args: any[]) => m(findNodeHandle(ref.current), ...args));
   }, [ref]);

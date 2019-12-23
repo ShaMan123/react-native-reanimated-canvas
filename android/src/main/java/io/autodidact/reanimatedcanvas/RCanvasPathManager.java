@@ -1,6 +1,7 @@
 package io.autodidact.reanimatedcanvas;
 
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,18 +47,18 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPath> {
     @NonNull
     @Override
     protected RCanvasPath createViewInstance(@NonNull ThemedReactContext reactContext) {
-        return new RCanvasPath(reactContext, true);
+        return new RCanvasPath(reactContext);
     }
 
-    final static ArrayList<Integer> blacklist = new ArrayList<>();
+    private static final ArrayList<Integer> blacklist = new ArrayList<>();
 
-    private boolean shouldUpdateView(@NonNull RCanvasPath viewToUpdate) {
-        return blacklist.indexOf(viewToUpdate.getId()) == -1;
+    static void addToBlackList(int reactTag) {
+        blacklist.add(reactTag);
     }
 
     @Override
     public void updateProperties(@NonNull RCanvasPath viewToUpdate, ReactStylesDiffMap props) {
-        if (shouldUpdateView(viewToUpdate)) {
+        if (blacklist.indexOf(viewToUpdate.getId()) == -1) {
             super.updateProperties(viewToUpdate, props);
         }
     }

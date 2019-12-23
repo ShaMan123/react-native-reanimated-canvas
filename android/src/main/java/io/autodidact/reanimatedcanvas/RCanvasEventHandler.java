@@ -5,55 +5,16 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewParent;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeMap;
-import com.facebook.react.common.MapBuilder;
-import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.UIManagerModule;
-import com.facebook.react.uimanager.events.EventDispatcher;
-
-import java.util.Map;
-
 public class RCanvasEventHandler {
-    @interface JSEventNames {
-        String STROKE_START = "onStrokeStart";
-        String STROKE_CHANGED = "onStrokeChange";
-        String STROKE_END = "onStrokeEnd";
-        String ON_PRESS = "onPress";
-        String ON_LONG_PRESS = "onLongPress";
-        String ON_PATHS_CHANGE = "onPathsChange";
-        String ON_UPDATE = "onUpdate";
-    }
-
-    public static Map<String, Object> getExportedCustomDirectEventTypeConstants() {
-        return MapBuilder.<String, Object>builder()
-                .put(JSEventNames.STROKE_START, MapBuilder.of("registrationName", JSEventNames.STROKE_START))
-                .put(JSEventNames.STROKE_CHANGED, MapBuilder.of("registrationName", JSEventNames.STROKE_CHANGED))
-                .put(JSEventNames.STROKE_END, MapBuilder.of("registrationName", JSEventNames.STROKE_END))
-                .put(JSEventNames.ON_PRESS, MapBuilder.of("registrationName", JSEventNames.ON_PRESS))
-                .put(JSEventNames.ON_LONG_PRESS, MapBuilder.of("registrationName", JSEventNames.ON_LONG_PRESS))
-                .put(JSEventNames.ON_PATHS_CHANGE, MapBuilder.of("registrationName", JSEventNames.ON_PATHS_CHANGE))
-                .put(JSEventNames.ON_UPDATE, MapBuilder.of("registrationName", JSEventNames.ON_UPDATE))
-                .build();
-    }
-
-    private RCanvas mView;
+    private final RCanvas mView;
     private TouchState mTouchState;
     private int prevTouchAction = -1;
-    private boolean mShouldFireOnStrokeChangedEvent = false;
-    private boolean mShouldFireOnPressEvent = false;
-    private boolean mShouldFireOnLongPressEvent = false;
-    private boolean mShouldHandleTouches = false;
+    private final GestureDetector detector;
+    private final EventListener mEventListener;
 
-    private GestureDetector detector;
-    private EventDispatcher mEventDispatcher;
-
-    public RCanvasEventHandler(RCanvas view){
+    public RCanvasEventHandler(RCanvas view, EventListener eventListener){
         mView = view;
-        mEventDispatcher = ((ReactContext) view.getContext()).getNativeModule(UIManagerModule.class).getEventDispatcher();
+        mEventListener = eventListener;
         final GestureListener gestureListener = new GestureListener();
         detector =  new GestureDetector(mView.getContext(), gestureListener) {
             @Override
@@ -64,10 +25,6 @@ public class RCanvasEventHandler {
                 return super.onTouchEvent(ev);
             }
         };
-    }
-
-    public TouchState getTouchState(){
-        return mTouchState;
     }
 
     public void setTouchState(TouchState touchState){
@@ -82,24 +39,13 @@ public class RCanvasEventHandler {
         }
     }
 
-    public void setShouldFireOnStrokeChangedEvent(boolean fire){
-        mShouldFireOnStrokeChangedEvent = fire;
-    }
-
-    public void setShouldFireOnPressEvent(boolean shouldFireEvent) {
-        mShouldFireOnPressEvent = shouldFireEvent;
-    }
-
-    public void setShouldFireOnLongPressEvent(boolean shouldFireEvent) {
-        mShouldFireOnLongPressEvent = shouldFireEvent;
-    }
-
-    public void setShouldHandleTouches(boolean shouldHandleTouches) {
-        mShouldHandleTouches = shouldHandleTouches;
-    }
-
     public boolean onTouchEvent(MotionEvent ev){
-        return mShouldHandleTouches && mTouchState.enabled() && detector.onTouchEvent(ev);
+        return mTouchState.enabled() && detector.onTouchEvent(ev);
+    }
+
+    private boolean shouldFail(MotionEvent event){
+        int action = event.getAction();
+        return event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || action == MotionEvent.ACTION_CANCEL;
     }
 
     private class GestureListener implements GestureDetector.OnGestureListener {
@@ -109,6 +55,7 @@ public class RCanvasEventHandler {
         private void endPath() {
             if (pathId != null) {
                 mView.endInteraction(pathId);
+                mEventListener.emitStrokeEnd(pathId);
                 pathId = null;
             }
         }
@@ -130,7 +77,7 @@ public class RCanvasEventHandler {
         @Override
         public void onLongPress(MotionEvent motionEvent) {
             isLongPress = true;
-            if(mShouldFireOnLongPressEvent) emitPress(motionEvent.getX(), motionEvent.getY(), JSEventNames.ON_LONG_PRESS);
+            mEventListener.emitLongPress(new PointF(motionEvent.getX(), motionEvent.getY()));
         }
 
         @Override
@@ -145,7 +92,7 @@ public class RCanvasEventHandler {
 
             if(prevTouchAction == MotionEvent.ACTION_DOWN){
                 pathId = mView.init();
-                emitStrokeStart(pathId);
+                mEventListener.emitStrokeStart(pathId);
             }
 
             if(shouldFail(event)) {
@@ -157,6 +104,7 @@ public class RCanvasEventHandler {
 
             if (pathId != null){
                 mView.drawPoint(pathId, point);
+                mEventListener.emitStrokeChange(pathId, point);
             }
 
             prevTouchAction = action;
@@ -165,71 +113,55 @@ public class RCanvasEventHandler {
 
         @Override
         public boolean onSingleTapUp(MotionEvent motionEvent) {
-            if(mShouldFireOnPressEvent) {
-                if(!isLongPress) emitPress(motionEvent.getX(), motionEvent.getY(), JSEventNames.ON_PRESS);
+            if(mEventListener.shouldEmitPress) {
+                if(!isLongPress) mEventListener.emitPress(new PointF(motionEvent.getX(), motionEvent.getY()));
                 return true;
             }
             return false;
         }
-
     }
 
-    private boolean shouldFail(MotionEvent event){
-        int action = event.getAction();
-        return event.getPointerCount() != 1 || action == MotionEvent.ACTION_OUTSIDE || action == MotionEvent.ACTION_CANCEL;
-    }
+    abstract class EventListener {
+        abstract void onStrokeStart(String id);
+        abstract void onStrokeChange(String id, PointF point);
+        abstract void onStrokeEnd(String id);
+        abstract void onPress(PointF point);
+        abstract void onLongPress(PointF point);
 
-    public void emit(String eventName, WritableMap eventData){
-        //mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mView.getId(), eventName, eventData));
-    }
-
-    public void emitStrokeStart(String pathId) {
-        emit(JSEventNames.STROKE_START, mView.getPath(pathId).toWritableMap(false));
-    }
-
-    public void maybeEmitStrokeChange(String pathId, PointF point) {
-        if (mShouldFireOnStrokeChangedEvent) {
-            WritableMap e = Arguments.createMap();
-            e.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
-            e.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
-            e.merge(mView.getPath(pathId).toWritableMap(false));
-            emit(JSEventNames.STROKE_CHANGED, e);
+        private void emitStrokeStart(String id) {
+            if (shouldEmitStrokeStart) {
+                onStrokeStart(id);
+            }
         }
-    }
 
-    public void emitStrokeEnd(String pathId){
-        emit(JSEventNames.STROKE_END, mView.getPath(pathId).toWritableMap());
-    }
-
-    public void emitPathsChange(){
-        WritableMap event = Arguments.createMap();
-        WritableArray paths = Arguments.createArray();
-        for (RCanvasPath path: mView.paths()) {
-            paths.pushString(path.getPathId());
+        private void emitStrokeChange(String id, PointF point) {
+            if (shouldEmitStrokeChange) {
+                onStrokeChange(id, point);
+            }
         }
-        event.putArray("paths", paths);
-        emit(JSEventNames.ON_PATHS_CHANGE, event);
-    }
 
-    public void emitPress(float x, float y, String eventName){
-        WritableMap e = Arguments.createMap();
-        PathIntersectionHelper intersectionHelper = mView.getIntersectionHelper();
-        e.putArray("paths", intersectionHelper.isPointOnPath(new PointF(x, y)));
-        e.putDouble("x", PixelUtil.toDIPFromPixel(x));
-        e.putDouble("y", PixelUtil.toDIPFromPixel(y));
-        emit(eventName, e);
-    }
-
-    void emitUpdate() {
-        WritableNativeMap event = new WritableNativeMap();
-        WritableNativeMap data = new WritableNativeMap();
-        for (RCanvasPath path: mView.paths()) {
-            data.putMap(path.getPathId(), path.toWritableMap());
+        private void emitStrokeEnd(String id) {
+            if (shouldEmitStrokeEnd) {
+                onStrokeEnd(id);
+            }
         }
-        event.putMap("paths", data);
-        RCanvas.CanvasState currentState = mView.mStateStack.peek();
-        event.putInt("strokeColor", currentState.strokeColor);
-        event.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
-        emit(JSEventNames.ON_UPDATE, event);
+
+        private void emitPress(PointF point) {
+            if (shouldEmitPress) {
+                onPress(point);
+            }
+        }
+
+        private void emitLongPress(PointF point) {
+            if (shouldEmitLongPress) {
+               onLongPress(point);
+            }
+        }
+        
+        protected boolean shouldEmitStrokeStart = false;
+        protected boolean shouldEmitStrokeChange = false;
+        protected boolean shouldEmitStrokeEnd = false;
+        protected boolean shouldEmitPress = false;
+        protected boolean shouldEmitLongPress = false;
     }
 }

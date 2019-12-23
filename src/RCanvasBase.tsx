@@ -5,7 +5,7 @@ import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useS
 import { findNodeHandle, LayoutChangeEvent, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
-import { PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, UpdateEvent } from './types';
+import { PathData, PathsChangeEvent, RCanvasProperties, RCanvasRef, ChangeEvent } from './types';
 import { generatePathId, useEventProp, useHitSlop, useRefGetter, processColorProp } from './util';
 
 const { createAnimatedComponent } = Animated;
@@ -13,9 +13,7 @@ const { createAnimatedComponent } = Animated;
 const RNativeCanvas = createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
 
 function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
-  //const { strokeWidth } = props;
-  //const strokeColor = useStrokeColor(props.strokeColor);
-  const [ignored, forceUpdate] = useReducer<never>((x: number) => x + 1, 0);
+  //const [ignored, forceUpdate] = useReducer<never>((x: number) => x + 1, 0);
   const hitSlop = useHitSlop(props.hitSlop);
   const node = useRefGetter(null as any, (current) => current && current.getNode());
   const currentPathId = useRefGetter<string>();
@@ -32,43 +30,26 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const module = useModule(node.ref);
 
-  const onPathsChange = useCallback((e: PathsChangeEvent) => {
-    const pathIds = e.nativeEvent.paths;
-    invalidPaths.set(_.concat(invalidPaths.value(), _.differenceWith(pathIds, paths.value(), (a, b) => a === b.id)));
-    paths.set(_.intersectionWith(paths.value(), pathIds, (a, b) => a.id === b));
-    console.log(e.nativeEvent, invalidPaths.value())
-    forceUpdate();
-  }, [paths]);
-
-  const onUpdate = useCallback((e: UpdateEvent) => {
+  const onChange = useCallback((e: ChangeEvent) => {
     console.log('incoming update', e.nativeEvent);
-    paths.set(_.values(e.nativeEvent.paths));
+    const { state, paths: changedPaths, added, changed, removed } = e.nativeEvent;
+    let updatedPaths = _.differenceWith(paths.value(), _.concat(changed, removed), (a, b) => a.id === b);
+    updatedPaths = _.concat(updatedPaths, _.values(_.pick(changedPaths, _.concat(added, changed))) as PathData[]);
+    paths.set(updatedPaths);
+
     updateContext.set(new Date());
-    let needsUpdate = false;
+
     if (typeof strokeColor.value() === 'number') {
-      strokeColor.set(e.nativeEvent.strokeColor);
-      needsUpdate = true;
+      strokeColor.set(state.strokeColor);
     }
     if (typeof strokeWidth.value() === 'number') {
-      strokeWidth.set(e.nativeEvent.strokeWidth);
-      needsUpdate = true;
-    }
-    if (needsUpdate) {
-      forceUpdate();
+      strokeWidth.set(state.strokeWidth);
     }
   }, [paths, strokeColor, strokeWidth]);
 
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
       ...module,
-      addPath(path: PathData) {
-        this.addPaths([path]);
-      },
-      addPaths(data: PathData[]) {
-        if (data.length === 0) return;
-        paths.set(_.concat(paths.value(), _.differenceBy(paths.value(), data, 'id')));
-        module.addPaths(data);
-      },
       getPaths() {
         return paths.value();
       },
@@ -104,9 +85,8 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   return (
     <RNativeCanvas
       {...props}
+      onChange={useEventProp(onChange, props.onChange)}
       ref={node.ref}
-      onPathsChange={useEventProp(onPathsChange, props.onPathsChange)}
-      onUpdate={onUpdate}
       strokeWidth={strokeWidth.value()}
       strokeColor={strokeColor.value()}
       hitSlop={hitSlop}
@@ -114,11 +94,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       <View
         style={StyleSheet.absoluteFill}
       >
-        {React.Children.map(props.children, (child: ReactElement) => {
-          const isInvalid = _.find(invalidPaths.value(), (id) => child && id === child.key);
-          console.log(child && child.key, isInvalid, invalidPaths.value())
-          return isInvalid ? null : child;
-        })}
+        {props.children}
       </View>
     </RNativeCanvas>
   )

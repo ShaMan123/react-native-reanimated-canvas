@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
@@ -47,6 +48,14 @@ public final class Utility {
         p.putDouble("x", PixelUtil.toDIPFromPixel(point.x));
         p.putDouble("y", PixelUtil.toDIPFromPixel(point.y));
         return p;
+    }
+
+    static String[] processStringArray(ReadableArray array) {
+        String[] arr = new String[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            arr[i] = array.getString(i);
+        }
+        return arr;
     }
 
     public static RectF toRect(ReadableMap rect) {
@@ -101,4 +110,14 @@ public final class Utility {
                 view.getBottom()
         );
     }
+
+    static void runOnNativeModulesThread(ReactContext context, Runnable action) {
+        if (context.isOnNativeModulesQueueThread()) {
+            action.run();
+        } else {
+            context.runOnNativeModulesQueueThread(action);
+        }
+    }
+
+
 }
