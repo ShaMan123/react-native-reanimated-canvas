@@ -9,6 +9,7 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -27,17 +28,16 @@ import java.util.Locale;
 import java.util.Stack;
 
 public class RCanvasPath extends View {
-    private Stack<RCanvasPathState> mPathStateStack;
-    private String mPathId;
+    protected Stack<RCanvasPathState> mPathStateStack;
+    protected String mPathId;
     private RectF mHitSlop;
     private boolean mOverriddenHitSlop = false;
 
     private Paint mPaint;
-    private Path mPath;
+    protected Path mPath;
 
     protected ArrayList<PointF> mTempPoints;
-    private boolean mReceivedPoints = false;
-    private boolean mShouldAnimatePath = false;
+
 
     public RCanvasPath(ReactContext context) {
         super(context);
@@ -46,13 +46,6 @@ public class RCanvasPath extends View {
         mPathStateStack.push(new RCanvasPathState());
         mHitSlop = new RectF();
         //setHardwareAcceleration(false);
-    }
-
-    public void init(String id, int strokeColor, float strokeWidth, @Nullable RectF hitSlop) {
-        setPathId(id);
-        setStrokeColor(strokeColor);
-        setStrokeWidth(strokeWidth);
-        setHitSlop(hitSlop);
     }
 
     public String getPathId() {
@@ -181,143 +174,11 @@ public class RCanvasPath extends View {
         }
     }
 
-    public void preCommitPoints(@Nullable ArrayList<PointF> points) {
-        mTempPoints = points;
-        if (points != null) {
-            mReceivedPoints = true;
-        }
-    }
-
-    private void commitPoints() {
-        if (mTempPoints != null) {
-            setPoints(mTempPoints);
-            mTempPoints = null;
-        }
-    }
-
-    public void shouldAnimatePath(Boolean animate) {
-        mShouldAnimatePath = animate;
-    }
-
-    public void commitPoint(int index) {
-        if (mTempPoints != null) {
-            UiThreadUtil.assertOnUiThread();
-            addPoint(mTempPoints.get(index));
-            if (getParent() != null) {
-                ((ViewGroup) getParent()).postInvalidateOnAnimation();
-            }
-            if (index == mTempPoints.size() - 1) {
-                mTempPoints = null;
-                mShouldAnimatePath = false;
-            }
-        }
-    }
-
-    public void onAfterUpdateTransaction() {
-        if (mPathId == null) {
-            mPathId = Utility.generateId();
-        }
-        if (mReceivedPoints) {
-            mReceivedPoints = false;
-            if (!mShouldAnimatePath) {
-                commitPoints();
-            }
-        }
-
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawPath(mPath, getPaint());
-        /*
-        for (int i = 0; i < points.size(); i++) {
-            draw(canvas, i);
-        }
 
-         */
-    }
-
-    protected void drawPoint(int pointIndex) {
-        RCanvasPathState currentState = mPathStateStack.peek();
-        ArrayList<PointF> mPoints = currentState.points;
-        int pointsCount = mPoints.size();
-        if (pointIndex < 0) {
-            pointIndex += pointsCount;
-        }
-        if (pointIndex >= pointsCount) {
-            return;
-        }
-
-        if (pointsCount >= 3 && pointIndex >= 2) {
-            PointF a = mPoints.get(pointIndex - 2);
-            PointF b = mPoints.get(pointIndex - 1);
-            PointF c = mPoints.get(pointIndex);
-            PointF prevMid = midPoint(a, b);
-            PointF currentMid = midPoint(b, c);
-
-            // Draw a curve
-            Path path = new Path();
-            path.moveTo(prevMid.x, prevMid.y);
-            path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
-
-            mPath.addPath(path);
-        } else if (pointsCount >= 2 && pointIndex >= 1) {
-            PointF a = mPoints.get(pointIndex - 1);
-            PointF b = mPoints.get(pointIndex);
-            PointF mid = midPoint(a, b);
-
-            // Draw a line to the middle of points a and b
-            // This is so the next draw which uses a curve looks correct and continues from there
-            //mPath.drawLine(a.x, a.y, mid.x, mid.y, getPaint());
-            mPath.moveTo(a.x, a.y);
-            mPath.lineTo(mid.x, mid.y);
-        } else if (pointsCount >= 1) {
-            PointF a = mPoints.get(pointIndex);
-
-            // Draw a single point
-            mPath.addCircle(a.x, a.y, currentState.strokeWidth, Path.Direction.CCW);
-        }
-    }
-
-    protected void draw(Canvas canvas, int pointIndex) {
-        RCanvasPathState currentState = mPathStateStack.peek();
-        ArrayList<PointF> mPoints = currentState.points;
-        int pointsCount = mPoints.size();
-        if (pointIndex < 0) {
-            pointIndex += pointsCount;
-        }
-        if (pointIndex >= pointsCount) {
-            return;
-        }
-
-        if (pointsCount >= 3 && pointIndex >= 2) {
-            PointF a = mPoints.get(pointIndex - 2);
-            PointF b = mPoints.get(pointIndex - 1);
-            PointF c = mPoints.get(pointIndex);
-            PointF prevMid = midPoint(a, b);
-            PointF currentMid = midPoint(b, c);
-
-            // Draw a curve
-            Path path = new Path();
-            path.moveTo(prevMid.x, prevMid.y);
-            path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
-
-            canvas.drawPath(path, getPaint());
-        } else if (pointsCount >= 2 && pointIndex >= 1) {
-            PointF a = mPoints.get(pointIndex - 1);
-            PointF b = mPoints.get(pointIndex);
-            PointF mid = midPoint(a, b);
-
-            // Draw a line to the middle of points a and b
-            // This is so the next draw which uses a curve looks correct and continues from there
-            canvas.drawLine(a.x, a.y, mid.x, mid.y, getPaint());
-        } else if (pointsCount >= 1) {
-            PointF a = mPoints.get(pointIndex);
-
-            // Draw a single point
-            canvas.drawPoint(a.x, a.y, getPaint());
-        }
     }
 
     protected Paint getPaint() {
