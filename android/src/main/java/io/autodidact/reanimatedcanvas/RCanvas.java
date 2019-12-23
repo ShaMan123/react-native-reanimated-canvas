@@ -2,6 +2,7 @@ package io.autodidact.reanimatedcanvas;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -63,19 +64,16 @@ public class RCanvas extends ReactViewGroup {
         return mStateStack.size() - 1;
     }
 
-    public ArrayList<RCanvasPath> restore() {
-        return restore(mStateStack.size() - 1);
-    }
-
     public ArrayList<RCanvasPath> restore(int saveCount) {
         if (saveCount == -1) {
-            saveCount = mStateStack.size() - 1;
+            saveCount = Math.max(mStateStack.size() - 1, 0);
         } else if (saveCount >= mStateStack.size() || saveCount < 0) {
             throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: bad save count %d", TAG, saveCount));
         }
 
         ArrayList<RCanvasPath> changedPaths = new ArrayList<>();
         mStateStack.setSize(saveCount + 1);
+        Log.d(TAG, "restore: " + saveCount + "  " + mStateStack.peek());
         for (RCanvasPath path: paths()) {
             if (path.restore(saveCount)) {
                 changedPaths.add(path);
@@ -135,11 +133,24 @@ public class RCanvas extends ReactViewGroup {
         RCanvasState currentState = mStateStack.peek();
         strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? currentState.strokeWidth : strokeWidth;
-        RCanvasPath path = mNextPath;
-        path.init(pathId, strokeColor, strokeWidth, mHitSlop);
-        mPaths.add(path);
-        allocNext();
+        RCanvasPath path = init(pathId);
+        path.setStrokeColor(strokeColor);
+        path.setStrokeWidth(strokeWidth);
+
         postInvalidateOnAnimation();
+    }
+
+    protected RCanvasPath init(String pathId) {
+        if (getPathIndex(pathId) == -1) {
+            RCanvasPath path = mNextPath;
+            path.setPathId(pathId);
+            path.setHitSlop(mHitSlop);
+            mPaths.add(path);
+            allocNext();
+            return path;
+        } else {
+            throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: path#%s already exists", TAG, pathId));
+        }
     }
 
     public void drawPoint(String pathId, PointF point) {
@@ -164,16 +175,6 @@ public class RCanvas extends ReactViewGroup {
         }
         removePaths(pathsToRemove);
         postInvalidateOnAnimation();
-    }
-
-    protected void addPath(String id) {
-        if (getPathIndex(id) == -1) {
-            allocNext();
-            mNextPath.setPathId(id);
-            mNextPath.setHitSlop(mHitSlop);
-        } else {
-            throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: path#%s already exists", TAG, id));
-        }
     }
 
     protected void removePaths(final ArrayList<RCanvasPath> paths) {
