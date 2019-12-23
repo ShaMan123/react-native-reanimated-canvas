@@ -1,11 +1,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import CanvasBase, { RCanvasPath, RCanvasRef, useCanvasPanResponder, useCanvasGestureHandler } from 'react-native-reanimated-canvas/base';
-import LegacyCanvas from './LegacyCanvas';
-import { styles } from './common';
-import { View, Text } from 'react-native';
+import { Text, View, processColor } from 'react-native';
 import { PanGestureHandler, RectButton } from 'react-native-gesture-handler';
+import CanvasBase, { RCanvasPath, RCanvasRef, useCanvasGestureHandler, useCanvasPanResponder, generatePathId } from 'react-native-reanimated-canvas/base';
+import { styles } from './common';
+import _ from 'lodash';
 
+const points = new Array(200).fill(0).map((v, i) => ({ x: i, y: i }));
 
 export default function CustomTouchHandling() {
   const refA = useRef<RCanvasRef>();
@@ -23,7 +24,6 @@ export default function CustomTouchHandling() {
 
   const [gh, ghGo] = useState(false);
 
-  const points = useMemo(() => new Array(200).fill(0).map((v, i) => ({ x: i, y: i })), []);
 
   const base = (
     <CanvasBase
