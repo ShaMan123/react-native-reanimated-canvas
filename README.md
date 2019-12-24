@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">React Native Reanimated Canvas</h1>
-  <h3 align="center">A Light-weight, Low-level, Declarative canvas for React Native</h3>
+  <h3 align="center">A Light-weight, Low-level, Declarative Canvas for React Native</h3>
 </p>
 
 ---
