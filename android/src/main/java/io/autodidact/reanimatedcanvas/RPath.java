@@ -69,6 +69,7 @@ public class RPath extends View {
         Paint paint = getPaint();
         paint.setColor(currentState.strokeColor);
         paint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
+
         postInvalidateOnAnimation();
     }
 
@@ -81,6 +82,7 @@ public class RPath extends View {
         currentState.strokeWidth = width;
         currentState.setDirty();
         getPaint().setStrokeWidth(currentState.strokeWidth);
+
         postInvalidateOnAnimation();
     }
 
@@ -107,7 +109,9 @@ public class RPath extends View {
                 break;
             }
         }
-        mPathStateStack.setSize(saveCount + 1);
+
+        mPathStateStack.set(mPathStateStack.size() - 1, mPathStateStack.get(saveCount));
+
         return isDirty;
     }
 
@@ -128,27 +132,14 @@ public class RPath extends View {
         return ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
     }
 
-    public static PointF midPoint(PointF p1, PointF p2) {
-        return new PointF((p1.x + p2.x) * 0.5f, (p1.y + p2.y) * 0.5f);
-    }
+
 
     public void addPoint(PointF p) {
         RPathState currentState = mPathStateStack.peek();
         ArrayList<PointF> points = currentState.points;
         points.add(p);
         currentState.setDirty();
-        int pointsCount = points.size();
-
-        if (pointsCount >= 3) {
-            addPointToPath(mPath,
-                    points.get(pointsCount - 3),
-                    points.get(pointsCount - 2),
-                    p);
-        } else if (pointsCount >= 2) {
-            addPointToPath(mPath, points.get(0), points.get(0), p);
-        } else {
-            addPointToPath(mPath, p, p, p);
-        }
+        PathUtil.addLastPoint(mPath, points);
 
         postInvalidateOnAnimation();
     }
@@ -160,8 +151,8 @@ public class RPath extends View {
             mPoints.clear();
             mPoints.addAll(points);
             currentState.setDirty();
+            mPath.set(PathUtil.obtain(mPoints));
 
-            mPath.set(evaluatePath());
             postInvalidateOnAnimation();
         }
     }
@@ -187,50 +178,6 @@ public class RPath extends View {
             mPaint.setXfermode(new PorterDuffXfermode(isErase ? PorterDuff.Mode.CLEAR : PorterDuff.Mode.SRC_OVER));
         }
         return mPaint;
-    }
-
-    private Path evaluatePath() {
-        RPathState currentState = mPathStateStack.peek();
-        ArrayList<PointF> points = currentState.points;
-        int pointsCount = points.size();
-        Path path = new Path();
-
-        for(int pointIndex=0; pointIndex<pointsCount; pointIndex++) {
-            if (pointsCount >= 3 && pointIndex >= 2) {
-                PointF a = points.get(pointIndex - 2);
-                PointF b = points.get(pointIndex - 1);
-                PointF c = points.get(pointIndex);
-                PointF prevMid = midPoint(a, b);
-                PointF currentMid = midPoint(b, c);
-
-                // Draw a curve
-                path.moveTo(prevMid.x, prevMid.y);
-                path.quadTo(b.x, b.y, currentMid.x, currentMid.y);
-            } else if (pointsCount >= 2 && pointIndex >= 1) {
-                PointF a = points.get(pointIndex - 1);
-                PointF b = points.get(pointIndex);
-                PointF mid = midPoint(a, b);
-
-                // Draw a line to the middle of points a and b
-                // This is so the next draw which uses a curve looks correct and continues from there
-                path.moveTo(a.x, a.y);
-                path.lineTo(mid.x, mid.y);
-            } else if (pointsCount >= 1) {
-                PointF a = points.get(pointIndex);
-
-                // Draw a single point
-                path.moveTo(a.x, a.y);
-                path.lineTo(a.x, a.y);
-            }
-        }
-        return path;
-    }
-
-    private static void addPointToPath(Path path, PointF tPoint, PointF pPoint, PointF point) {
-        PointF mid1 = new PointF((pPoint.x + tPoint.x) * 0.5f, (pPoint.y + tPoint.y) * 0.5f);
-        PointF mid2 = new PointF((point.x + pPoint.x) * 0.5f, (point.y + pPoint.y) * 0.5f);
-        path.moveTo(mid1.x, mid1.y);
-        path.quadTo(pPoint.x, pPoint.y, mid2.x, mid2.y);
     }
 
     @TargetApi(19)

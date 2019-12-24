@@ -66,8 +66,7 @@ public class RCanvas extends ReactViewGroup {
         }
 
         ArrayList<RPath> changedPaths = new ArrayList<>();
-        mStateStack.setSize(saveCount + 1);
-        Log.d(TAG, "restore: " + saveCount + "  " + mStateStack.peek());
+        mStateStack.set(mStateStack.size() - 1, mStateStack.get(saveCount));
         for (RPath path: paths()) {
             if (path.restore(saveCount)) {
                 changedPaths.add(path);
