@@ -12,7 +12,9 @@ Check [getting started](https://shaman123.github.io/react-native-reanimated-canv
 
 ## Documentation
 
-Check out our dedicated documentation page for info about this library, API reference and more: [docs](https://shaman123.github.io/react-native-reanimated-canvas/)
+Check out our dedicated documentation page for info about this library, API reference and more:
+
+[https://shaman123.github.io/react-native-reanimated-canvas/](https://shaman123.github.io/react-native-reanimated-canvas/)
 
 ## Examples
 
