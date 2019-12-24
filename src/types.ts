@@ -113,7 +113,9 @@ export interface RPathProps extends RCanvasCommonProps {
    * **********************
    * Use with `index`
    */
-  animate?: boolean
+  animate?: boolean,
+
+  points: Point[]
 }
 
 export interface RCanvasProps extends RCanvasCommonProps {
