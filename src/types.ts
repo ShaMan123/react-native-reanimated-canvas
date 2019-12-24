@@ -24,17 +24,17 @@ export type Point = {
   y: number
 }
 
-export interface PathDataBase {
+export interface RPathDataBase {
   strokeColor: string | number
   strokeWidth: number
   points?: Point[]
 }
 
-export interface PathData extends PathDataBase {
+export interface RPathData extends RPathDataBase {
   id: string
 }
 
-export type PathIntersectionResponse = string[];
+export type IntersectionResponse = string[];
 
 export interface NativeStrokeEvent extends Point {
   id: string,
@@ -45,16 +45,16 @@ export interface NativeChangeEvent {
     strokeColor: number,
     strokeWidth: number
   },
-  paths: { [id: string]: PathData | null },
+  paths: { [id: string]: RPathData | null },
   added: string[],
   changed: string[],
   removed: string[]
 }
 
-export type NativeTouchEvent = PathIntersectionResponse & Point;
-export type StrokeStartEvent = NativeSyntheticEvent<PathData>;
+export type NativeTouchEvent = IntersectionResponse & Point;
+export type StrokeStartEvent = NativeSyntheticEvent<RPathData>;
 export type StrokeEvent = NativeSyntheticEvent<NativeStrokeEvent>;
-export type StrokeEndEvent = NativeSyntheticEvent<PathData>;
+export type StrokeEndEvent = NativeSyntheticEvent<RPathData>;
 export type ChangeEvent = NativeSyntheticEvent<NativeChangeEvent>
 
 interface NativeTouchProps {
@@ -76,7 +76,7 @@ interface ExtendedInsets extends Insets {
   vertical?: number
 }
 
-export interface RCanvasCommonProps {
+interface RCanvasCommonProps {
   strokeColor?: string | Animated.Adaptable<number>
   strokeWidth?: Animated.Adaptable<number>
 
@@ -98,7 +98,7 @@ export interface RCanvasCommonProps {
   renderToHardwareTextureAndroid?: boolean
 }
 
-export interface RCanvasPathProps extends RCanvasCommonProps {
+export interface RPathProps extends RCanvasCommonProps {
   /**
    * **********************
    * Experimental
@@ -120,7 +120,7 @@ export interface RCanvasProps extends RCanvasCommonProps {
   onChange?: (e: ChangeEvent) => void
 }
 
-export type RCanvasPathProperties = ViewProps & RCanvasPathProps;
+export type RPathProperties = ViewProps & RPathProps;
 
 export type RCanvasProperties = React.PropsWithChildren<ViewProps & PanGestureHandlerProperties & RCanvasProps>;
 
@@ -157,11 +157,11 @@ export type RCanvasRef = {
 
   clear(): void
 
-  getPaths(): PathData[]
+  getPaths(): RPathData[]
 
-  getPath(id: string): PathData | null
+  getPath(id: string): RPathData | null
 
-  update(paths: { [id: string]: PathDataBase | null }): void
+  update(paths: { [id: string]: RPathDataBase | null }): void
 
   setPathAttributes(id: string, attr: { width: number, color: string | number }): void
 
@@ -177,11 +177,11 @@ export type RCanvasRef = {
     x: number,
     y: number,
     pathId: T,
-    onSuccess: (result: T extends (never | null) ? PathIntersectionResponse : boolean) => void,
+    onSuccess: (result: T extends (never | null) ? IntersectionResponse : boolean) => void,
     onFailure: (error: Error) => void
   ): void
   isPointOnPath(x: number, y: number, pathId: number): Promise<boolean>
-  isPointOnPath(x: number, y: number): Promise<PathIntersectionResponse>
+  isPointOnPath(x: number, y: number): Promise<IntersectionResponse>
 
   /**
    * save paths' state

@@ -7,7 +7,7 @@ import Animated from 'react-native-reanimated';
 import { RCanvasProperties } from './types';
 
 export function generatePathId() {
-  return _.uniqueId('RCanvasPath');
+  return _.uniqueId('RPath');
 }
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {

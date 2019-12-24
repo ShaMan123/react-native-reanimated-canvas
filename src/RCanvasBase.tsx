@@ -5,7 +5,7 @@ import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo } fro
 import { findNodeHandle, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useModule, VIEW_MANAGER } from './RCanvasModule';
-import { ChangeEvent, PathData, RCanvasProperties, RCanvasRef, PathDataBase } from './types';
+import { ChangeEvent, RPathData, RCanvasProperties, RCanvasRef, RPathDataBase } from './types';
 import { generatePathId, processColorProp, useEventProp, useHitSlop, useRefGetter } from './util';
 
 const RNativeCanvas = Animated.createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
@@ -14,7 +14,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   //const [ignored, forceUpdate] = useReducer<never>((x: number) => x + 1, 0);
   const hitSlop = useHitSlop(props.hitSlop);
   const node = useRefGetter(null as any, (current) => current && current.getNode());
-  const paths = useRefGetter([] as PathData[]);
+  const paths = useRefGetter([] as RPathData[]);
   const updateContext = useRefGetter(new Date());
 
   const strokeColor = useRefGetter(processColorProp(props.strokeColor));
@@ -29,7 +29,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   const onChange = useCallback((e: ChangeEvent) => {
     const { state, paths: changedPaths, added, changed, removed } = e.nativeEvent;
     let updatedPaths = _.differenceWith(paths.value(), _.concat(changed, removed), (a, b) => a.id === b);
-    updatedPaths = _.concat(updatedPaths, _.values(_.pick(changedPaths, _.concat(added, changed))) as PathData[]);
+    updatedPaths = _.concat(updatedPaths, _.values(_.pick(changedPaths, _.concat(added, changed))) as RPathData[]);
     paths.set(updatedPaths);
 
     updateContext.set(new Date());
@@ -45,14 +45,14 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
       ...module,
-      update(data: { [id: string]: PathDataBase | null }) {
+      update(data: { [id: string]: RPathDataBase | null }) {
         const parsedPaths = _.mapValues(_.cloneDeep(data), (path, id) => {
           if (path) {
             if (path.strokeColor) path.strokeColor = processColor(path.strokeColor);
             //@ts-ignore
             if (!path.id) path.id = id;
           }
-          return path as PathData | null;
+          return path as RPathData | null;
         });
 
         const filteredPaths = _.filter(paths.value(), (path) => !_.has(data, path.id));

@@ -2,8 +2,8 @@
 
 import _ from 'lodash';
 import { MutableRefObject, useMemo } from 'react';
-import { findNodeHandle, NativeModules, Platform, UIManager, processColor } from 'react-native';
-import { Commands, RCanvasRef, Point, PathData } from './types';
+import { findNodeHandle, NativeModules, Platform, processColor, UIManager } from 'react-native';
+import { Commands, Point, RCanvasRef, RPathData } from './types';
 import { processColorProp } from './util';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
@@ -35,7 +35,7 @@ export function clear(tag: number) {
   dispatchCommand(tag, Commands.clear);
 }
 
-export function update(tag: number, paths: { [id: string]: PathData | null }) {
+export function update(tag: number, paths: { [id: string]: RPathData | null }) {
   dispatchCommand(tag, Commands.update, [paths]);
 }
 

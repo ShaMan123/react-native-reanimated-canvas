@@ -1,7 +1,7 @@
 
 import Animated from 'react-native-reanimated';
 import { MODULE, VIEW_MANAGER } from './RCanvasModule';
-import { Commands, PathIntersectionResponse, Methods } from './types';
+import { Commands, IntersectionResponse, Methods } from './types';
 
 const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange } = Animated;
 
@@ -40,7 +40,7 @@ export const getPaths = proc((tag, id, cb) => {
 });
 
 export const isPointOnPath = proc((tag, x, y, topPath) => {
-  const cb = callback<PathIntersectionResponse>(map.fromEnd([topPath]), 0);
+  const cb = callback<IntersectionResponse>(map.fromEnd([topPath]), 0);
   const isPointOnPath = invoke(MODULE, Methods.isPointOnPath, tag, x, y, new Value(), cb, callback());
   return safeDispatch(
     tag,
