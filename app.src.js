@@ -2,10 +2,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import RedBox from 'redbox-react';
-import App from 'C:/Users/DELL/Autodidact/react-native-reanimated-canvas/docs/node_modules/component-docs/dist/templates/App.js';
+import App from 'component-docs/dist/templates/App.js';
 import data from './app.data';
-import 'C:/Users/DELL/Autodidact/react-native-reanimated-canvas/docs/node_modules/component-docs/dist/styles/reset.css';
-import 'C:/Users/DELL/Autodidact/react-native-reanimated-canvas/docs/node_modules/component-docs/dist/styles/globals.css';
+import 'component-docs/dist/styles/reset.css';
+import 'component-docs/dist/styles/globals.css';
 
 import 'C:/Users/DELL/Autodidact/react-native-reanimated-canvas/docs/assets/styles.css';
 
