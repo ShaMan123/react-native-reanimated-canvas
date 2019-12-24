@@ -1,0 +1,32 @@
+<html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="description" content=""/><meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Migration Path"/><meta name="twitter:description" content=""/><meta property="og:type" content="website"/><meta property="og:title" content="Migration Path"/><meta property="og:description" content=""/><title>Migration Path</title><link type="text/css" rel="stylesheet" href="app.css"/></head><body><div id='root'><div class="Layout_lugqar2"><aside class="SidebarContent_s9nrg4n"><input type="checkbox" id="slide-sidebar" role="button" class="MenuButton_mzfqg8l"/><label for="slide-sidebar" class="MenuIcon_m1mups47">☰</label><div class="MenuContent_mdzibsv"><input type="search" value="" placeholder="Filter…" class="Searchbar_s1nn5lbd"/><nav class="Navigation_nlggdah"><a data-selected="false" class="LinkItem_l5q2p2e" href="overview.html">Overview</a><a data-selected="false" class="LinkItem_l5q2p2e" href="getting-started.html">Getting Started</a><a data-selected="false" class="LinkItem_l5q2p2e" href="in-depth.html">In Depth</a><a data-selected="true" class="LinkItem_l5q2p2e" href="migration-path.html">Migration Path</a><a data-selected="false" class="LinkItem_l5q2p2e" href="license.html">License</a></nav></div></aside><main class="Container_c119hgic"><div class="Inner_ir6lat6"><div><h1 id="migration-path">
+          <a class="anchor" href="#migration-path">
+            <svg width="16" height="16">
+              <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+            </svg>
+          </a>
+        Migration Path</h1>
+<hr />
+<h2 id="custom-touch-handling">
+          <a class="anchor" href="#custom-touch-handling">
+            <svg width="16" height="16">
+              <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+            </svg>
+          </a>
+        Custom Touch Handling</h2>
+<p>If you don't use <code>react-native-gesture-handler</code> or <code>react-native-reanimated</code> consider doing so.
+These are excellent, performant libraries.
+Non the less, a basic implementation of this library is exposed for such a case.
+Take a look at <a href="./CanvasExample/App/JSTouchHandling.tsx">JSTouchHandling</a>.
+You will have to set up touch handling yourself, you can use exposed hooks for common usage.</p>
+<pre><code class="language-ts"><span class="token keyword">import</span> RCanvasBase<span class="token punctuation">,</span> <span class="token punctuation">{</span> useCanvasPanResponder<span class="token punctuation">,</span> useCanvasGestureHandler <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-native-reanimated-canvas/base'</span><span class="token punctuation">;</span></code></pre>
+</div></div></main></div></div>
+    <style type="text/css">
+      :root {
+        --theme-primary-color: #397AF9;
+      }
+    </style>
+  
+    <script>
+      window.__INITIAL_PATH__ = 'migration-path';
+    </script>
+  <script src="app.bundle.js"></script></body></html>
