@@ -36,10 +36,6 @@ public class RCanvasEventDispatcher {
         mEventDispatcher.dispatchEvent(RCanvasEvent.obtain(mCanvas.getId(), eventName, eventData));
     }
 
-    void emitChange(ArrayList<RCanvasPath> prev, ArrayList<RCanvasPath> curr) {
-
-    }
-
     void emitChange(
             @Nullable ArrayList<RCanvasPath> added,
             @Nullable ArrayList<RCanvasPath> changed,
@@ -79,6 +75,10 @@ public class RCanvasEventDispatcher {
         event.putArray("removed", removedArray);
 
         emit(JSEventNames.ON_CHANGE, event);
+
+        for (RCanvasPath path: mCanvas.mPaths) {
+            path.getState().startListening();
+        }
     }
 
 }
