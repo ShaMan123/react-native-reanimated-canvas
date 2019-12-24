@@ -44,15 +44,17 @@ const mapToObject = (filePath, group) =>
   fs
     .readdirSync(filePath, { withFileTypes: true })
     .map(file => {
-      if (fs.lstatSync(path.resolve(filePath, file)).isDirectory()) {
+      const name = typeof file === 'string' ? file : file.name;
+      //fs.lstatSync(path.resolve(filePath, file)).isDirectory()
+      if (file.isDirectory()) {
         return mapToObject(
-          path.join(filePath, file),
-          nameToGroupTitle(file)
+          path.join(filePath, name),
+          nameToGroupTitle(name)
         );
       } else {
         const result = {
-          file: path.join(filePath, file),
-          type: getType(file),
+          file: path.join(filePath, name),
+          type: getType(name),
         };
         if (group) {
           result.group = group;
@@ -70,5 +72,5 @@ module.exports = {
   pages: docs,
   output: dist,
   github,
-  //open: true
+  open: true
 };

@@ -4,11 +4,10 @@
   "description": "Documentation for React Native Reanimated Canavs",
   "private": true,
   "scripts": {
-    "start": "component-docs serve",
-    "build": "component-docs build && npm run patch",
+    "serve": "npm run build && webpack-dev-server",
+    "build": "component-docs build && npm run patch && webpack",
     "patch": "node patch.js",
     "clean": "del dist/",
-    "prestart1": "npm run clean",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
@@ -18,18 +17,25 @@
     "@babel/preset-env": "^7.2.3",
     "@babel/preset-flow": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
+    "@webpack-cli/serve": "^0.2.0",
     "babel-plugin-module-resolver": "^4.0.0",
+    "command-line-args": "^5.1.1",
     "core-js": "^2.6.8",
+    "css-loader": "^3.4.0",
     "del-cli": "^1.1.0",
     "file-loader": "^1.1.11",
     "gh-pages": "^2.1.1",
-    "url-loader": "^1.0.1"
+    "style-loader": "^1.1.1",
+    "url-loader": "^1.0.1",
+    "webpack": "^4.41.4",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.10.1"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "color": "^2.0.1",
-    "component-docs": "^0.19.5",
+    "component-docs": "^0.20.3",
     "linaria": "^1.2.4",
     "react-native-vector-icons": "^6.4.2"
   }
