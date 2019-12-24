@@ -1,13 +1,9 @@
-<p align="center">
-  <h1 align="center">React Native Reanimated Canvas</h1>
-  <h3 align="center">Light-weight, Low-level, Declarative Canvas for React Native</h3>
-</p>
-
-----------------
+<h1 align="center" align="center">React Native Reanimated Canvas</h1>
 
 A canvas component designed especially for responsive drawing in `react-native`.
 
-**NOTICE:** `iOS` is not yet supported.
+#### NOTICE:
+`iOS` is not yet supported.
 
 
 ## Installation
