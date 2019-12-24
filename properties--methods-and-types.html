@@ -1,0 +1,234 @@
+<html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="description" content=""/><meta name="twitter:card" content="summary"/><meta name="twitter:title" content="Properties, Methods and Types"/><meta name="twitter:description" content=""/><meta property="og:type" content="website"/><meta property="og:title" content="Properties, Methods and Types"/><meta property="og:description" content=""/><title>Properties, Methods and Types</title><link type="text/css" rel="stylesheet" href="app.css"/></head><body><div id='root'><div class="Layout_lugqar2"><aside class="SidebarContent_s9nrg4n"><input type="checkbox" id="slide-sidebar" role="button" class="MenuButton_mzfqg8l"/><label for="slide-sidebar" class="MenuIcon_m1mups47">☰</label><div class="MenuContent_mdzibsv"><input type="search" value="" placeholder="Filter…" class="Searchbar_s1nn5lbd"/><nav class="Navigation_nlggdah"><a data-selected="false" class="LinkItem_l5q2p2e" href="index.html">Reanimated Canvas</a><a data-selected="false" class="LinkItem_l5q2p2e" href="getting-started.html">Getting Started</a><a data-selected="true" class="LinkItem_l5q2p2e" href="properties--methods-and-types.html">Properties, Methods and Types</a><a data-selected="false" class="LinkItem_l5q2p2e" href="migration-path.html">Migration Path</a></nav></div></aside><main class="Container_c119hgic"><div class="Inner_ir6lat6"><div><h1 id="properties-methods-and-types">
+          <a class="anchor" href="#properties-methods-and-types">
+            <svg width="16" height="16">
+              <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path>
+            </svg>
+          </a>
+        Properties, Methods and Types</h1>
+<hr />
+<p>Take a look at <a href="https://github.com/ShaMan123/react-native-reanimated-canvas/blob/master/src/types.ts">src/types.ts</a>.</p>
+<pre><code class="language-ts">
+<span class="token keyword">import</span> <span class="token operator">*</span> <span class="token keyword">as</span> React <span class="token keyword">from</span> <span class="token string">'react'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> Insets<span class="token punctuation">,</span> NativeSyntheticEvent<span class="token punctuation">,</span> ViewProps <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"react-native"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> PanGestureHandlerProperties <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'react-native-gesture-handler'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> Animated <span class="token keyword">from</span> <span class="token string">'react-native-reanimated'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">enum</span> Commands <span class="token punctuation">{</span>
+  alloc <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">,</span>
+  drawPoint<span class="token punctuation">,</span>
+  endInteraction<span class="token punctuation">,</span>
+  clear<span class="token punctuation">,</span>
+  update<span class="token punctuation">,</span>
+  setAttributes
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">enum</span> Methods <span class="token punctuation">{</span>
+  isPointOnPath <span class="token operator">=</span> <span class="token string">'isPointOnPath'</span><span class="token punctuation">,</span>
+  save <span class="token operator">=</span> <span class="token string">'save'</span><span class="token punctuation">,</span>
+  restore <span class="token operator">=</span> <span class="token string">'restore'</span><span class="token punctuation">,</span>
+  getPaths <span class="token operator">=</span> <span class="token string">'getPaths'</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> Point <span class="token operator">=</span> <span class="token punctuation">{</span>
+  x<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span>
+  y<span class="token punctuation">:</span> <span class="token builtin">number</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">RPathDataBase</span> <span class="token punctuation">{</span>
+  strokeColor<span class="token punctuation">:</span> <span class="token builtin">string</span> <span class="token operator">|</span> <span class="token builtin">number</span>
+  strokeWidth<span class="token punctuation">:</span> <span class="token builtin">number</span>
+  points<span class="token operator">?</span><span class="token punctuation">:</span> Point<span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">RPathData</span> <span class="token keyword">extends</span> <span class="token class-name">RPathDataBase</span> <span class="token punctuation">{</span>
+  id<span class="token punctuation">:</span> <span class="token builtin">string</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> IntersectionResponse <span class="token operator">=</span> <span class="token builtin">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">NativeStrokeEvent</span> <span class="token keyword">extends</span> <span class="token class-name">Point</span> <span class="token punctuation">{</span>
+  id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">NativeChangeEvent</span> <span class="token punctuation">{</span>
+  state<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+    strokeColor<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span>
+    strokeWidth<span class="token punctuation">:</span> <span class="token builtin">number</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  paths<span class="token punctuation">:</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">]</span><span class="token punctuation">:</span> RPathData <span class="token operator">|</span> <span class="token keyword">null</span> <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  added<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  changed<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  removed<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> NativeTouchEvent <span class="token operator">=</span> IntersectionResponse <span class="token operator">&amp;</span> Point<span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">type</span> StrokeStartEvent <span class="token operator">=</span> NativeSyntheticEvent<span class="token operator">&lt;</span>RPathData<span class="token operator">&gt;</span><span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">type</span> StrokeEvent <span class="token operator">=</span> NativeSyntheticEvent<span class="token operator">&lt;</span>NativeStrokeEvent<span class="token operator">&gt;</span><span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">type</span> StrokeEndEvent <span class="token operator">=</span> NativeSyntheticEvent<span class="token operator">&lt;</span>RPathData<span class="token operator">&gt;</span><span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">type</span> ChangeEvent <span class="token operator">=</span> NativeSyntheticEvent<span class="token operator">&lt;</span>NativeChangeEvent<span class="token operator">&gt;</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">NativeTouchProps</span> <span class="token punctuation">{</span>
+  <span class="token comment">/** set to true to handle touches with the native driver */</span>
+  useNativeDriver<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">boolean</span>
+  onStrokeStart<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> StrokeStartEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  onStrokeChange<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> StrokeEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  onStrokeEnd<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> StrokeEndEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  <span class="token comment">/** fires only if `useNativeDriver` is set to `true` */</span>
+  onPress<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> NativeTouchEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  <span class="token comment">/** fires only if `useNativeDriver` is set to `true` */</span>
+  onLongPress<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> NativeTouchEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">ExtendedInsets</span> <span class="token keyword">extends</span> <span class="token class-name">Insets</span> <span class="token punctuation">{</span>
+  <span class="token comment">/**overrides left &amp; right insets */</span>
+  horizontal<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span>
+  <span class="token comment">/**overrides top &amp; bottom insets */</span>
+  vertical<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">number</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">interface</span> <span class="token class-name">RCanvasCommonProps</span> <span class="token punctuation">{</span>
+  strokeColor<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">string</span> <span class="token operator">|</span> Animated<span class="token punctuation">.</span>Adaptable<span class="token operator">&lt;</span><span class="token builtin">number</span><span class="token operator">&gt;</span>
+  strokeWidth<span class="token operator">?</span><span class="token punctuation">:</span> Animated<span class="token punctuation">.</span>Adaptable<span class="token operator">&lt;</span><span class="token builtin">number</span><span class="token operator">&gt;</span>
+
+  <span class="token comment">/**
+   * pass a rect or a number to apply all insets equally
+   * hitSlop is used for `isPointOnPath`
+   */</span>
+  hitSlop<span class="token operator">?</span><span class="token punctuation">:</span> ExtendedInsets <span class="token operator">|</span> <span class="token builtin">number</span>
+
+  <span class="token comment">/**
+   * 
+   * *************************************************************************
+   * Reanimated Canvas
+   * *************************************************************************
+   * Defaults to `false`, ensuresing all functionality works.
+   * Might take a toll on performance.
+   * If strange things are stirring set this prop to `false`.
+   */</span>
+  renderToHardwareTextureAndroid<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">boolean</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">RPathProps</span> <span class="token keyword">extends</span> <span class="token class-name">RCanvasCommonProps</span> <span class="token punctuation">{</span>
+  <span class="token comment">/**
+   * **********************
+   * Experimental
+   * **********************
+   * Use with `animate = true`
+   * Pass an animated node to animate path drawing
+   */</span>
+  index<span class="token operator">?</span><span class="token punctuation">:</span> Animated<span class="token punctuation">.</span>Node<span class="token operator">&lt;</span><span class="token builtin">number</span><span class="token operator">&gt;</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * **********************
+   * Experimental
+   * **********************
+   * Use with `index`
+   */</span>
+  animate<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">boolean</span><span class="token punctuation">,</span>
+
+  points<span class="token punctuation">:</span> Point<span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">interface</span> <span class="token class-name">RCanvasProps</span> <span class="token keyword">extends</span> <span class="token class-name">RCanvasCommonProps</span> <span class="token punctuation">{</span>
+  onChange<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">e<span class="token punctuation">:</span> ChangeEvent</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> RPathProperties <span class="token operator">=</span> ViewProps <span class="token operator">&amp;</span> RPathProps<span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> RCanvasProperties <span class="token operator">=</span> React<span class="token punctuation">.</span>PropsWithChildren<span class="token operator">&lt;</span>ViewProps <span class="token operator">&amp;</span> PanGestureHandlerProperties <span class="token operator">&amp;</span> RCanvasProps<span class="token operator">&gt;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">type</span> RCanvasRef <span class="token operator">=</span> <span class="token punctuation">{</span>
+
+  <span class="token comment">/**
+   * allocate a new path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
+   * [startPath, addPoint, endPath]
+   * @param id when omitted a unique id is generated using `generatePathId()` and returned from the method
+   */</span>
+  <span class="token function">alloc</span><span class="token punctuation">(</span>id<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> strokeColor<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">string</span> <span class="token operator">|</span> <span class="token builtin">number</span><span class="token punctuation">,</span> strokeWidth<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">string</span>
+  <span class="token comment">/**
+   * draw a point to the current/specified path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
+   * [startPath, addPoint, endPath]
+   * 
+   * @param x
+   * @param y
+   * @param id the path's id
+   */</span>
+  <span class="token function">drawPoint</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> point<span class="token punctuation">:</span> Point<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+  <span class="token comment">/**
+   * end current interaction for path
+   * use this method to customize touch handling or to mock drawing animations
+   * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
+   * Must call this method when interaction ends
+   * [startPath, addPoint, endPath]
+   * @param id 
+   */</span>
+  <span class="token function">endInteraction</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token function">getPaths</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> RPathData<span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+  <span class="token function">getPath</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">)</span><span class="token punctuation">:</span> RPathData <span class="token operator">|</span> <span class="token keyword">null</span>
+
+  <span class="token function">update</span><span class="token punctuation">(</span>paths<span class="token punctuation">:</span> <span class="token punctuation">{</span> <span class="token punctuation">[</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">]</span><span class="token punctuation">:</span> RPathDataBase <span class="token operator">|</span> <span class="token keyword">null</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token function">setPathAttributes</span><span class="token punctuation">(</span>id<span class="token punctuation">:</span> <span class="token builtin">string</span><span class="token punctuation">,</span> attr<span class="token punctuation">:</span> <span class="token punctuation">{</span> width<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span> color<span class="token punctuation">:</span> <span class="token builtin">string</span> <span class="token operator">|</span> <span class="token builtin">number</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token function">dispatchCommand</span><span class="token punctuation">(</span>command<span class="token punctuation">:</span> Commands<span class="token punctuation">,</span> data<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">any</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token comment">/**
+ * @param x Set it to `evt.nativeEvent.locationX`
+ * @param y Set it to `evt.nativeEvent.locationY`
+ * @param pathId Set to the pathId or undefined
+ * @param callback If omitted the method returns a Promise
+ */</span>
+  isPointOnPath<span class="token operator">&lt;</span><span class="token constant">T</span> <span class="token keyword">extends</span> <span class="token class-name">string</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>
+    x<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span>
+    y<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span>
+    pathId<span class="token punctuation">:</span> <span class="token constant">T</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">onSuccess</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">result<span class="token punctuation">:</span> <span class="token constant">T</span> <span class="token keyword">extends</span> <span class="token punctuation">(</span><span class="token builtin">never</span> <span class="token operator">|</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token operator">?</span> IntersectionResponse <span class="token punctuation">:</span> <span class="token builtin">boolean</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">onFailure</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">error<span class="token punctuation">:</span> Error</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  <span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+  <span class="token function">isPointOnPath</span><span class="token punctuation">(</span>x<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span> y<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span> pathId<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">Promise</span><span class="token operator">&lt;</span><span class="token builtin">boolean</span><span class="token operator">&gt;</span>
+  <span class="token function">isPointOnPath</span><span class="token punctuation">(</span>x<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">,</span> y<span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">Promise</span><span class="token operator">&lt;</span>IntersectionResponse<span class="token operator">&gt;</span>
+
+  <span class="token comment">/**
+   * save paths' state
+   * @param onSuccess 
+   * @param onFailure 
+   */</span>
+  <span class="token function">save</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">Promise</span><span class="token operator">&lt;</span><span class="token builtin">number</span><span class="token operator">&gt;</span>
+  <span class="token function">save</span><span class="token punctuation">(</span>
+    onSuccess<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">saveCount<span class="token punctuation">:</span> <span class="token builtin">number</span></span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span><span class="token punctuation">,</span>
+    onFailure<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token punctuation">(</span><span class="token parameter">error<span class="token punctuation">:</span> Error</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token keyword">void</span>
+  <span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token function">restore</span><span class="token punctuation">(</span>saveCount<span class="token operator">?</span><span class="token punctuation">:</span> <span class="token builtin">number</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">Promise</span><span class="token operator">&lt;</span><span class="token keyword">void</span><span class="token operator">&gt;</span>
+
+  <span class="token function">getNode</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> RCanvasRef
+
+  <span class="token function">handle</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token builtin">number</span> <span class="token operator">|</span> <span class="token keyword">null</span>
+
+  <span class="token function">setNativeProps</span><span class="token punctuation">(</span>props<span class="token punctuation">:</span> RCanvasProperties<span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token keyword">void</span>
+
+  <span class="token comment">/**
+   * return only the unassigned module
+   * use to assign to a ref
+   */</span>
+  <span class="token keyword">module</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span> RCanvasRef
+<span class="token punctuation">}</span>
+</code></pre>
+</div></div></main></div></div>
+    <style type="text/css">
+      :root {
+        --theme-primary-color: #397AF9;
+      }
+    </style>
+  
+    <script>
+      window.__INITIAL_PATH__ = 'properties--methods-and-types';
+    </script>
+  <script src="app.bundle.js"></script></body></html>
