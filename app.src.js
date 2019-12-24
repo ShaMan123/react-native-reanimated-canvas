@@ -7,7 +7,7 @@ import data from './app.data';
 import 'component-docs/dist/styles/reset.css';
 import 'component-docs/dist/styles/globals.css';
 
-import 'C:/Users/DELL/Autodidact/react-native-reanimated-canvas/docs/assets/styles.css';
+import '../assets/styles.css';
 
 const root = document.getElementById('root');
 const render = () => {
