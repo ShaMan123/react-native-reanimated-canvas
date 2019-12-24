@@ -2,8 +2,8 @@
 
 A canvas component designed especially for responsive drawing in `react-native`.
 
-#### NOTICE:
-`iOS` is not yet supported.
+## Before You Begin
+`iOS` is not yet supported on `@next` build version.
 
 
 ## Installation
