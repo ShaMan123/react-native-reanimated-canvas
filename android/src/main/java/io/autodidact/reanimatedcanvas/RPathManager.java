@@ -12,8 +12,8 @@ import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
-public class RCanvasPathManager extends SimpleViewManager<RCanvasPathHandler> {
-    final static String NAME = "ReanimatedCanvasPathManager";
+public class RPathManager extends SimpleViewManager<RPathHandler> {
+    final static String NAME = "ReanimatedPathManager";
 
     @interface Props {
         String ID = "id";
@@ -22,7 +22,7 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPathHandler> {
         String ANIMATION_CONTROLLER = "index";
     }
 
-    public RCanvasPathManager() {
+    public RPathManager() {
         super();
     }
 
@@ -34,52 +34,52 @@ public class RCanvasPathManager extends SimpleViewManager<RCanvasPathHandler> {
 
     @NonNull
     @Override
-    protected RCanvasPathHandler createViewInstance(@NonNull ThemedReactContext reactContext) {
-        return new RCanvasPathHandler(reactContext);
+    protected RPathHandler createViewInstance(@NonNull ThemedReactContext reactContext) {
+        return new RPathHandler(reactContext);
     }
 
     @ReactProp(name = Props.ID)
-    public void setPathId(RCanvasPathHandler view, String id) {
+    public void setPathId(RPathHandler view, String id) {
         view.setPathId(id);
     }
 
     @Override
-    public void setRenderToHardwareTexture(@NonNull RCanvasPathHandler view, boolean useHWTexture) {
+    public void setRenderToHardwareTexture(@NonNull RPathHandler view, boolean useHWTexture) {
         view.setLayerType(useHWTexture ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_SOFTWARE, null);
     }
 
     @ReactProp(name = RCanvasManager.Props.STROKE_COLOR)
-    public void setStrokeColor(RCanvasPathHandler view, int color) {
+    public void setStrokeColor(RPathHandler view, int color) {
         view.setStrokeColor(color);
     }
 
     @ReactProp(name = RCanvasManager.Props.STROKE_WIDTH)
-    public void setStrokeWidth(RCanvasPathHandler view, float width) {
+    public void setStrokeWidth(RPathHandler view, float width) {
         view.setStrokeWidth(PixelUtil.toPixelFromDIP(width));
     }
 
     @ReactProp(name = Props.POINTS)
-    public void setPoints(RCanvasPathHandler view, ReadableArray points) {
+    public void setPoints(RPathHandler view, ReadableArray points) {
         view.preCommitPoints(Utility.processPointArray(points));
     }
 
     @ReactProp(name = Props.ANIMATE)
-    public void setShouldAnimatePath(RCanvasPathHandler view, Boolean animate) {
+    public void setShouldAnimatePath(RPathHandler view, Boolean animate) {
         view.shouldAnimatePath(animate);
     }
 
     @ReactProp(name = Props.ANIMATION_CONTROLLER)
-    public void setPathAnimationController(RCanvasPathHandler view, int index) {
+    public void setPathAnimationController(RPathHandler view, int index) {
         view.commitPoint(index);
     }
 
     @ReactProp(name = RCanvasManager.Props.HIT_SLOP)
-    public void setHitSlop(RCanvasPathHandler view, @Nullable ReadableMap hitSlop) {
+    public void setHitSlop(RPathHandler view, @Nullable ReadableMap hitSlop) {
         view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
     }
 
     @Override
-    protected void onAfterUpdateTransaction(@NonNull RCanvasPathHandler view) {
+    protected void onAfterUpdateTransaction(@NonNull RPathHandler view) {
         super.onAfterUpdateTransaction(view);
         view.onAfterUpdateTransaction();
         if (view.getParent() != null && view.getParent() instanceof RCanvasHandler) {

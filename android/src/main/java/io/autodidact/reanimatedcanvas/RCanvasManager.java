@@ -11,7 +11,6 @@ import androidx.annotation.StringDef;
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ThemedReactContext;
@@ -63,8 +62,8 @@ public class RCanvasManager extends ReactViewManager {
     @Override
     public void addView(ReactViewGroup parent, View child, int index) {
         super.addView(parent, child, index);
-        if (child instanceof RCanvasPath) {
-            ((RCanvasHandler) parent).finalizePathAddition((RCanvasPath) child);
+        if (child instanceof RPath) {
+            ((RCanvasHandler) parent).finalizePathAddition((RPath) child);
         }
     }
 
@@ -72,8 +71,8 @@ public class RCanvasManager extends ReactViewManager {
     public void removeViewAt(ReactViewGroup parent, int index) {
         View child = parent.getChildAt(index);
         super.removeViewAt(parent, index);
-        if (child instanceof RCanvasPath) {
-            ((RCanvasHandler) parent).finalizePathRemoval((RCanvasPath) child);
+        if (child instanceof RPath) {
+            ((RCanvasHandler) parent).finalizePathRemoval((RPath) child);
         }
     }
 

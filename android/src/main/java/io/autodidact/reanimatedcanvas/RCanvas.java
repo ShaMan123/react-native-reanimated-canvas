@@ -20,23 +20,23 @@ import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 
 public class RCanvas extends ReactViewGroup {
 
-    protected ArrayList<RCanvasPath> mPaths = new ArrayList<>();
+    protected ArrayList<RPath> mPaths = new ArrayList<>();
     protected ArrayList<String> mInteractionContainer = new ArrayList<>();
     protected RectF mHitSlop = new RectF();
-    private RCanvasPath mNextPath;
+    private RPath mNextPath;
     protected Stack<RCanvasState> mStateStack;
-    private final PathIntersectionHelper mIntersectionHelper;
+    private final IntersectionHelper mIntersectionHelper;
 
     public RCanvas(ThemedReactContext context) {
         super(context);
-        mIntersectionHelper = new PathIntersectionHelper(this);
+        mIntersectionHelper = new IntersectionHelper(this);
         mStateStack = new Stack<>();
         mStateStack.push(new RCanvasState());
         allocNext();
         save();
     }
 
-    public PathIntersectionHelper getIntersectionHelper(){
+    public IntersectionHelper getIntersectionHelper(){
         return mIntersectionHelper;
     }
 
@@ -52,23 +52,23 @@ public class RCanvas extends ReactViewGroup {
 
     public int save() {
         mStateStack.push(mStateStack.peek());
-        for (RCanvasPath path: paths()) {
+        for (RPath path: paths()) {
             path.save();
         }
         return mStateStack.size() - 1;
     }
 
-    public ArrayList<RCanvasPath> restore(int saveCount) {
+    public ArrayList<RPath> restore(int saveCount) {
         if (saveCount == -1) {
             saveCount = Math.max(mStateStack.size() - 1, 0);
         } else if (saveCount >= mStateStack.size() || saveCount < 0) {
             throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s: bad save count %d", TAG, saveCount));
         }
 
-        ArrayList<RCanvasPath> changedPaths = new ArrayList<>();
+        ArrayList<RPath> changedPaths = new ArrayList<>();
         mStateStack.setSize(saveCount + 1);
         Log.d(TAG, "restore: " + saveCount + "  " + mStateStack.peek());
-        for (RCanvasPath path: paths()) {
+        for (RPath path: paths()) {
             if (path.restore(saveCount)) {
                 changedPaths.add(path);
             }
@@ -80,17 +80,17 @@ public class RCanvas extends ReactViewGroup {
 
     public void setHitSlop(RectF hitSlop){
         mHitSlop = hitSlop;
-        for (RCanvasPath path: paths()) {
+        for (RPath path: paths()) {
             path.setHitSlop(mHitSlop);
         }
     }
 
-    public ArrayList<RCanvasPath> paths() {
+    public ArrayList<RPath> paths() {
         return new ArrayList<>(mPaths);
     }
 
-    public RCanvasPath getPath(String id) {
-        for (RCanvasPath path: paths()) {
+    public RPath getPath(String id) {
+        for (RPath path: paths()) {
             if (path.getPathId() != null && path.getPathId().equals(id)) {
                 return path;
             }
@@ -100,8 +100,8 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public int getPathIndex(String pathId) {
-        ArrayList<RCanvasPath> paths = paths();
-        RCanvasPath path;
+        ArrayList<RPath> paths = paths();
+        RPath path;
         for (int i = 0; i < paths.size(); i++) {
             path = paths.get(i);
             if(path.getPathId() != null && path.getPathId().equals(pathId)) {
@@ -112,7 +112,7 @@ public class RCanvas extends ReactViewGroup {
     }
 
     private void allocNext() {
-        mNextPath = new RCanvasPath((ReactContext) getContext());
+        mNextPath = new RPath((ReactContext) getContext());
         addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
 
@@ -127,14 +127,14 @@ public class RCanvas extends ReactViewGroup {
         RCanvasState currentState = mStateStack.peek();
         strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? currentState.strokeWidth : strokeWidth;
-        RCanvasPath path = init(pathId);
+        RPath path = init(pathId);
         path.setStrokeColor(strokeColor);
         path.setStrokeWidth(strokeWidth);
     }
 
-    protected RCanvasPath init(String pathId) {
+    protected RPath init(String pathId) {
         if (getPathIndex(pathId) == -1) {
-            RCanvasPath path = mNextPath;
+            RPath path = mNextPath;
             path.setPathId(pathId);
             path.setHitSlop(mHitSlop);
             mPaths.add(path);
@@ -163,16 +163,16 @@ public class RCanvas extends ReactViewGroup {
         postInvalidateOnAnimation();
     }
 
-    protected void removePaths(final ArrayList<RCanvasPath> paths) {
+    protected void removePaths(final ArrayList<RPath> paths) {
         mPaths.removeAll(paths);
-        for (RCanvasPath path: paths) {
+        for (RPath path: paths) {
             removeView(path);
         }
     }
 
-    protected ArrayList<RCanvasPath> filterPaths(final ArrayList<RCanvasPath> paths, final boolean pathInteractionInProgress) {
-        ArrayList<RCanvasPath> filteredList = new ArrayList<>();
-        for (RCanvasPath path: paths) {
+    protected ArrayList<RPath> filterPaths(final ArrayList<RPath> paths, final boolean pathInteractionInProgress) {
+        ArrayList<RPath> filteredList = new ArrayList<>();
+        for (RPath path: paths) {
             if ((mInteractionContainer.indexOf(path.getPathId()) > -1) == pathInteractionInProgress) {
                 filteredList.add(path);
             }

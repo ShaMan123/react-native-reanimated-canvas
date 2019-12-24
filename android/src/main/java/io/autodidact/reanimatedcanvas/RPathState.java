@@ -4,29 +4,29 @@ import android.graphics.PointF;
 
 import java.util.ArrayList;
 
-public class RCanvasPathState {
+public class RPathState {
     ArrayList<PointF> points;
     int strokeColor;
     float strokeWidth;
     private boolean mDirty = false;
     private boolean mDirtyForCycle = false;
 
-    RCanvasPathState(RCanvasPathState pathState) {
+    RPathState(RPathState pathState) {
         this(pathState.strokeColor, pathState.strokeWidth, pathState.points);
     }
 
-    RCanvasPathState(int strokeColor, float strokeWidth, ArrayList<PointF> points) {
+    RPathState(int strokeColor, float strokeWidth, ArrayList<PointF> points) {
         this(strokeColor, strokeWidth);
         this.points.addAll(points);
     }
 
-    RCanvasPathState(int strokeColor, float strokeWidth) {
+    RPathState(int strokeColor, float strokeWidth) {
         this();
         this.strokeColor = strokeColor;
         this.strokeWidth = strokeWidth;
     }
 
-    RCanvasPathState() {
+    RPathState() {
         points = new ArrayList<>();
     }
 

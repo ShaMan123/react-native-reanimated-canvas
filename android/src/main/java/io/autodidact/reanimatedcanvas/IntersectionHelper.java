@@ -16,15 +16,15 @@ import com.facebook.react.bridge.WritableArray;
 
 import java.util.ArrayList;
 
-public class PathIntersectionHelper {
+public class IntersectionHelper {
 
     private final RCanvas mView;
 
-    public PathIntersectionHelper(RCanvas view) {
+    public IntersectionHelper(RCanvas view) {
         mView = view;
     }
 
-    private ArrayList<RCanvasPath> getPaths() {
+    private ArrayList<RPath> getPaths() {
         return mView.paths();
     }
 
@@ -34,11 +34,11 @@ public class PathIntersectionHelper {
 
     @TargetApi(19)
     boolean isTransparent(PointF point, String pathId){
-        ArrayList<RCanvasPath> mPaths = getPaths();
+        ArrayList<RPath> mPaths = getPaths();
         int start = getIndex(pathId);
         //int beginAt = Math.min(start + 1, mPaths.size() - 1);
         for (int i = start; i < mPaths.size(); i++){
-            RCanvasPath mPath = mPaths.get(i);
+            RPath mPath = mPaths.get(i);
             if(mPath.isPointOnPath(point) && mPath.getStrokeColor() == Color.TRANSPARENT) {
                 return true;
             }
@@ -52,7 +52,7 @@ public class PathIntersectionHelper {
             return false;
         }
         else {
-            RCanvasPath mPath = getPaths().get(getIndex(pathId));
+            RPath mPath = getPaths().get(getIndex(pathId));
             return mPath.isPointOnPath(point);
         }
     }
@@ -60,8 +60,8 @@ public class PathIntersectionHelper {
     @TargetApi(19)
     public WritableArray isPointOnPath(PointF point){
         WritableArray array = Arguments.createArray();
-        RCanvasPath mPath;
-        ArrayList<RCanvasPath> paths = getPaths();
+        RPath mPath;
+        ArrayList<RPath> paths = getPaths();
         String id;
 
         if (BuildConfig.DEBUG) {
@@ -120,7 +120,7 @@ public class PathIntersectionHelper {
         }
     }
 
-    static class DebugRect extends RCanvasPath {
+    static class DebugRect extends RPath {
         private RectF mRect;
         private Paint mPaint;
         DebugRect(RCanvas view,PointF point) {

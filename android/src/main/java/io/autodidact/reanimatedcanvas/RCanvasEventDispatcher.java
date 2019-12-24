@@ -37,9 +37,9 @@ public class RCanvasEventDispatcher {
     }
 
     void emitChange(
-            @Nullable ArrayList<RCanvasPath> added,
-            @Nullable ArrayList<RCanvasPath> changed,
-            @Nullable ArrayList<RCanvasPath> removed
+            @Nullable ArrayList<RPath> added,
+            @Nullable ArrayList<RPath> changed,
+            @Nullable ArrayList<RPath> removed
     ) {
         WritableNativeMap event = new WritableNativeMap();
         WritableNativeMap changedPaths = new WritableNativeMap();
@@ -48,21 +48,21 @@ public class RCanvasEventDispatcher {
         WritableNativeArray removedArray = new WritableNativeArray();
 
         if (changed != null) {
-            for (RCanvasPath path: changed) {
+            for (RPath path: changed) {
                 changedPaths.putMap(path.getPathId(), path.toWritableMap(true));
                 changedArray.pushString(path.getPathId());
             }
         }
 
         if (added != null) {
-            for (RCanvasPath path: added) {
+            for (RPath path: added) {
                 changedPaths.putMap(path.getPathId(), path.toWritableMap(false));
                 addedArray.pushString(path.getPathId());
             }
         }
 
         if (removed != null) {
-            for (RCanvasPath path: removed) {
+            for (RPath path: removed) {
                 changedPaths.putNull(path.getPathId());
                 removedArray.pushString(path.getPathId());
             }
@@ -76,7 +76,7 @@ public class RCanvasEventDispatcher {
 
         emit(JSEventNames.ON_CHANGE, event);
 
-        for (RCanvasPath path: mCanvas.mPaths) {
+        for (RPath path: mCanvas.mPaths) {
             path.getState().startListening();
         }
     }

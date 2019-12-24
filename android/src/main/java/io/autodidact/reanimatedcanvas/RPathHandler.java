@@ -11,13 +11,13 @@ import com.facebook.react.bridge.UiThreadUtil;
 
 import java.util.ArrayList;
 
-public class RCanvasPathHandler extends RCanvasPath {
+public class RPathHandler extends RPath {
 
     private boolean mReceivedPoints = false;
     private boolean mShouldAnimatePath = false;
     private boolean mDidUpdate = false;
 
-    RCanvasPathHandler(ReactContext context) {
+    RPathHandler(ReactContext context) {
         super(context);
     }
 

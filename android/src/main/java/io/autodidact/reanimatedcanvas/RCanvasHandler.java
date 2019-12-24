@@ -20,8 +20,8 @@ public class RCanvasHandler extends RCanvas {
 
     private final ArrayList<Integer> reactTagRegistry = new ArrayList<>();
     private final RCanvasEventDispatcher mEventDispatcher;
-    private final ArrayList<RCanvasPath> added = new ArrayList<>();
-    private final ArrayList<RCanvasPath> removed = new ArrayList<>();
+    private final ArrayList<RPath> added = new ArrayList<>();
+    private final ArrayList<RPath> removed = new ArrayList<>();
 
     public RCanvasHandler(ThemedReactContext context) {
         super(context);
@@ -29,8 +29,8 @@ public class RCanvasHandler extends RCanvas {
     }
 
     @Override
-    public ArrayList<RCanvasPath> restore(int saveCount) {
-        ArrayList<RCanvasPath> changed = super.restore(saveCount);
+    public ArrayList<RPath> restore(int saveCount) {
+        ArrayList<RPath> changed = super.restore(saveCount);
         mEventDispatcher.emitChange(null, changed, null);
         return changed;
     }
@@ -38,7 +38,7 @@ public class RCanvasHandler extends RCanvas {
     @Override
     public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
         super.init(pathId, strokeColor, strokeWidth);
-        ArrayList<RCanvasPath> added = new ArrayList<>();
+        ArrayList<RPath> added = new ArrayList<>();
         added.add(getPath(pathId));
         mEventDispatcher.emitChange(added, null, null);
     }
@@ -46,21 +46,21 @@ public class RCanvasHandler extends RCanvas {
     @Override
     public void endInteraction(String pathId) {
         super.endInteraction(pathId);
-        ArrayList<RCanvasPath> changed = new ArrayList<>();
+        ArrayList<RPath> changed = new ArrayList<>();
         changed.add(getPath(pathId));
         mEventDispatcher.emitChange(null ,changed, null);
     }
 
     @Override
     public void clear() {
-        ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>(mPaths);
+        ArrayList<RPath> pathsToRemove = new ArrayList<>(mPaths);
         super.clear();
         mEventDispatcher.emitChange(null, null, pathsToRemove);
     }
 
     public void handleUpdate(@Nullable ReadableMap paths) {
         if (paths == null) return;
-        ArrayList<RCanvasPath> pathsToRemove = new ArrayList<>();
+        ArrayList<RPath> pathsToRemove = new ArrayList<>();
         Iterator<Map.Entry<String, Object>> iterator = paths.getEntryIterator();
         Map.Entry<String, Object> entry;
         boolean exists, remove;
@@ -91,7 +91,7 @@ public class RCanvasHandler extends RCanvas {
     }
 
     public void setAttributes(String id, ReadableMap attributes, boolean standalone) {
-        RCanvasPath path = getPath(id);
+        RPath path = getPath(id);
         if (standalone) {
             path.getState().startListening();
         }
@@ -112,7 +112,7 @@ public class RCanvasHandler extends RCanvas {
         if (standalone) {
             postInvalidateOnAnimation();
             if (path.getState().updatedInCycle()) {
-                ArrayList<RCanvasPath> changed = new ArrayList<>();
+                ArrayList<RPath> changed = new ArrayList<>();
                 changed.add(getPath(id));
                 mEventDispatcher.emitChange(null, changed, null);
             }
@@ -120,14 +120,14 @@ public class RCanvasHandler extends RCanvas {
 
     }
 
-    protected void finalizePathAddition(RCanvasPath path) {
+    protected void finalizePathAddition(RPath path) {
         mPaths.add(path);
         path.setHitSlop(mHitSlop);
         added.add(path);
         reactTagRegistry.add(path.getId());
     }
 
-    protected void finalizePathRemoval(RCanvasPath path) {
+    protected void finalizePathRemoval(RPath path) {
         mPaths.remove(path);
         removed.add(path);
         Number tag = path.getId();
@@ -142,14 +142,14 @@ public class RCanvasHandler extends RCanvas {
         }
     }
 
-    protected void finalizeUpdate(RCanvasPath path) {
-        ArrayList<RCanvasPath> changed = new ArrayList<>();
+    protected void finalizeUpdate(RPath path) {
+        ArrayList<RPath> changed = new ArrayList<>();
         changed.add(path);
         mEventDispatcher.emitChange(null, changed, null);
     }
 
     @Override
-    protected final void removePaths(final ArrayList<RCanvasPath> paths) {
+    protected final void removePaths(final ArrayList<RPath> paths) {
         final ReactContext context = (ReactContext) getContext();
         final UIImplementation uiImplementation = context.getNativeModule(UIManagerModule.class).getUIImplementation();
         final SparseIntArray tagsToRemove = new SparseIntArray();
@@ -157,7 +157,7 @@ public class RCanvasHandler extends RCanvas {
         mPaths.removeAll(paths);
 
         for (int i = 0; i < getChildCount(); i++) {
-            for (RCanvasPath path: paths) {
+            for (RPath path: paths) {
                 if (getChildAt(i).getId() == path.getId()) {
                     if (reactTagRegistry.indexOf(path.getId()) > -1) {
                         tagsToRemove.put(i, path.getId());

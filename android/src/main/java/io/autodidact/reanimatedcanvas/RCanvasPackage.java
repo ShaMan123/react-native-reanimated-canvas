@@ -30,7 +30,7 @@ public class RCanvasPackage implements ReactPackage {
     public List<ViewManager> createViewManagers(@NonNull ReactApplicationContext reactContext) {
         return Arrays.<ViewManager>asList(
                 new RCanvasManager(),
-                new RCanvasPathManager(),
+                new RPathManager(),
                 new ViewManagerStub()
         );
     }

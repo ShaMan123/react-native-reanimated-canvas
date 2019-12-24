@@ -40,7 +40,7 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
             run(tag, new Runnable() {
                 @Override
                 public void run(RCanvas view) {
-                    PathIntersectionHelper intersectionHelper = view.getIntersectionHelper();
+                    IntersectionHelper intersectionHelper = view.getIntersectionHelper();
                     PointF point = new PointF(PixelUtil.toPixelFromDIP(x), PixelUtil.toPixelFromDIP(y));
                     success.invoke(pathId == null ?
                             intersectionHelper.isPointOnPath(point):
