@@ -5,6 +5,8 @@ const REANIMATED = 'react-native-reanimated';
 const GESTURE_HANDLER = 'react-native-gesture-handler';
 const ext = '.stub.tsx';
 
+const handler = require('../scripts/prepareExample');
+handler.touch();
 const dev = require('./dev.config.json');
 
 const config = {
