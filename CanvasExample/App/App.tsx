@@ -12,12 +12,14 @@ import Variety from './Variety';
 import JSTouchHandling from './JSTouchHandling';
 import ScrollableCanvas from './ScrollView';
 import Updater from './Updater';
+import DeclarativeUpdate from './DeclarativeUpdate';
 
 const SCREENS = {
   Basic: { screen: Basic, title: 'Basic' },
   Synced: { screen: Synced, title: 'Sync two canvases' },
   Variety: { screen: Variety, title: 'Images, Text, Buttons & Paths' },
-  Updater: { screen: Updater, title: 'Imperative Updating' },
+  ImperativeUpdater: { screen: Updater, title: 'Imperative Updating' },
+  DeclarativeUpdate: { screen: DeclarativeUpdate, title: 'Declarative Updating' },
   Scrollable: { screen: Scrollable, title: 'Scrollable-ish' },
   ScrollableCanvas: { screen: ScrollableCanvas, title: 'ScrollableCanvas' },
   JSTouchHandling: { screen: JSTouchHandling, title: 'Custom JS Touch Handling (Backward Compatibility)' },
