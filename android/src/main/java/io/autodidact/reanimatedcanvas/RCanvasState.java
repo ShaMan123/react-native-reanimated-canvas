@@ -1,8 +1,12 @@
 package io.autodidact.reanimatedcanvas;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.uimanager.PixelUtil;
+
+import java.util.HashMap;
 
 public class RCanvasState {
     int strokeColor;
@@ -21,5 +25,14 @@ public class RCanvasState {
         out.putInt("strokeColor", strokeColor);
         out.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(strokeWidth));
         return out;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        HashMap<String, Object> out = new HashMap<>();
+        out.put("strokeColor", strokeColor);
+        out.put("strokeWidth", PixelUtil.toDIPFromPixel(strokeWidth));
+        return out.toString();
     }
 }
