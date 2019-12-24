@@ -3,6 +3,8 @@
   <h3 align="center">Light-weight, Low-level, Declarative Canvas for React Native</h3>
 </p>
 
+----------------
+
 A canvas component designed especially for responsive drawing in `react-native`.
 
 **NOTICE:** `iOS` is not yet supported.
