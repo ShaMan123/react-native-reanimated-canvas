@@ -1,4 +1,4 @@
-<h1 align="center" align="center">React Native Reanimated Canvas</h1>
+# React Native Reanimated Canvas
 
 A canvas component designed especially for responsive drawing in `react-native`.
 
