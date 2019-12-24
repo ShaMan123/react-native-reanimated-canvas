@@ -1,16 +1,11 @@
 <p align="center">
   <h1 align="center">React Native Reanimated Canvas</h1>
-  <h3 align="center">A Light-weight, Low-level, Declarative Canvas for React Native</h3>
+  <h3 align="center">Light-weight, Low-level, Declarative Canvas for React Native</h3>
 </p>
 
 ---
 
-This repository was originally forked from `@terrylinla/react-native-sketch-canvas`, which is no longer active.
-The source code has been heavily refactored to boost performance.
-
-Some features have been added, some removed or changed, making it more light weight and low-level, befitting `react-native-reanimated`.
-
-Due to these major changes a lot more can be done with this library, including integration with other libraries and components such as `react-native-svg`.
+A canvas component designed especially for responsive drawing in `react-native`.
 
 **NOTICE:** `iOS` is not yet supported.
 
@@ -18,11 +13,11 @@ Due to these major changes a lot more can be done with this library, including i
 
 ## Installation
 
-Check [getting started](https://software-mansion.github.io/react-native-reanimated/getting-started.html) section of our docs for the detailed installation instructions.
+Check [getting started](https://shaman123.github.io/react-native-reanimated-canvas/getting-started.html) section of our docs for the detailed installation instructions.
 
 ## Documentation
 
-Check out our dedicated documentation page for info about this library, API reference and more: [https://software-mansion.github.io/react-native-reanimated](https://software-mansion.github.io/react-native-reanimated)
+Check out our dedicated documentation page for info about this library, API reference and more: [docs](https://shaman123.github.io/react-native-reanimated-canvas/)
 
 ## Examples
 
