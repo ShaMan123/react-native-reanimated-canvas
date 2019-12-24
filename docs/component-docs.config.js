@@ -3,8 +3,8 @@ import fs from 'fs';
 
 // eslint-disable-next-line no-extend-native
 Object.defineProperty(Array.prototype, 'flat', {
-  value: function(depth = 1) {
-    return this.reduce(function(flat, toFlatten) {
+  value: function (depth = 1) {
+    return this.reduce(function (flat, toFlatten) {
       return flat.concat(
         Array.isArray(toFlatten) && depth > 1
           ? toFlatten.flat(depth - 1)
@@ -17,8 +17,7 @@ Object.defineProperty(Array.prototype, 'flat', {
 const root = path.join(__dirname, '..');
 const dist = path.join(__dirname, 'dist');
 const styles = [path.join(__dirname, 'assets', 'styles.css')];
-const github =
-  'https://github.com/ShaMan123/react-native-reanimated-canvas';
+const github = 'https://github.com/ShaMan123/react-native-reanimated-canvas';
 
 if (!fs.existsSync(dist)) {
   fs.mkdirSync(dist);
@@ -45,15 +44,15 @@ const mapToObject = (filePath, group) =>
   fs
     .readdirSync(filePath, { withFileTypes: true })
     .map(file => {
-      if (file.isDirectory()) {
+      if (fs.lstatSync(path.resolve(filePath, file)).isDirectory()) {
         return mapToObject(
-          path.join(filePath, file.name),
-          nameToGroupTitle(file.name)
+          path.join(filePath, file),
+          nameToGroupTitle(file)
         );
       } else {
         const result = {
-          file: path.join(filePath, file.name),
-          type: getType(file.name),
+          file: path.join(filePath, file),
+          type: getType(file),
         };
         if (group) {
           result.group = group;
@@ -63,7 +62,7 @@ const mapToObject = (filePath, group) =>
     })
     .flat();
 
-const docs = mapToObject(path.join(__dirname, 'pages'));
+let docs = mapToObject(path.join(__dirname, 'pages'));
 
 module.exports = {
   root,
@@ -71,4 +70,5 @@ module.exports = {
   pages: docs,
   output: dist,
   github,
+  //open: true
 };

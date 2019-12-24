@@ -5,10 +5,11 @@
   "private": true,
   "scripts": {
     "start": "component-docs serve",
-    "build": "component-docs build",
+    "build": "component-docs build && npm run patch",
+    "patch": "node patch.js",
     "clean": "del dist/",
-    "prestart1": "yarn clean",
-    "deploy": "component-docs build && gh-pages -d dist"
+    "prestart1": "npm run clean",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
     "@babel/node": "^7.2.2",
