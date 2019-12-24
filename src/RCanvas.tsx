@@ -3,8 +3,8 @@ import _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated, { add, and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
-import { alloc, drawPoint, endInteraction, pathIdMem, stringId } from './RACanvasModule';
 import RCanvasBase from './RCanvasBase';
+import { alloc, drawPoint, endInteraction, pathIdMem, stringId } from './RCanvasModule';
 import { RCanvasProperties, RCanvasRef } from './types';
 import { useEventProp } from './util';
 

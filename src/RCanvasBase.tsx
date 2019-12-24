@@ -1,10 +1,10 @@
-'use strict';
+'RCanvasBaseModule';
 
 import _ from 'lodash';
 import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo } from 'react';
 import { findNodeHandle, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { useModule, VIEW_MANAGER } from './RCanvasModule';
+import { useModule, VIEW_MANAGER } from './RCanvasBaseModule';
 import { ChangeEvent, RPathData, RCanvasProperties, RCanvasRef, RPathDataBase } from './types';
 import { generatePathId, processColorProp, useEventProp, useHitSlop, useRefGetter } from './util';
 

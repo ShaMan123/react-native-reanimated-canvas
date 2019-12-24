@@ -1,5 +1,4 @@
 'use strict';
-
 import { MutableRefObject, useCallback, useMemo } from 'react';
 import { PanResponder } from 'react-native';
 import { RCanvasProperties, RCanvasRef } from './types';

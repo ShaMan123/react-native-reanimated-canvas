@@ -1,9 +1,9 @@
-'use strict';
+'RCanvasBaseModule';
 
 import React, { Ref, useMemo } from 'react';
 import { requireNativeComponent } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { PATH_VIEW_MANAGER } from './RCanvasModule';
+import { PATH_VIEW_MANAGER } from './RCanvasBaseModule';
 import { RPathProperties } from './types';
 import { useStrokeColor } from './util';
 

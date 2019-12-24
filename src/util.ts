@@ -1,5 +1,3 @@
-'use strict';
-
 import _ from 'lodash';
 import { useCallback, useMemo, useRef } from 'react';
 import { processColor } from 'react-native';

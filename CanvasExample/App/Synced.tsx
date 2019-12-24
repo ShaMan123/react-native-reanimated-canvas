@@ -2,12 +2,11 @@ import _ from 'lodash';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import Animated, { add, and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
-import { RACanvasModule, RCanvasRef } from 'react-native-reanimated-canvas';
-import { } from '../../src/RACanvasModule';
+import { RCanvasModule, RCanvasRef } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
 
-const { alloc, drawPoint, endInteraction, stringId, pathIdMem } = RACanvasModule;
+const { alloc, drawPoint, endInteraction, stringId, pathIdMem } = RCanvasModule;
 const { View } = Animated;
 
 function useValue(value: number | (() => number)) {

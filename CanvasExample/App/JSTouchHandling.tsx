@@ -1,10 +1,9 @@
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Text, View, processColor } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Text, View } from 'react-native';
 import { PanGestureHandler, RectButton } from 'react-native-gesture-handler';
-import CanvasBase, { RCanvasPath, RCanvasRef, useCanvasGestureHandler, useCanvasPanResponder, generatePathId } from 'react-native-reanimated-canvas/base';
+import CanvasBase, { RCanvasRef, RPath, useCanvasGestureHandler, useCanvasPanResponder } from 'react-native-reanimated-canvas/base';
 import { styles } from './common';
-import _ from 'lodash';
 
 const points = new Array(200).fill(0).map((v, i) => ({ x: i, y: i }));
 
@@ -31,14 +30,14 @@ export default function CustomTouchHandling() {
       defaultStrokeWidth={20}
       hitSlop={20}
     >
-      <RCanvasPath
+      <RPath
         points={points}
         strokeWidth={20}
         strokeColor='pink'
       />
       {
         show &&
-        <RCanvasPath
+        <RPath
           points={points.slice(50, 150)}
           strokeWidth={20}
           strokeColor='blue'

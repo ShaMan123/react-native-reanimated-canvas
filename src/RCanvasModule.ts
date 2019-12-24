@@ -1,116 +1,60 @@
-'use strict';
 
-import _ from 'lodash';
-import { MutableRefObject, useMemo } from 'react';
-import { findNodeHandle, NativeModules, Platform, processColor, UIManager } from 'react-native';
-import { Commands, Point, RCanvasRef, RPathData } from './types';
-import { processColorProp } from './util';
+import Animated from 'react-native-reanimated';
+import { MODULE, VIEW_MANAGER } from './RCanvasBaseModule';
+import { Commands, IntersectionResponse, Methods } from './types';
 
-export const VIEW_MANAGER = 'ReanimatedCanvasManager';
-export const PATH_VIEW_MANAGER = 'ReanimatedCanvasPathManager';
-export const MODULE = 'ReanimatedCanvasModule';
+const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange } = Animated;
 
-const NativeModuleManager = Platform.select({
-  ios: NativeModules[VIEW_MANAGER],
-  default: NativeModules[MODULE]
+export const pathIdMem = new Value(0);
+
+export const stringId = proc((id) => concat('RACanvasPath', id));
+
+export const safeDispatch = proc((tag, node) => cond(neq(tag as Animated.Adaptable<number>, 0), node));
+
+export const alloc = proc((tag, id, strokeColor, strokeWidth) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.alloc, tag, id, strokeColor, strokeWidth));
 });
 
-export function dispatchCommand(tag: number, command: Commands, data: any[] = []) {
-  UIManager.dispatchViewManagerCommand(tag, command, data);
-}
+export const drawPoint = proc((tag, id, x, y) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.drawPoint, tag, id, x, y));
+});
 
-export function alloc(tag: number, pathId: string, strokeColor: any, strokeWidth: number) {
-  dispatchCommand(tag, Commands.alloc, [pathId, processColorProp(strokeColor), strokeWidth]);
-}
+export const endInteraction = proc((tag, id) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.endInteraction, tag, id));
+});
 
-export function drawPoint(tag: number, pathId: string, point: Point) {
-  dispatchCommand(tag, Commands.drawPoint, [pathId, point.x, point.y]);
-}
+export const setPathColor = proc((tag, id, strokeColor) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ strokeColor })));
+});
 
-export function endInteraction(tag: number, pathId: string) {
-  dispatchCommand(tag, Commands.endInteraction, [pathId]);
-}
+export const setPathWidth = proc((tag, id, strokeWidth) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.setAttributes, tag, id, map({ strokeWidth })));
+});
 
-export function clear(tag: number) {
-  dispatchCommand(tag, Commands.clear);
-}
+export const clear = proc((tag) => {
+  return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.clear, tag));
+});
 
-export function update(tag: number, paths: { [id: string]: RPathData | null }) {
-  dispatchCommand(tag, Commands.update, [paths]);
-}
+export const getPaths = proc((tag, id, cb) => {
+  return safeDispatch(tag, invoke(MODULE, Methods.getPaths, tag, id, 0, cb, callback()));
+});
 
-export function setPathAttributes(tag: number, pathId: string, attr: { width: number, color: string | number }) {
-  if (typeof attr.color === 'string') {
-    attr.color = processColor(attr.color);
-  }
-  dispatchCommand(tag, Commands.setAttributes, [pathId, attr]);
-}
+export const isPointOnPath = proc((tag, x, y, topPath) => {
+  const cb = callback<IntersectionResponse>(map.fromEnd([topPath]), 0);
+  const isPointOnPath = invoke(MODULE, Methods.isPointOnPath, tag, x, y, new Value(), cb, callback());
+  return safeDispatch(
+    tag,
+    [
+      onChange(x, isPointOnPath),
+      onChange(y, isPointOnPath),
+    ]
+  );
+});
 
-export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>>(
-  handle: number,
-  x: number,
-  y: number,
-  pathId?: T,
-  onSuccess?: (result: R) => void,
-  onFailure?: (error: any) => void
-) {
-  const nativeX = x;
-  const nativeY = y;
-  const normalizedPathId = typeof pathId === 'number' ? pathId : null;
-  const nativeMethod = ((onSuccess: (result: R) => void, onFailure: (error: any) => void) => {
-    return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, onSuccess, onFailure);
-  });
+export const save = proc((tag, saveCount) => {
+  return safeDispatch(tag, invoke(MODULE, Methods.save, tag, callback(saveCount), callback()));
+});
 
-  return promisify(nativeMethod, onSuccess, onFailure);
-};
-
-export function save<R extends number, E extends Error>(
-  handle: number,
-  onSuccess?: (saveCount: R) => void,
-  onFailure?: (error: E) => void
-) {
-  const nativeMethod = (onSuccess: (result: R) => void, onFailure: (error: E) => void) => {
-    NativeModuleManager.save(handle, onSuccess, onFailure);
-  };
-
-  return promisify(nativeMethod, onSuccess, onFailure);
-}
-
-export function restore<R extends void, E extends Error>(
-  handle: number,
-  saveCount?: number,
-  onSuccess?: (result: R) => void,
-  onFailure?: (error: E) => void
-) {
-  const nativeMethod = (onSuccess: (result: R) => void, onFailure: (error: E) => void) => {
-    NativeModuleManager.restore(handle, saveCount || -1, onSuccess, onFailure);
-  };
-
-  return promisify(nativeMethod, onSuccess, onFailure);
-}
-
-function promisify<R, E>(method: (onSuccess: (result: R) => void, onFailure: (error: E) => void) => void, onSuccess?: (result: R) => void, onFailure?: (error: E) => void) {
-  if (onSuccess && onFailure) {
-    return method(onSuccess, onFailure);
-  } else if (onSuccess) {
-    return method(onSuccess, console.error);
-  } else {
-    return new Promise((resolve, reject) => {
-      method(resolve, reject)
-    });
-  }
-}
-
-type ModuleMethods = 'isPointOnPath' | 'save' | 'restore';
-type ViewManagerCommands = 'dispatchCommand' | 'startPath' | 'addPoint' | 'endPath' | 'clear' | 'update' | 'setPathAttributes';
-
-export function useModule(ref: MutableRefObject<RCanvasRef>)/*: Pick<RCanvasRef, ModuleMethods | ViewManagerCommands>*/ {
-  return useMemo(() => {
-    const methods = { dispatchCommand, alloc, drawPoint, endInteraction, clear, update, setPathAttributes, isPointOnPath, save, restore };
-    //@ts-ignore
-    return _.mapValues(methods, (m) => (...args: any[]) => m(findNodeHandle(ref.current), ...args));
-  }, [ref]);
-}
+export const restore = proc((tag, saveCount) => {
+  return safeDispatch(tag, invoke(MODULE, Methods.restore, tag, saveCount, callback(), callback()));
+});

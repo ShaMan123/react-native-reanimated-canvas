@@ -2,7 +2,7 @@
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { Text } from 'react-native';
-import RCanvas, { generatePathId, PathData, RCanvasPath, RCanvasRef } from 'react-native-reanimated-canvas';
+import RCanvas, { generatePathId, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 
 const points = new Array(200).fill(0).map((v, i) => ({ x: i, y: i }));
@@ -13,7 +13,7 @@ function genPathData(id = generatePathId()) {
     strokeColor: `rgb(${Math.round(Math.random() * 255)},${Math.round(Math.random() * 255)},${Math.round(Math.random() * 255)})`,
     strokeWidth: Math.max(25 * Math.random(), 10),
     points: _.map(points, (point, i) => _.mapValues(point, v => (50 - v) * Math.random() * 200))
-  } as PathData;
+  } as RPathData;
 }
 
 export default function CustomTouchHandling() {
@@ -70,7 +70,7 @@ export default function CustomTouchHandling() {
         ref={refA}
         renderToHardwareTextureAndroid={renderToHWT}
       >
-        {_.map(paths, data => <RCanvasPath {...data} key={data.id} />)}
+        {_.map(paths, data => <RPath {...data} key={data.id} />)}
       </RCanvas>
       <Text>{`renderToHardwareTextureAndroid: ${renderToHWT}`}</Text>
     </>
