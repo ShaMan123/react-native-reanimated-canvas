@@ -1,98 +1,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BorderlessButton, LongPressGestureHandler, State, TapGestureHandler, TapGestureHandlerStateChangeEvent, RectButton } from 'react-native-gesture-handler';
-import Animated, { Easing } from 'react-native-reanimated';
-import { PathData, RACanvasModule, RCanvasPath, RCanvasRef, generatePathId } from 'react-native-reanimated-canvas';
-import { styles } from './common';
-import LegacyCanvas from './LegacyCanvas';
 import { Text } from 'react-native';
-import _ from 'lodash';
+import { BorderlessButton, LongPressGestureHandler, RectButton, State, TapGestureHandler, TapGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
+import Animated from 'react-native-reanimated';
+import { RCanvasModule, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
+import { runDelayed, runSpring, styles } from './common';
+import LegacyCanvas from './LegacyCanvas';
 const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
-//StatusBar.setHidden(true)
-function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
-  const state = {
-    finished: new Value(0),
-    velocity: new Value(0),
-    position: new Value(0),
-    time: new Value(0),
-  };
-
-  const config = {
-    toValue: new Value(0),
-    damping: 10,
-    mass: 5,
-    stiffness: 101.6,
-    overshootClamping: false,
-    restSpeedThreshold: 0.001,
-    restDisplacementThreshold: 0.001,
-  };
-
-  return block([
-    cond(clockRunning(clock), 0, [
-      set(state.finished, 0),
-      set(state.time, 0),
-      set(state.position, value),
-      set(state.velocity, 0),
-      set(config.toValue, dest),
-      startClock(clock),
-    ]),
-    spring(clock, state, config),
-    cond(state.finished, debug('stop clock', stopClock(clock))),
-    state.position,
-  ]);
-}
-
-function runTiming(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
-  const state = {
-    finished: new Value(0),
-    position: new Value(0),
-    frameTime: new Value(0),
-    time: new Value(0),
-  };
-
-  const config = {
-    toValue: new Value(0),
-    duration: 2500,
-    easing: Easing.linear,
-  };
-
-  const reset = [
-    set(state.finished, 0),
-    set(state.frameTime, 0),
-    set(state.time, 0),
-    set(state.position, value),
-    set(config.toValue, dest),
-    startClock(clock),
-  ]
-
-  return [
-    cond(clockRunning(clock), 0, reset),
-    timing(clock, state, config),
-    cond(state.finished, stopClock(clock)),
-    state.position,
-  ];
-}
-
-function runDelayed(node: Animated.Node<any>, delay: Animated.Adaptable<number> = 1500) {
-  const delayClock = new Clock();
-  const delayClockStart = new Value(0);
-  return block([
-    cond(
-      not(clockRunning(delayClock)),
-      [
-        startClock(delayClock),
-        set(delayClockStart, delayClock)
-      ]
-    ),
-    cond(
-      greaterOrEq(sub(delayClock, delayClockStart), delay),
-      [
-        node,
-        stopClock(delayClock)
-      ]
-    )
-  ])
-}
 
 export default function Basic() {
   const ref = useRef<RCanvasRef>();
@@ -171,7 +85,7 @@ export default function Basic() {
   const width = useMemo(() => new Value(0), []);
   useCode(() =>
     block([
-      RACanvasModule.isPointOnPath(tag, x, y, path)
+      RCanvasModule.isPointOnPath(tag, x, y, path)
     ]),
     [x, y]
   );
@@ -184,7 +98,7 @@ export default function Basic() {
           path,
           cond(
             eq(bip, 0),
-            //RACanvasModule.getPaths(tag, map([path]), callback<PathData>(map([{ strokeWidth }]))),
+            RCanvasModule.getPaths(tag, map([path]), callback<RPathData>(map([{ strokeWidth }]))),
           )
         ),
         onChange(
@@ -192,7 +106,7 @@ export default function Basic() {
           cond(
             greaterThan(strokeWidth, 0),
             [
-              RACanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
+              RCanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
               set(bip, 1)
             ]
           )
@@ -202,7 +116,7 @@ export default function Basic() {
           cond(
             bip,
             [
-              runDelayed(RACanvasModule.setPathWidth(tag, path, strokeWidth)),
+              runDelayed(RCanvasModule.setPathWidth(tag, path, strokeWidth)),
               set(bip, 0)
             ]
           )
@@ -244,14 +158,14 @@ export default function Basic() {
                   defaultStrokeWidth={20}
                   hitSlop={20}
                 >
-                  <RCanvasPath
+                  <RPath
                     points={points}
                     strokeWidth={20}
                     strokeColor='pink'
                     animate
                     index={index}
                   />
-                  <RCanvasPath
+                  <RPath
                     points={show ? points.slice(50, 150) : points.slice(20, 100)}
                     strokeWidth={20}
                     strokeColor='blue'
@@ -260,7 +174,7 @@ export default function Basic() {
                   />
                   {
                     show &&
-                    <RCanvasPath
+                    <RPath
                       points={points.slice(50, 150)}
                       strokeWidth={20}
                       strokeColor='gold'

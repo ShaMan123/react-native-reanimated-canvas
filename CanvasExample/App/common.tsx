@@ -1,6 +1,7 @@
 
 import { useCallback, useRef } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Animated, Easing } from 'react-native';
+import { Value, block, cond, clockRunning, set, startClock, spring, debug, stopClock, timing, Clock, not, greaterOrEq, sub } from 'react-native-reanimated';
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);
@@ -15,6 +16,92 @@ export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R =
 
   return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
 }
+
+export function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
+  const state = {
+    finished: new Value(0),
+    velocity: new Value(0),
+    position: new Value(0),
+    time: new Value(0),
+  };
+
+  const config = {
+    toValue: new Value(0),
+    damping: 10,
+    mass: 5,
+    stiffness: 101.6,
+    overshootClamping: false,
+    restSpeedThreshold: 0.001,
+    restDisplacementThreshold: 0.001,
+  };
+
+  return block([
+    cond(clockRunning(clock), 0, [
+      set(state.finished, 0),
+      set(state.time, 0),
+      set(state.position, value),
+      set(state.velocity, 0),
+      set(config.toValue, dest),
+      startClock(clock),
+    ]),
+    spring(clock, state, config),
+    cond(state.finished, debug('stop clock', stopClock(clock))),
+    state.position,
+  ]);
+}
+
+export function runTiming(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {
+  const state = {
+    finished: new Value(0),
+    position: new Value(0),
+    frameTime: new Value(0),
+    time: new Value(0),
+  };
+
+  const config = {
+    toValue: new Value(0),
+    duration: 2500,
+    easing: Easing.linear,
+  };
+
+  const reset = [
+    set(state.finished, 0),
+    set(state.frameTime, 0),
+    set(state.time, 0),
+    set(state.position, value),
+    set(config.toValue, dest),
+    startClock(clock),
+  ]
+
+  return [
+    cond(clockRunning(clock), 0, reset),
+    timing(clock, state, config),
+    cond(state.finished, stopClock(clock)),
+    state.position,
+  ];
+}
+
+export function runDelayed(node: Animated.Node<any>, delay: Animated.Adaptable<number> = 1500) {
+  const delayClock = new Clock();
+  const delayClockStart = new Value(0);
+  return block([
+    cond(
+      not(clockRunning(delayClock)),
+      [
+        startClock(delayClock),
+        set(delayClockStart, delayClock)
+      ]
+    ),
+    cond(
+      greaterOrEq(sub(delayClock, delayClockStart), delay),
+      [
+        node,
+        cond(clockRunning(delayClock), stopClock(delayClock))
+      ]
+    )
+  ])
+}
+
 
 export const styles = StyleSheet.create({
   default: {
