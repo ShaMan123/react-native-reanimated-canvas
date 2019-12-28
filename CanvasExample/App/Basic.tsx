@@ -152,7 +152,7 @@ export default function Basic() {
                 <LegacyCanvas
                   ref={ref}
                   onLayout={(e) => {
-                    tag.setValue(e.nativeEvent.target)
+                    //tag.setValue(e.nativeEvent.target)
                     setPip(e.nativeEvent.target)
                   }}
                   defaultStrokeWidth={20}

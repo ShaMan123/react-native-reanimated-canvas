@@ -103,7 +103,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGes
       <RCanvasBase
         {...props}
         ref={ref}
-        onLayout={onLayout} //useEventProp(onLayout, props.onLayout)
+        onLayout={useEventProp(onLayout, props.onLayout)}
       />
     </PanGestureHandler>
   );
