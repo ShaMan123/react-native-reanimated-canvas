@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/ShaMan123/react-native-reanimated-canvas"
   },
-  "version": "1.0.12",
+  "version": "2.0.0",
   "description": "a light-weight, low-level, responsive sketching component",
   "author": "ShaMan123 (https://github.com/ShaMan123)",
   "contributors": [],
