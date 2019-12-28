@@ -5,7 +5,7 @@ import { Commands, Point, RCanvasRef, RPathData } from './types';
 import { processColorProp } from './util';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
-export const PATH_VIEW_MANAGER = 'ReanimatedCanvasPathManager';
+export const PATH_VIEW_MANAGER = 'ReanimatedPathManager';
 export const MODULE = 'ReanimatedCanvasModule';
 
 const NativeModuleManager = Platform.select({
