@@ -2,7 +2,7 @@
 
 const path = require('path');
 const root = path.resolve(__dirname, '..');
-const { useLocalReanimatedModule, reanimatedLocalPath } = require('./dev.config');
+const { useLocalReanimatedModule, reanimatedLocalPath } = require('./example.config');
 
 const reanimatedModule = useLocalReanimatedModule ?
   {

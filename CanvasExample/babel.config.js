@@ -1,4 +1,4 @@
-const DEVConfig = require('./dev.config');
+const DEVConfig = require('./example.config');
 
 module.exports = {
   presets: ['module:metro-react-native-babel-preset'],

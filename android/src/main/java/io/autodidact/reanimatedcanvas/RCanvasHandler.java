@@ -171,7 +171,6 @@ public class RCanvasHandler extends RCanvas {
             Utility.runOnNativeModulesThread((ReactContext) getContext(), new Runnable() {
                 @Override
                 public void run() {
-
                     ReactShadowNode shadowNode;
                     ReactShadowNode parentShadowNode;
                     for (int i = 0; i < tagsToRemove.size(); i++) {
