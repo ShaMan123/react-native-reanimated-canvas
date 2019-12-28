@@ -11,7 +11,7 @@ const path = require('path');
 const pkg = require('./package.json');
 const baseConfig = require('../base/metro.config');
 const _ = require('lodash');
-const { useLocalReanimatedModule, reanimatedLocalPath, useBaseImplementation, resolveReanimatedPath, resolveGestureHandlerPath, logInfo } = require('./example.config');
+const { useLocalReanimatedModule, useBaseImplementation, resolveReanimatedPath, resolveGestureHandlerPath, logInfo } = require('./example.config');
 
 const watchFolders = [path.resolve(__dirname, '..')];
 const blacklisters = [];  //path.resolve(__dirname, '../node_modules'),
@@ -27,16 +27,16 @@ if (useBaseImplementation) {
     path.resolve(__dirname, 'node_modules', REANIMATED),
   );
 } else if (useLocalReanimatedModule) {
-  watchFolders.push(path.resolve(__dirname, '..', '..', REANIMATED));
+  watchFolders.push(resolveReanimatedPath());
   blacklisters.concat(
-    path.resolve(__dirname, '..', '..', REANIMATED, 'node_modules'),
-    path.resolve(__dirname, '..', '..', REANIMATED, 'Example')
+    path.resolve(resolveReanimatedPath(), 'node_modules'),
+    path.resolve(resolveReanimatedPath(), 'Example')
   );
 }
 
 const config = {
   resolver: {
-    blacklistRE: blacklist(blacklisters),
+    //blacklistRE: blacklist(blacklisters),
     extraNodeModules
   },
   watchFolders,
