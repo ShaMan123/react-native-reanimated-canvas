@@ -32,7 +32,7 @@
   },
   "optionalDependencies": {
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd"
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
   },
   "dependencies": {},
   "devDependencies": {
@@ -43,7 +43,7 @@
     "@types/react-test-renderer": "^16.9.1",
     "lodash": "^4.17.11",
     "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd",
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated",
     "semver": "^6.2.0",
     "typescript": "^3.7.3",
     "yargs": "^14.0.0"

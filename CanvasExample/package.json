@@ -17,7 +17,7 @@
     "typescript": "^3.7.2",
     "@react-navigation/web": "^1.0.0-alpha.9",
     "react-native-gesture-handler": "^1.5.2",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated#android-cwd",
+    "react-native-reanimated": "github:ShaMan123/react-native-reanimated",
     "react-native-view-shot": "^3.0.2",
     "react-navigation": "^4.0.10",
     "react-navigation-stack": "^1.10.3"
