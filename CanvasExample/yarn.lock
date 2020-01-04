@@ -5186,9 +5186,9 @@ react-native-gesture-handler@^1.5.2:
     invariant "^2.2.4"
     prop-types "^15.7.2"
 
-"react-native-reanimated@github:ShaMan123/react-native-reanimated#android-cwd":
+"react-native-reanimated@github:ShaMan123/react-native-reanimated":
   version "1.4.0"
-  resolved "https://codeload.github.com/ShaMan123/react-native-reanimated/tar.gz/cfbd61fa80216f0db15a0e388894cc38dda0d3b2"
+  resolved "https://codeload.github.com/ShaMan123/react-native-reanimated/tar.gz/ac21445a1a60305c249ccc33ef884bdaff87e38e"
 
 react-native-safe-area-view@^0.14.1:
   version "0.14.8"

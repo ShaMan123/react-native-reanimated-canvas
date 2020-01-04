@@ -1,27 +1,12 @@
-//
-//  RCanvasData.m
-//  RCanvas
-//
-//  Created by terry on 03/08/2017.
-//  Copyright © 2017 Terry. All rights reserved.
-//
 
 #import "RPath.h"
 #import "Utility.h"
-
-@interface RPath ()
-
-@property (nonatomic, readwrite) int pathId;
-@property (nonatomic, readwrite) CGFloat strokeWidth;
-@property (nonatomic, readwrite) UIColor* strokeColor;
-@property (nonatomic, readwrite) NSMutableArray<NSValue*> *points;
-
-@end
 
 @implementation RPath
 {
     CGRect _dirty;
     UIBezierPath *_path;
+    UIColor *_strokeColor;
 }
 
 - (instancetype)init
@@ -41,8 +26,7 @@
         _strokeColor = strokeColor;
         _strokeWidth = strokeWidth;
         _points = [NSMutableArray new];
-        _isTranslucent = CGColorGetComponents(strokeColor.CGColor)[3] != 1.0 &&
-            ![Utility isSameColor:strokeColor color:[UIColor clearColor]];
+        _isTranslucent = _isTranslucent = [Utility isTranslucent:_strokeColor];
         _path = _isTranslucent ? [UIBezierPath new] : nil;
     }
     return self;
@@ -55,11 +39,27 @@
         _strokeColor = strokeColor;
         _strokeWidth = strokeWidth;
         _points = [points mutableCopy];
-        _isTranslucent = CGColorGetComponents(strokeColor.CGColor)[3] != 1.0 &&
-            ![Utility isSameColor:strokeColor color:[UIColor clearColor]];
+        _isTranslucent = [Utility isTranslucent:_strokeColor];
         _path = _isTranslucent ? [self evaluatePath] : nil;
     }
     return self;
+}
+
+- (void)setStrokeColor:(UIColor *)strokeColor {
+    _strokeColor = strokeColor;
+    _isTranslucent = [Utility isTranslucent:_strokeColor];
+    _path = _isTranslucent ? [self evaluatePath] : nil;
+    [self setNeedsDisplay];
+}
+
+- (void)setStrokeWidth:(CGFloat)strokeWidth {
+    _strokeWidth = strokeWidth;
+    [self setNeedsDisplay];
+}
+
+- (void)setPoints:(NSMutableArray<NSValue *> *)points {
+    _points = [points mutableCopy];
+    [self setNeedsDisplay];
 }
 
 - (CGRect)addPoint:(CGPoint) point {
@@ -221,10 +221,5 @@
     }
     return path;
 }
-
-- (UIBezierPath*) getPath {
-    return _path;
-}
-
 
 @end

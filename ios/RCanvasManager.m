@@ -4,10 +4,12 @@
 #import <React/RCTView.h>
 #import <React/UIView+React.h>
 #import <React/RCTUIManager.h>
+#import "PathIntersectionHelper.h"
+#import "RCTConvert+RCanvas.h"
 
 @implementation RCanvasManager
 
-RCT_EXPORT_MODULE(ReanimatedCanvasManager)
+RCT_EXPORT_MODULE(RNRCanvas)
 
 + (BOOL)requiresMainQueueSetup
 {
@@ -20,7 +22,7 @@ RCT_EXPORT_MODULE(ReanimatedCanvasManager)
 
 #pragma mark - Events
 
-RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
+//RCT_EXPORT_VIEW_PROPERTY(onChange, RCTBubblingEventBlock);
 
 #pragma mark - Props
 /*
@@ -54,57 +56,49 @@ RCT_CUSTOM_VIEW_PROPERTY(text, NSArray, RCanvas)
 
 #pragma mark - Exported methods
 
+RCT_EXPORT_METHOD(alloc:(nonnull NSNumber *)reactTag pathId:(int)pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int)strokeWidth)
+{
+    [self runCanvas:reactTag
+              block:^(RCanvas *canvas) {
+                  [canvas allocPath:pathId strokeColor:strokeColor strokeWidth:strokeWidth];
+              }
+     ];
+}
 
-RCT_EXPORT_METHOD(addPoint:(nonnull NSNumber *)reactTag x: (float)x y: (float)y)
+RCT_EXPORT_METHOD(drawPoint:(nonnull NSNumber *)reactTag x:(float)x y:(float)y pathId:(int)pathId)
 {
     [self runCanvas:reactTag block:^(RCanvas *canvas) {
-        [canvas addPointX:x Y:y];
+        [canvas drawPoint:CGPointMake(x, y) pathId:pathId];
     }];
 }
 
-RCT_EXPORT_METHOD(addPath:(nonnull NSNumber *)reactTag pathId: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth points: (NSArray*) points)
+RCT_EXPORT_METHOD(endPath:(nonnull NSNumber *)reactTag pathId:(int)pathId)
 {
-    NSMutableArray *cgPoints = [[NSMutableArray alloc] initWithCapacity: points.count];
-    for (NSString *coor in points) {
-        NSArray *coorInNumber = [coor componentsSeparatedByString: @","];
-        [cgPoints addObject: [NSValue valueWithCGPoint: CGPointMake([coorInNumber[0] floatValue], [coorInNumber[1] floatValue])]];
-    }
-
     [self runCanvas:reactTag
               block:^(RCanvas *canvas) {
-                  [canvas
-                   addPath: pathId
-                   strokeColor: strokeColor
-                   strokeWidth: strokeWidth
-                   points: cgPoints
-                   ];
+                  [canvas endPath:pathId];
               }
      ];
 }
 
-RCT_EXPORT_METHOD(startPath:(nonnull NSNumber *)reactTag pathId: (int) pathId strokeColor: (UIColor*) strokeColor strokeWidth: (int) strokeWidth)
+RCT_EXPORT_METHOD(addPaths:(nonnull NSNumber *)reactTag data:(NSDictionary *)data)
 {
     [self runCanvas:reactTag
               block:^(RCanvas *canvas) {
-                  [canvas startPath: pathId strokeColor: strokeColor strokeWidth: strokeWidth];
+                  NSMutableArray *paths = [NSMutableArray new];
+                  for (NSDictionary *pathData in data) {
+                      [paths addObject:[RCTConvert inflatePath:pathData]];
+                  }
+                  [canvas addPaths:paths];
               }
      ];
 }
 
-RCT_EXPORT_METHOD(deletePath:(nonnull NSNumber *)reactTag pathId: (int) pathId)
+RCT_EXPORT_METHOD(deletePaths:(nonnull NSNumber *)reactTag pathIdArray:(NSArray<NSNumber *> *)pathIdArray)
 {
     [self runCanvas:reactTag
               block:^(RCanvas *canvas) {
-                  [canvas deletePath: pathId];
-              }
-     ];
-}
-
-RCT_EXPORT_METHOD(endPath:(nonnull NSNumber *)reactTag)
-{
-    [self runCanvas:reactTag
-              block:^(RCanvas *canvas) {
-                  [canvas endPath];
+                  [canvas deletePaths:[canvas getPaths:pathIdArray]];
               }
      ];
 }
@@ -118,12 +112,20 @@ RCT_EXPORT_METHOD(clear:(nonnull NSNumber *)reactTag)
      ];
 }
 
-RCT_EXPORT_METHOD(isPointOnPath:(nonnull NSNumber *)reactTag x:(nonnull NSNumber *)x y:(nonnull NSNumber* )y pathId:(nonnull NSNumber *)pathId callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(isPointOnPath:(nonnull NSNumber *)reactTag x:(nonnull NSNumber *)x y:(nonnull NSNumber *)y pathId:(nullable NSNumber *)pathId onSuccess:(RCTResponseSenderBlock)onSuccess onFailure:(RCTResponseSenderBlock)onFailure)
 {
-    NSNumber *_pathId = [pathId intValue] == -1 ? nil: pathId;
     [self runCanvas:reactTag
               block:^(RCanvas *canvas) {
-                  callback(@[[NSNull null], [canvas isPointOnPath: [x floatValue] y:[y floatValue] pathId:_pathId]]);
+                  NSArray<NSNumber *> *response = [PathIntersectionHelper
+                                                   isPointOnPath:CGPointMake([x floatValue], [y floatValue]) paths:[canvas paths]
+                                                   ];
+                  
+                  if (pathId == nil || [pathId intValue] == -1) {
+                      onSuccess(response);
+                  } else {
+                       onSuccess(response);
+                      //onSuccess([response containsObject:pathId]);
+                  }
               }
      ];
 }

@@ -4,9 +4,9 @@ import { findNodeHandle, NativeModules, Platform, processColor, UIManager } from
 import { Commands, Point, RCanvasRef, RPathData } from './types';
 import { processColorProp } from './util';
 
-export const VIEW_MANAGER = 'ReanimatedCanvasManager';
-export const PATH_VIEW_MANAGER = 'ReanimatedPathManager';
-export const MODULE = 'ReanimatedCanvasModule';
+export const VIEW_MANAGER = 'RNRCanvas';
+export const PATH_VIEW_MANAGER = 'RNRPath';
+export const MODULE = 'RNRCanvasModule';
 
 const NativeModuleManager = Platform.select({
   ios: NativeModules[VIEW_MANAGER],

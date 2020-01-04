@@ -7,7 +7,7 @@
 
 @implementation RPathManager
 
-RCT_EXPORT_MODULE(ReanimatedCanvasManager)
+RCT_EXPORT_MODULE(RNRPath)
 
 + (BOOL)requiresMainQueueSetup
 {

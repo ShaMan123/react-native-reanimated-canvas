@@ -18,7 +18,7 @@ const blacklisters = [];  //path.resolve(__dirname, '../node_modules'),
 
 const REANIMATED = 'react-native-reanimated';
 const GH = 'react-native-gesture-handler';
-const extraNodeModules = { [REANIMATED]: resolveReanimatedPath(), [GH]: resolveGestureHandlerPath(false) };
+const extraNodeModules = { [REANIMATED]: resolveReanimatedPath(), [GH]: resolveGestureHandlerPath(false), lodash: path.resolve(__dirname, 'node_modules', 'lodash') };
 
 logInfo();
 

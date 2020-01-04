@@ -258,7 +258,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReanimatedCanvas (from `../../`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - RNReanimated (from `../../../react-native-reanimated`)
+  - RNReanimated (from `../node_modules/react-native-reanimated`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -321,7 +321,7 @@ EXTERNAL SOURCES:
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
-    :path: "../../../react-native-reanimated"
+    :path: "../node_modules/react-native-reanimated"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 

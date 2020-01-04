@@ -28,6 +28,11 @@ CGPoint midPoint (CGPoint p1, CGPoint p2) {
     return false;
 }
 
++ (BOOL)isTranslucent:(UIColor *)color {
+    return CGColorGetComponents(color.CGColor)[3] != 1.0 &&
+    ![self isSameColor:color color:[UIColor clearColor]];
+}
+
 + (CGRect)fillImageWithSize:(CGSize)imgSize toSize:(CGSize)targetSize contentMode:(NSString*)mode {
     CGFloat imageAspectRatio = imgSize.width / imgSize.height;
     CGFloat targetAspectRatio = targetSize.width / targetSize.height;
