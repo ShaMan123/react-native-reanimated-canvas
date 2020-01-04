@@ -16,6 +16,7 @@ module.exports = {
           fbjs: './node_modules/fbjs',
           'hoist-non-react-statics': './node_modules/hoist-non-react-statics',
           invariant: './node_modules/invariant',
+          lodash: './node_modules/lodash'
         },
       },
     ]

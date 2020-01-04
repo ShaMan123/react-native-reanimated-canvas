@@ -1,15 +1,15 @@
 //
-//  RNSketchCanvasData.m
-//  RNSketchCanvas
+//  RCanvasData.m
+//  RCanvas
 //
 //  Created by terry on 03/08/2017.
 //  Copyright © 2017 Terry. All rights reserved.
 //
 
-#import "RNSketchData.h"
+#import "RPath.h"
 #import "Utility.h"
 
-@interface RNSketchData ()
+@interface RPath ()
 
 @property (nonatomic, readwrite) int pathId;
 @property (nonatomic, readwrite) CGFloat strokeWidth;
@@ -18,14 +18,24 @@
 
 @end
 
-@implementation RNSketchData
+@implementation RPath
 {
     CGRect _dirty;
     UIBezierPath *_path;
 }
 
-- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+- (instancetype)init
+{
     self = [super init];
+    if (self) {
+        _dirty = CGRectZero;
+        _path = nil;
+    }
+    return self;
+}
+
+- (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth {
+    self = [self init];
     if (self) {
         _pathId = pathId;
         _strokeColor = strokeColor;
@@ -34,13 +44,12 @@
         _isTranslucent = CGColorGetComponents(strokeColor.CGColor)[3] != 1.0 &&
             ![Utility isSameColor:strokeColor color:[UIColor clearColor]];
         _path = _isTranslucent ? [UIBezierPath new] : nil;
-        _dirty = CGRectZero;
     }
     return self;
 }
 
 - (instancetype)initWithId:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points: (NSArray*) points {
-    self = [super init];
+    self = [self init];
     if (self) {
         _pathId = pathId;
         _strokeColor = strokeColor;
@@ -49,7 +58,6 @@
         _isTranslucent = CGColorGetComponents(strokeColor.CGColor)[3] != 1.0 &&
             ![Utility isSameColor:strokeColor color:[UIColor clearColor]];
         _path = _isTranslucent ? [self evaluatePath] : nil;
-        _dirty = CGRectZero;
     }
     return self;
 }
