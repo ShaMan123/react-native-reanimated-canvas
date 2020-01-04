@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 
 @ReactModule(name = RCanvasModule.NAME)
 public class RCanvasModule extends ReactContextBaseJavaModule {
-    static final String NAME = "ReanimatedCanvasModule";
+    static final String NAME = "RNRCanvasModule";
 
     RCanvasModule(ReactApplicationContext reactContext) {
         super(reactContext);

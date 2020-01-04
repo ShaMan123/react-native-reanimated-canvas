@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
 public class RCanvasManager extends ReactViewManager {
-    static final String NAME = "ReanimatedCanvasManager";
+    static final String NAME = "RNRCanvas";
     static final String TAG = "RCanvas";
 
     @interface Props {

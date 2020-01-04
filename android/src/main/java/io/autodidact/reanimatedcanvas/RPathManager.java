@@ -13,7 +13,7 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
 public class RPathManager extends SimpleViewManager<RPathHandler> {
-    final static String NAME = "ReanimatedPathManager";
+    final static String NAME = "RNRPath";
 
     @interface Props {
         String ID = "id";
