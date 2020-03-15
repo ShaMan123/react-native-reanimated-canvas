@@ -33,7 +33,6 @@ public class RCanvas extends ReactViewGroup {
         mStateStack = new Stack<>();
         mStateStack.push(new RCanvasState());
         allocNext();
-        save();
     }
 
     public IntersectionHelper getIntersectionHelper(){

@@ -103,8 +103,9 @@ public class RPath extends View {
      */
     public boolean restore(int saveCount) {
         boolean isDirty = false;
-        while (mPathStateStack.size() > saveCount + 1) {
-            if (mPathStateStack.pop().isDirty()) {
+
+        for (int i = mPathStateStack.size() - 1; i >= saveCount ; i--) {
+            if (mPathStateStack.get(i).isDirty()) {
                 isDirty = true;
                 break;
             }
