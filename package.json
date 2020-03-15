@@ -60,6 +60,5 @@
     "react-native-reanimated-canvas.d.ts",
     "ReanimatedCanvas.podspec"
   ],
-  "types": "react-native-reanimated-canvas.d.ts",
   "homepage": "https://shaman123.github.io/react-native-reanimated-canvas/"
 }
