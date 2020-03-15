@@ -94,7 +94,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   return (
     <RNativeCanvas
       {...props}
-      onChange={onChange} //  useEventProp(onChange, props.onChange)
+      onChange={useEventProp(onChange, props.onChange)}
       ref={node.ref}
       strokeWidth={strokeWidth.value()}
       strokeColor={strokeColor.value()}
