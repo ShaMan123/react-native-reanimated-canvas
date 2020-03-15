@@ -12,15 +12,17 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-navigation/web": "^1.0.0-alpha.9",
+    "lodash": "^4.17.15",
     "react": "16.9.0",
     "react-native": "0.61.5",
-    "typescript": "^3.7.2",
-    "@react-navigation/web": "^1.0.0-alpha.9",
     "react-native-gesture-handler": "^1.5.2",
     "react-native-reanimated": "github:ShaMan123/react-native-reanimated",
+    "react-native-screens": "^2.3.0",
     "react-native-view-shot": "^3.0.2",
     "react-navigation": "^4.0.10",
-    "react-navigation-stack": "^1.10.3"
+    "react-navigation-stack": "^1.10.3",
+    "typescript": "^3.7.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
