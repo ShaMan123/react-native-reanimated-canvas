@@ -16,7 +16,7 @@
     "lodash": "^4.17.15",
     "react": "16.9.0",
     "react-native": "0.61.5",
-    "react-native-gesture-handler": "^1.5.2",
+    "react-native-gesture-handler": "github:ShaMan123/react-native-gesture-handler#drag-gesture-handler",
     "react-native-reanimated": "github:ShaMan123/react-native-reanimated",
     "react-native-screens": "^2.3.0",
     "react-native-view-shot": "^3.0.2",

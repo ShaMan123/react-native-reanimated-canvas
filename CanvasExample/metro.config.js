@@ -14,13 +14,19 @@ const _ = require('lodash');
 const { useLocalReanimatedModule, useBaseImplementation, resolveReanimatedPath, resolveGestureHandlerPath, logInfo } = require('./example.config');
 
 const watchFolders = [path.resolve(__dirname, '..')];
-const blacklisters = [];  //path.resolve(__dirname, '../node_modules'),
+const blacklisters = [
+  path.resolve(__dirname, '..', 'android'),
+  path.resolve(__dirname, '..', 'ios'),
+  path.resolve(__dirname, 'android'),
+  path.resolve(__dirname, 'ios'),
+];  //path.resolve(__dirname, '../node_modules'),
 
 const REANIMATED = 'react-native-reanimated';
 const GH = 'react-native-gesture-handler';
 const extraNodeModules = {
   [REANIMATED]: resolveReanimatedPath(),
-  [GH]: resolveGestureHandlerPath(false)
+  [GH]: resolveGestureHandlerPath(false),
+  lodash: path.resolve(__dirname, 'node_modules', 'lodash')
 };
 
 logInfo();
@@ -39,7 +45,7 @@ if (useBaseImplementation) {
 
 const config = {
   resolver: {
-    //blacklistRE: blacklist(blacklisters),
+    blacklistRE: blacklist(blacklisters),
     extraNodeModules
   },
   watchFolders,
