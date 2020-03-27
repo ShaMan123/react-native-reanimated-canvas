@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.StringDef;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -19,6 +20,8 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.PixelUtil;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
@@ -29,12 +32,12 @@ public class RPath extends View {
     protected String mPathId;
     private RectF mHitSlop;
     private boolean mOverriddenHitSlop = false;
+    private @RPath.ResizeMode String mResizeMode = RPath.ResizeMode.NONE;
 
     private Paint mPaint;
     protected Path mPath;
 
     protected ArrayList<PointF> mTempPoints;
-
 
     public RPath(ReactContext context) {
         super(context);
@@ -129,11 +132,13 @@ public class RPath extends View {
         }
     }
 
+    public void setResizeMode(@ResizeMode String resizeMode) {
+        mResizeMode = resizeMode;
+    }
+
     private static boolean isTranslucent(int strokeColor) {
         return ((strokeColor >> 24) & 0xff) != 255 && strokeColor != Color.TRANSPARENT;
     }
-
-
 
     public void addPoint(PointF p) {
         RPathState currentState = mPathStateStack.peek();
@@ -209,6 +214,47 @@ public class RPath extends View {
         return path;
     }
 
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef({
+            ResizeMode.COVER,
+            ResizeMode.STRETCH,
+            ResizeMode.NONE
+    })
+    @interface ResizeMode {
+        String COVER = "cover";
+        String STRETCH = "stretch";
+        String NONE = "none";
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        PointF scaler;
+        float sx = w * 1.f / oldw * 1.f;
+        float sy = h * 1.f / oldh * 1.f;
+        float scale = sx;
+        PointF next;
+        switch (mResizeMode) {
+            case ResizeMode.COVER:
+                next = new PointF(Math.max(oldw * scale, w), Math.max(oldh * scale, h));
+                scale = Math.min(next.x / oldw, next.y / oldh);
+                scaler = new PointF(scale, scale);
+                break;
+            case ResizeMode.STRETCH:
+                scaler = new PointF(sx, sy);
+                break;
+            default:
+            case ResizeMode.NONE:
+                return;
+        }
+        ArrayList<PointF> points = new ArrayList<>(mPathStateStack.peek().points);
+        for (PointF point: points) {
+            point.x *= scaler.x;
+            point.y *= scaler.y;
+        }
+        setPoints(points);
+    }
+
     @Override
     public String toString() {
         HashMap<String, Object> props = new HashMap<>();
@@ -220,4 +266,5 @@ public class RPath extends View {
         props.put("points", currentState.points);
         return String.format(Locale.ENGLISH, "RPath(%s)", props);
     }
+
 }

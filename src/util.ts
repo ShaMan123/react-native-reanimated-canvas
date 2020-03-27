@@ -22,7 +22,9 @@ export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R =
 }
 
 export function processColorProp(value: any) {
-  return value instanceof Animated.Node ? value : processColor(value);
+  return value instanceof Animated.Node || typeof value === 'number' ?
+    value :
+    processColor(value);
 }
 
 export function useStrokeColor(value: any) {
@@ -44,23 +46,25 @@ export function useEventProp<TArgs extends any[], T extends (...args: TArgs) => 
 
 export const basicRect = { left: 0, top: 0, right: 0, bottom: 0 };
 
-export function useHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
-  return useMemo(() => {
-    let rect;
-    if (typeof hitSlop === 'number') {
-      rect = _.mapValues(basicRect, () => hitSlop)
-    } else {
-      rect = _.pick(hitSlop, _.keys(basicRect));
-      if (hitSlop) {
-        if (hitSlop.vertical) {
-          rect.top = rect.bottom = hitSlop.vertical;
-        }
-        if (hitSlop.horizontal) {
-          rect.left = rect.right = hitSlop.horizontal;
-        }
+export function parseHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
+  let rect: typeof basicRect;
+  if (typeof hitSlop === 'number') {
+    rect = _.mapValues(basicRect, () => hitSlop)
+  } else {
+    rect = _.pick(hitSlop, _.keys(basicRect));
+    if (hitSlop) {
+      if (hitSlop.vertical) {
+        rect.top = rect.bottom = hitSlop.vertical;
+      }
+      if (hitSlop.horizontal) {
+        rect.left = rect.right = hitSlop.horizontal;
       }
     }
+  }
 
-    return rect;
-  }, [hitSlop]);
+  return rect;
+}
+
+export function useHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
+  return useMemo(() => parseHitSlop(hitSlop), [hitSlop]);
 }

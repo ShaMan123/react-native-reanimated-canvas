@@ -90,7 +90,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       node
     ]
   );
-
   return (
     <RNativeCanvas
       {...props}
@@ -99,6 +98,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
       strokeWidth={strokeWidth.value()}
       strokeColor={strokeColor.value()}
       hitSlop={hitSlop}
+      resizeMode={props.resizeMode}
     >
       <View
         style={StyleSheet.absoluteFill}
@@ -114,6 +114,7 @@ ForwardedRCanvasBase.defaultProps = {
   strokeColor: 'black',
   strokeWidth: 5,
   hitSlop: 20,
+  resizeMode: 'cover',
   renderToHardwareTextureAndroid: false
 } as RCanvasProperties;
 ForwardedRCanvasBase.displayName = 'Forwarded(RCanvasBase)'

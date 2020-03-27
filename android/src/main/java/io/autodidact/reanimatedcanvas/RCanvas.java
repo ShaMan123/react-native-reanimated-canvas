@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Stack;
 
+import io.autodidact.reanimatedcanvas.RPath.ResizeMode;
+
 import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 
 public class RCanvas extends ReactViewGroup {
@@ -23,6 +25,7 @@ public class RCanvas extends ReactViewGroup {
     protected ArrayList<RPath> mPaths = new ArrayList<>();
     protected ArrayList<String> mInteractionContainer = new ArrayList<>();
     protected RectF mHitSlop = new RectF();
+    private @ResizeMode String mResizeMode = ResizeMode.NONE;
     private RPath mNextPath;
     protected Stack<RCanvasState> mStateStack;
     private final IntersectionHelper mIntersectionHelper;
@@ -83,6 +86,13 @@ public class RCanvas extends ReactViewGroup {
         }
     }
 
+    public void setResizeMode(@ResizeMode String resizeMode) {
+        mResizeMode = resizeMode;
+        for (RPath path: paths()) {
+            path.setResizeMode(resizeMode);
+        }
+    }
+
     public ArrayList<RPath> paths() {
         return new ArrayList<>(mPaths);
     }
@@ -115,19 +125,21 @@ public class RCanvas extends ReactViewGroup {
     }
 
     public String init() {
-        RCanvasState currentState = mStateStack.peek();
         String pathId = Utility.generateId();
-        init(pathId, currentState.strokeColor, currentState.strokeWidth);
+        init(pathId, null, null, null);
         return pathId;
     }
 
-    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
+    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
+                     @Nullable @ResizeMode String resizeMode) {
         RCanvasState currentState = mStateStack.peek();
         strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
         strokeWidth = strokeWidth == null ? currentState.strokeWidth : strokeWidth;
+        resizeMode = resizeMode == null ? mResizeMode : resizeMode;
         RPath path = init(pathId);
         path.setStrokeColor(strokeColor);
         path.setStrokeWidth(strokeWidth);
+        path.setResizeMode(resizeMode);
     }
 
     protected RPath init(String pathId) {
@@ -135,6 +147,7 @@ public class RCanvas extends ReactViewGroup {
             RPath path = mNextPath;
             path.setPathId(pathId);
             path.setHitSlop(mHitSlop);
+            path.setResizeMode(mResizeMode);
             mPaths.add(path);
             allocNext();
             return path;
@@ -180,5 +193,13 @@ public class RCanvas extends ReactViewGroup {
 
     public void tearDown(){
 
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        for (RPath path: paths()) {
+            path.onSizeChanged(w, h, oldw, oldh);
+        }
     }
 }

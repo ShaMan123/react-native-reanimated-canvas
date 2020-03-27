@@ -12,6 +12,8 @@ import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
+import io.autodidact.reanimatedcanvas.RPath.ResizeMode;
+
 public class RPathManager extends SimpleViewManager<RPathHandler> {
     final static String NAME = "ReanimatedPathManager";
 
@@ -20,6 +22,7 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
         String POINTS = "points";
         String ANIMATE = "animate";
         String ANIMATION_CONTROLLER = "index";
+        String RESIZE_MODE = "resizeMode";
     }
 
     public RPathManager() {
@@ -76,6 +79,11 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
     @ReactProp(name = RCanvasManager.Props.HIT_SLOP)
     public void setHitSlop(RPathHandler view, @Nullable ReadableMap hitSlop) {
         view.setHitSlop(Utility.parseHitSlop(hitSlop), true);
+    }
+
+    @ReactProp(name = Props.RESIZE_MODE)
+    public void setResizeMode(RPathHandler view, @Nullable @ResizeMode String resizeMode) {
+        view.setResizeMode(resizeMode != null ? resizeMode : RPath.ResizeMode.NONE);
     }
 
     @Override

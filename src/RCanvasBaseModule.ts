@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { MutableRefObject, useMemo } from 'react';
 import { findNodeHandle, NativeModules, Platform, processColor, UIManager } from 'react-native';
-import { Commands, Point, RCanvasRef, RPathData } from './types';
-import { processColorProp } from './util';
+import { Commands, Point, RCanvasRef, RPathData, RPathAttributes } from './types';
+import { processColorProp, parseHitSlop } from './util';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
 export const PATH_VIEW_MANAGER = 'ReanimatedPathManager';
@@ -37,10 +37,14 @@ export function update(tag: number, paths: { [id: string]: RPathData | null }) {
   dispatchCommand(tag, Commands.update, [paths]);
 }
 
-export function setPathAttributes(tag: number, pathId: string, attr: { width: number, color: string | number }) {
-  if (typeof attr.color === 'string') {
-    attr.color = processColor(attr.color);
+export function setPathAttributes(tag: number, pathId: string, attr: RPathAttributes) {
+  if (typeof attr.strokeColor === 'string') {
+    attr.strokeColor = processColor(attr.strokeColor);
   }
+  if (attr.hitSlop !== null) {
+    attr.hitSlop = parseHitSlop(attr.hitSlop);
+  }
+
   dispatchCommand(tag, Commands.setAttributes, [pathId, attr]);
 }
 

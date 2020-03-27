@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import io.autodidact.reanimatedcanvas.RPath.ResizeMode;
+
 public class RCanvasHandler extends RCanvas {
 
     private final ArrayList<Integer> reactTagRegistry = new ArrayList<>();
@@ -36,8 +38,9 @@ public class RCanvasHandler extends RCanvas {
     }
 
     @Override
-    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth) {
-        super.init(pathId, strokeColor, strokeWidth);
+    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
+                     @Nullable @ResizeMode String resizeMode) {
+        super.init(pathId, strokeColor, strokeWidth, resizeMode);
         ArrayList<RPath> added = new ArrayList<>();
         added.add(getPath(pathId));
         mEventDispatcher.emitChange(added, null, null);
@@ -101,6 +104,9 @@ public class RCanvasHandler extends RCanvas {
         }
         if (attributes.hasKey("strokeWidth")) {
             path.setStrokeWidth(PixelUtil.toPixelFromDIP(attributes.getInt("strokeWidth")));
+        }
+        if (attributes.hasKey("resizeMode")) {
+            path.setResizeMode(attributes.getString("resizeMode"));
         }
         if (attributes.hasKey("points")) {
             path.setPoints(Utility.processPointArray(attributes.getArray("points")));

@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
+import io.autodidact.reanimatedcanvas.RPath.ResizeMode;
+
 public class RCanvasManager extends ReactViewManager {
     static final String NAME = "ReanimatedCanvasManager";
     static final String TAG = "RCanvas";
@@ -97,6 +99,10 @@ public class RCanvasManager extends ReactViewManager {
         ((RCanvasHandler) view).setHitSlop(Utility.parseHitSlop(hitSlop));
     }
 
+    @ReactProp(name = RPathManager.Props.RESIZE_MODE)
+    public void setResizeMode(RCanvasHandler view, @Nullable @ResizeMode String resizeMode) {
+        view.setResizeMode(resizeMode != null ? resizeMode : RPath.ResizeMode.NONE);
+    }
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
@@ -165,7 +171,8 @@ public class RCanvasManager extends ReactViewManager {
                 String id = args.getString(0);
                 Integer strokeColor = !args.isNull(1) ? args.getInt(1) : null;
                 Float strokeWidth = !args.isNull(2) ? PixelUtil.toPixelFromDIP(args.getDouble(2)) : null;
-                view.init(id, strokeColor, strokeWidth);
+                @ResizeMode String resizeMode = args.size() == 4 && !args.isNull(3) ? args.getString(3) : null;
+                view.init(id, strokeColor, strokeWidth, resizeMode);
                 return;
             }
             case Commands.DRAW_POINT: {

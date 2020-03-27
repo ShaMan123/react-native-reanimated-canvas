@@ -24,14 +24,25 @@ export type Point = {
   y: number
 }
 
+export enum ResizeMode {
+  cover = 'cover',
+  stretch = 'stretch',
+  none = 'none',
+}
+
 export interface RPathDataBase {
-  strokeColor: string | number
-  strokeWidth: number
+  strokeColor: string | number,
+  strokeWidth: number,
   points?: Point[]
 }
 
 export interface RPathData extends RPathDataBase {
   id: string
+}
+
+export interface RPathAttributes extends RPathDataBase {
+  resizeMode?: ResizeMode,
+  hitSlop?: ExtendedInsets | number
 }
 
 export type IntersectionResponse = string[];
@@ -78,7 +89,8 @@ interface ExtendedInsets extends Insets {
 
 interface RCanvasCommonProps {
   strokeColor?: string | Animated.Adaptable<number>
-  strokeWidth?: Animated.Adaptable<number>
+  strokeWidth?: Animated.Adaptable<number>,
+  resizeMode?: ResizeMode,
 
   /**
    * pass a rect or a number to apply all insets equally
