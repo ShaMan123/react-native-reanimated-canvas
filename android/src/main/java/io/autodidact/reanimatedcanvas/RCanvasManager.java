@@ -83,7 +83,7 @@ public class RCanvasManager extends ReactViewManager {
         view.setLayerType(useHWTexture ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_SOFTWARE, null);
     }
 
-    @ReactProp(name = Props.STROKE_COLOR)
+    @ReactProp(name = Props.STROKE_COLOR, customType = "Color")
     public void setStrokeColor(RCanvasHandler viewContainer, int color) {
         viewContainer.setStrokeColor(color);
     }
