@@ -2,7 +2,6 @@ package io.autodidact.reanimatedcanvas;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -159,11 +158,15 @@ public class RCanvas extends ReactViewGroup {
 
     public void drawPoint(String pathId, PointF point) {
         UiThreadUtil.assertOnUiThread();
+        ensureInteraction(pathId);
+        getPath(pathId).addPoint(point);
+        postInvalidateOnAnimation();
+    }
+
+    public void ensureInteraction(String pathId) {
         if (mInteractionContainer.indexOf(pathId) == -1) {
             mInteractionContainer.add(pathId);
         }
-        getPath(pathId).addPoint(point);
-        postInvalidateOnAnimation();
     }
 
     public void endInteraction(String pathId) {
