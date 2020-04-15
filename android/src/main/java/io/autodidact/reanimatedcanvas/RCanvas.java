@@ -122,6 +122,7 @@ public class RCanvas extends ReactViewGroup {
     private void allocNext() {
         mNextPath = new RPath((ReactContext) getContext());
         addView(mNextPath, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        mNextPath.onSizeChanged(getWidth(), getHeight(), 0, 0);
     }
 
     public String init() {
@@ -201,5 +202,6 @@ public class RCanvas extends ReactViewGroup {
         for (RPath path: paths()) {
             path.onSizeChanged(w, h, oldw, oldh);
         }
+        mNextPath.onSizeChanged(w, h, oldw, oldh);
     }
 }
