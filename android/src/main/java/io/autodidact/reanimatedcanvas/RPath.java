@@ -45,7 +45,6 @@ public class RPath extends View {
         mPathStateStack = new Stack<>();
         mPathStateStack.push(new RPathState());
         mHitSlop = new RectF();
-        //setHardwareAcceleration(false);
     }
 
     public String getPathId() {
@@ -165,9 +164,7 @@ public class RPath extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
         canvas.drawPath(mPath, getPaint());
-
     }
 
     protected Paint getPaint() {
