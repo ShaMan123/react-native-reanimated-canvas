@@ -113,7 +113,7 @@ ForwardedRCanvasBase.defaultProps = {
   strokeWidth: 5,
   hitSlop: 20,
   resizeMode: 'cover',
-  renderToHardwareTextureAndroid: false
+  renderToHardwareTextureAndroid: true
 } as RCanvasProperties;
 ForwardedRCanvasBase.displayName = 'Forwarded(RCanvasBase)'
 
