@@ -19,6 +19,7 @@ const blacklisters = [
   path.resolve(__dirname, '..', 'ios'),
   path.resolve(__dirname, 'android'),
   path.resolve(__dirname, 'ios'),
+  path.resolve(resolveReanimatedPath(), 'docs'),
 ];  //path.resolve(__dirname, '../node_modules'),
 
 const REANIMATED = 'react-native-reanimated';
