@@ -46,11 +46,6 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
         view.setPathId(id);
     }
 
-    @Override
-    public void setRenderToHardwareTexture(@NonNull RPathHandler view, boolean useHWTexture) {
-        view.setLayerType(useHWTexture ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_SOFTWARE, null);
-    }
-
     @ReactProp(name = RCanvasManager.Props.STROKE_COLOR, customType = "Color")
     public void setStrokeColor(RPathHandler view, int color) {
         view.setStrokeColor(color);
