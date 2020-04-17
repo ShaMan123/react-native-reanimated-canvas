@@ -76,10 +76,10 @@ public final class Utility {
             return new RectF();
         } else {
             return new RectF(
-                    hitSlop.hasKey("left") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("left")) : 0,
-                    hitSlop.hasKey("top") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("top")) : 0,
-                    hitSlop.hasKey("right") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("right")) : 0,
-                    hitSlop.hasKey("bottom") ? PixelUtil.toPixelFromDIP(hitSlop.getDouble("bottom")) : 0
+                    hitSlop.hasKey("left") ? Math.max(0, PixelUtil.toPixelFromDIP(hitSlop.getDouble("left"))) : 0,
+                    hitSlop.hasKey("top") ? Math.max(0, PixelUtil.toPixelFromDIP(hitSlop.getDouble("top"))) : 0,
+                    hitSlop.hasKey("right") ? Math.max(0, PixelUtil.toPixelFromDIP(hitSlop.getDouble("right"))) : 0,
+                    hitSlop.hasKey("bottom") ? Math.max(0, PixelUtil.toPixelFromDIP(hitSlop.getDouble("bottom"))) : 0
             );
         }
     }

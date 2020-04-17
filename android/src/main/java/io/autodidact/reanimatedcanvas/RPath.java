@@ -118,6 +118,16 @@ public class RPath extends View {
         return isDirty;
     }
 
+    RectF getHitSlop() {
+        float radius = getStrokeWidth() / 2;
+        return new RectF(
+            mHitSlop.left + radius,
+            mHitSlop.top + radius,
+            mHitSlop.right + radius,
+            mHitSlop.bottom + radius
+        );
+    }
+
     void setHitSlop(RectF hitSlop){
         setHitSlop(hitSlop, false);
     }
@@ -190,7 +200,7 @@ public class RPath extends View {
         }
         return IntersectionHelper
                 .IntersectionOperator
-                .intersectsPath(point, mHitSlop, mPath);
+                .intersectsPath(point, getHitSlop(), mPath);
     }
 
     public WritableMap toWritableMap(Boolean includePoints){
