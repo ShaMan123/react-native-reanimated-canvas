@@ -22,8 +22,7 @@ function RPathBase(props: RPathProperties, ref: Ref<any>) {
 
 const RPath = React.forwardRef(RPathBase);
 RPath.defaultProps = {
-  renderToHardwareTextureAndroid: true,
-  hitSlop: 20
+  renderToHardwareTextureAndroid: true
 }
 RPath.displayName = 'RPath';
 

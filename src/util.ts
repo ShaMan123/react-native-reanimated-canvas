@@ -66,5 +66,5 @@ export function parseHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
 }
 
 export function useHitSlop(hitSlop: RCanvasProperties['hitSlop']) {
-  return useMemo(() => parseHitSlop(hitSlop), [hitSlop]);
+  return useMemo(() => hitSlop ? parseHitSlop(hitSlop) : undefined, [hitSlop]);
 }
