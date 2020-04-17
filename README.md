@@ -16,6 +16,8 @@ Check out our dedicated documentation page for info about this library, API refe
 
 [https://shaman123.github.io/react-native-reanimated-canvas/](https://shaman123.github.io/react-native-reanimated-canvas/)
 
+![example](./docs/assets/canvas.gif)
+
 ## Examples
 
 The source code for the example (showcase) app is under the [`CanvasExample/`](./CanvasExample) directory.
