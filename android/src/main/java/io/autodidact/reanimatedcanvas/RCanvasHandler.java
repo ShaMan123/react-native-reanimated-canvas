@@ -4,6 +4,7 @@ import android.util.SparseIntArray;
 
 import androidx.annotation.Nullable;
 
+import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
@@ -127,6 +128,15 @@ public class RCanvasHandler extends RCanvas {
     }
 
     protected void finalizePathAddition(RPath path) {
+        if (getPathIndex(path.getPathId()) != -1) {
+            throw new JSApplicationIllegalArgumentException(
+                String.format(
+                    "%s failed to add %s,\nid `%s` already exists",
+                    getClass().getSimpleName(),
+                    path,
+                    path.getPathId())
+            );
+        }
         mPaths.add(path);
         path.setHitSlop(mHitSlop);
         added.add(path);

@@ -28,17 +28,7 @@ public class RPathHandler extends RPath {
     public void setPathId(String id) {
         RCanvasHandler handler = getCanvasHandler();
         boolean changed = mPathId != null && !mPathId.equals(id);
-        if (handler != null && changed) {
-            if (handler.getPathIndex(id) != -1) {
-                throw new JSApplicationIllegalArgumentException(
-                    String.format(
-                        "id %s already exists, %s",
-                        id,
-                        getClass().getSimpleName())
-                );
-            }
-            handler.finalizePathRemoval(this);
-        }
+        if (handler != null && changed) handler.finalizePathRemoval(this);
         super.setPathId(id);
         if (handler != null && changed) handler.finalizePathAddition(this);
     }
