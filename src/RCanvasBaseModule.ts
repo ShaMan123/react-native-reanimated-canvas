@@ -49,9 +49,9 @@ export function setPathAttributes(tag: number, pathId: string, attr: RPathAttrib
 }
 
 export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R extends T extends number ? boolean : Array<number>>(
+export function isPointOnPath(handle: number, x: number, y: number, pathId: string): Promise<boolean>
+export function isPointOnPath(handle: number, x: number, y: number, pathId: string, callback: (error: any, result?: boolean) => void): void
+export function isPointOnPath<T, R extends T extends string ? boolean : Array<string>>(
   handle: number,
   x: number,
   y: number,
@@ -61,7 +61,7 @@ export function isPointOnPath<T, R extends T extends number ? boolean : Array<nu
 ) {
   const nativeX = x;
   const nativeY = y;
-  const normalizedPathId = typeof pathId === 'number' ? pathId : null;
+  const normalizedPathId = typeof pathId === 'string' ? pathId : null;
   const nativeMethod = ((onSuccess: (result: R) => void, onFailure: (error: any) => void) => {
     return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, onSuccess, onFailure);
   });
