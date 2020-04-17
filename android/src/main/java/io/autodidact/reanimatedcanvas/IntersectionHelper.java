@@ -92,7 +92,7 @@ public class IntersectionHelper {
             finalHitRect.roundOut(roundedHitRect);
 
             Path mTouchPath = new Path();
-            mTouchPath.addRect(finalHitRect, Path.Direction.CW);
+            mTouchPath.addOval(finalHitRect, Path.Direction.CW);
 
             mTouchPath.op(path, Path.Op.INTERSECT);
             return !mTouchPath.isEmpty();
@@ -150,7 +150,7 @@ public class IntersectionHelper {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            canvas.drawRect(mRect, mPaint);
+            canvas.drawOval(mRect, mPaint);
             mPaint.setStrokeWidth(1);
             mPaint.setTextSize(20);
             mPaint.setColor(Color.BLACK);
