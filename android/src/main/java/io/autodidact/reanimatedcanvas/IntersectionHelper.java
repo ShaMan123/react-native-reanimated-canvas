@@ -66,7 +66,6 @@ public class IntersectionHelper {
         String id;
 
         if (BuildConfig.DEBUG) {
-            DebugRect.draw(mView, point);
             for (int i = 0; i < paths.size(); i++) {
                 mPath = paths.get(i);
                 DebugRect.draw(mPath, point);
@@ -134,7 +133,7 @@ public class IntersectionHelper {
             super((ReactContext) view.getContext());
             mRect = Utility.applyHitSlop(point, view.mHitSlop);
             mString = "RCanvas";
-            setStrokeColor(Color.BLUE);
+            setStrokeColor(Color.MAGENTA);
             setStrokeWidth(10);
             mPaint = getPaint();
         }
@@ -143,7 +142,7 @@ public class IntersectionHelper {
             super((ReactContext) view.getContext());
             mRect = Utility.applyHitSlop(point, view.getHitSlop());
             mString = view.getPathId();
-            setStrokeColor(Color.MAGENTA);
+            setStrokeColor(Color.BLUE);
             setStrokeWidth(10);
             mPaint = getPaint();
         }
