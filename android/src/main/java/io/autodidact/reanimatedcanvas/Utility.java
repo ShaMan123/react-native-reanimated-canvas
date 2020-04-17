@@ -86,8 +86,8 @@ public final class Utility {
 
     static RectF applyHitSlop(PointF point, RectF hitSlop) {
         return new RectF(
-                Math.max(point.x - hitSlop.left, 0),
-                Math.max(point.y - hitSlop.top, 0),
+                point.x - hitSlop.left,
+                point.y - hitSlop.top,
                 point.x + hitSlop.right,
                 point.y + hitSlop.bottom
         );
