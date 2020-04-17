@@ -111,22 +111,7 @@ interface RCanvasCommonProps {
 }
 
 export interface RPathProps extends RCanvasCommonProps {
-  /**
-   * **********************
-   * Experimental
-   * **********************
-   * Use with `animate = true`
-   * Pass an animated node to animate path drawing
-   */
-  index?: Animated.Node<number>,
-  /**
-   * **********************
-   * Experimental
-   * **********************
-   * Use with `index`
-   */
-  animate?: boolean,
-
+  id?: string
   points: Point[]
 }
 

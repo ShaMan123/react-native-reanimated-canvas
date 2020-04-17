@@ -1,7 +1,5 @@
 package io.autodidact.reanimatedcanvas;
 
-import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -58,17 +56,7 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
 
     @ReactProp(name = Props.POINTS)
     public void setPoints(RPathHandler view, ReadableArray points) {
-        view.preCommitPoints(Utility.processPointArray(points));
-    }
-
-    @ReactProp(name = Props.ANIMATE)
-    public void setShouldAnimatePath(RPathHandler view, Boolean animate) {
-        view.shouldAnimatePath(animate);
-    }
-
-    @ReactProp(name = Props.ANIMATION_CONTROLLER)
-    public void setPathAnimationController(RPathHandler view, int index) {
-        view.commitPoint(index);
+        view.setPoints(Utility.processPointArray(points));
     }
 
     @ReactProp(name = RCanvasManager.Props.HIT_SLOP)
@@ -84,9 +72,6 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
     @Override
     protected void onAfterUpdateTransaction(@NonNull RPathHandler view) {
         super.onAfterUpdateTransaction(view);
-        view.onAfterUpdateTransaction();
-        if (view.getParent() != null && view.getParent() instanceof RCanvasHandler) {
-            ((RCanvasHandler) view.getParent()).finalizeUpdate(view);
-        }
+        view.finalizeUpdate();
     }
 }

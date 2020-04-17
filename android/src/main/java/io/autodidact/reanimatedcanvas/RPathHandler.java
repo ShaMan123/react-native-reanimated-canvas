@@ -1,89 +1,60 @@
 package io.autodidact.reanimatedcanvas;
 
 import android.graphics.PointF;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.bridge.UiThreadUtil;
 
 import java.util.ArrayList;
 
 public class RPathHandler extends RPath {
 
-    private boolean mReceivedPoints = false;
-    private boolean mShouldAnimatePath = false;
-    private boolean mDidUpdate = false;
+    private boolean mDidChange = false;
 
-    RPathHandler(ReactContext context) {
+    public RPathHandler(ReactContext context) {
         super(context);
+    }
+
+    private RCanvasHandler getCanvasHandler() {
+        if (getParent() != null && getParent() instanceof RCanvasHandler) {
+            return ((RCanvasHandler) getParent());
+        }
+        return null;
+    }
+
+    @Override
+    public void setPathId(String id) {
+        RCanvasHandler handler = getCanvasHandler();
+        boolean changed = mPathId != null && !mPathId.equals(id);
+        if (handler != null && changed) handler.finalizePathRemoval(this);
+        super.setPathId(id);
+        if (handler != null && changed) handler.finalizePathAddition(this);
     }
 
     @Override
     public void setStrokeColor(int color) {
         super.setStrokeColor(color);
-        mDidUpdate = true;
+        mDidChange = true;
     }
 
     @Override
     public void setStrokeWidth(float width) {
         super.setStrokeWidth(width);
-        mDidUpdate = true;
+        mDidChange = true;
     }
 
-    public void preCommitPoints(@Nullable ArrayList<PointF> points) {
-        mTempPoints = points;
-        if (points != null) {
-            mReceivedPoints = true;
-            mDidUpdate = true;
-        }
+    @Override
+    public void setPoints(@Nullable ArrayList<PointF> points) {
+        super.setPoints(points);
+        mDidChange = true;
     }
 
-    private void commitPoints() {
-        if (mTempPoints != null) {
-            setPoints(mTempPoints);
-            mTempPoints = null;
+    void finalizeUpdate() {
+        RCanvasHandler handler = getCanvasHandler();
+        if (mDidChange && handler != null) {
+            handler.finalizeUpdate(this);
         }
-    }
-
-    public void shouldAnimatePath(Boolean animate) {
-        mShouldAnimatePath = animate;
-    }
-
-    public void commitPoint(int index) {
-        if (mTempPoints != null) {
-            UiThreadUtil.assertOnUiThread();
-            addPoint(mTempPoints.get(index));
-            if (getParent() != null) {
-                ((ViewGroup) getParent()).postInvalidateOnAnimation();
-            }
-            if (index == mTempPoints.size() - 1) {
-                mTempPoints = null;
-                mShouldAnimatePath = false;
-            }
-        }
-    }
-
-    public void onAfterUpdateTransaction() {
-        if (mPathId == null) {
-            mPathId = Utility.generateId();
-        }
-        
-        if (mReceivedPoints) {
-            mReceivedPoints = false;
-            if (!mShouldAnimatePath) {
-                commitPoints();
-            }
-        }
-        
-        if (mDidUpdate) {
-            mDidUpdate = false;
-            ViewParent parent = getParent();
-            if (parent instanceof RCanvasHandler) {
-                ((RCanvasHandler) parent).finalizeUpdate(this);
-            }
-        }
+        mDidChange = false;
     }
 }

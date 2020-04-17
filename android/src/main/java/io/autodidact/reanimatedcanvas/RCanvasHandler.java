@@ -131,6 +131,7 @@ public class RCanvasHandler extends RCanvas {
         path.setHitSlop(mHitSlop);
         added.add(path);
         reactTagRegistry.add(path.getId());
+        finalizeUpdate();
     }
 
     protected void finalizePathRemoval(RPath path) {
@@ -138,6 +139,7 @@ public class RCanvasHandler extends RCanvas {
         removed.add(path);
         Number tag = path.getId();
         reactTagRegistry.remove(tag);
+        finalizeUpdate();
     }
 
     protected void finalizeUpdate() {
