@@ -3,6 +3,7 @@ import { requireNativeComponent, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { PATH_VIEW_MANAGER } from './RCanvasBaseModule';
 import { RPathProperties } from './types';
+import { generatePathId } from './util';
 
 const RNativePath = Animated.createAnimatedComponent(requireNativeComponent(PATH_VIEW_MANAGER));
 
@@ -10,6 +11,7 @@ function RPathBase(props: RPathProperties, ref: Ref<any>) {
   return (
     <RNativePath
       {...props}
+      id={props.id || generatePathId()}
       style={[StyleSheet.absoluteFill, props.style]}
       ref={ref}
     />
