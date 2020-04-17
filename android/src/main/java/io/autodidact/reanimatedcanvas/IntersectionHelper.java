@@ -53,6 +53,7 @@ public class IntersectionHelper {
         }
         else {
             RPath mPath = getPaths().get(getIndex(pathId));
+            DebugRect.draw(mPath, point);
             return mPath.isPointOnPath(point);
         }
     }
@@ -66,6 +67,10 @@ public class IntersectionHelper {
 
         if (BuildConfig.DEBUG) {
             DebugRect.draw(mView, point);
+            for (int i = 0; i < paths.size(); i++) {
+                mPath = paths.get(i);
+                DebugRect.draw(mPath, point);
+            }
         }
 
         for (int i = 0; i < paths.size(); i++) {
@@ -123,10 +128,22 @@ public class IntersectionHelper {
     static class DebugRect extends RPath {
         private RectF mRect;
         private Paint mPaint;
-        DebugRect(RCanvas view,PointF point) {
+        private String mString;
+
+        DebugRect(RCanvas view, PointF point) {
             super((ReactContext) view.getContext());
             mRect = Utility.applyHitSlop(point, view.mHitSlop);
+            mString = "RCanvas";
             setStrokeColor(Color.BLUE);
+            setStrokeWidth(10);
+            mPaint = getPaint();
+        }
+
+        DebugRect(RPath view, PointF point) {
+            super((ReactContext) view.getContext());
+            mRect = Utility.applyHitSlop(point, view.getHitSlop());
+            mString = view.getPathId();
+            setStrokeColor(Color.MAGENTA);
             setStrokeWidth(10);
             mPaint = getPaint();
         }
@@ -135,21 +152,34 @@ public class IntersectionHelper {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             canvas.drawRect(mRect, mPaint);
+            mPaint.setStrokeWidth(1);
+            mPaint.setTextSize(20);
+            mPaint.setColor(Color.BLACK);
+            canvas.drawText(mString, mRect.left, mRect.top, mPaint);
         }
 
         static void draw(final RCanvas view, final PointF point) {
-            final DebugRect debugRect = new DebugRect(view, point);
+            draw(view, new DebugRect(view, point));
+        }
+
+        static void draw(final RPath view, final PointF point) {
+            if (view.getParent() instanceof RCanvas) {
+                draw((RCanvas) view.getParent(), new DebugRect(view, point));
+            }
+        }
+
+        private static void draw(final RCanvas view, final DebugRect debugRect) {
             view.addView(debugRect);
             view.postInvalidateOnAnimation();
             view.postDelayed(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            view.removeView(debugRect);
-                            view.postInvalidateOnAnimation();
-                        }
-                    },
-                    1500
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        view.removeView(debugRect);
+                        view.postInvalidateOnAnimation();
+                    }
+                },
+                1500
             );
         }
     }
