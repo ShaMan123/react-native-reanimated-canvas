@@ -8,8 +8,6 @@ import { alloc, drawPoint, endInteraction, pathIdMem, stringId } from './RCanvas
 import { RCanvasProperties, RCanvasRef } from './types';
 import { useEventProp } from './util';
 
-const { View } = Animated;
-
 function useValue(value: number | (() => number)) {
   return useMemo(() => new Value(typeof value === 'function' ? value() : value), []);
 }
@@ -98,7 +96,6 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGes
       onHandlerStateChange={onHandlerStateChange}
       maxPointers={1}
       shouldCancelWhenOutside={false}
-      renderToHardwareTextureAndroid={false}
     >
       <RCanvasBase
         {...props}
@@ -108,12 +105,6 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGes
     </PanGestureHandler>
   );
 }
-
-const styles = {
-  default: {
-    flex: 1
-  }
-};
 
 const ForwardedRCanvas = forwardRef(RCanvas);
 ForwardedRCanvas.displayName = 'Forwarded(RCanvas)';
