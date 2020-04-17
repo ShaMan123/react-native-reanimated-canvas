@@ -8,6 +8,8 @@ import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
 const { View, cond, eq, set, block, Value, useCode, Clock, round, min, event, call } = Animated;
 
+const num = 200;
+
 export default function Basic() {
   const ref = useRef<RCanvasRef>();
   const tap = useRef();
@@ -30,7 +32,7 @@ export default function Basic() {
   }, [show])
 
   const animator = useMemo(() => new Value(0), []);
-  const points = useMemo(() => new Array(200).fill(0).map((v, i) => ({ x: i * Math.sin(i / 200), y: i * Math.sin(i / 200) })), []);
+  const points = useMemo(() => new Array(num).fill(0).map((v, i) => ({ x: i * Math.sin(i / num), y: i * Math.cos(i / num) })), []);
   const tag = useMemo(() => new Value(0), []);
   const path = useMemo(() => new Value(0), []);
 
@@ -114,9 +116,9 @@ export default function Basic() {
         //onHandlerStateChange={onTap}
         onHandlerStateChange={async e => {
           const { x, y } = e.nativeEvent;
-          console.log(ref.current?.getPaths())
           const res = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y);
-          console.log(res)
+          const res1 = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y, "pip");
+          console.log(res, res1)
         }}
       //enabled={false}
       >
@@ -143,20 +145,21 @@ export default function Basic() {
                   }}
                   defaultStrokeWidth={20}
                   hitSlop={20}
-                  onChange={e => console.log(e.nativeEvent)}
+                //onChange={e => console.log(e.nativeEvent)}
                 >
                   <RPath
                     points={points}
                     strokeWidth={20}
                     strokeColor='pink'
                     id="pip"
-                    hitSlop={80}
+                    hitSlop={50}
                   />
                   <RPath
                     points={show ? points.slice(50, 150) : points.slice(20, 100)}
                     strokeWidth={20}
                     strokeColor='blue'
                     id="pip1"
+                    hitSlop={0}
                   />
                   {
                     show &&
@@ -165,6 +168,7 @@ export default function Basic() {
                       strokeWidth={20}
                       strokeColor='gold'
                       id="pip2"
+                      hitSlop={0}
                     />
                   }
 
