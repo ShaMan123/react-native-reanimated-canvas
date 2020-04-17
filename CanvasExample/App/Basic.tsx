@@ -159,7 +159,7 @@ export default function Basic() {
                     strokeWidth={20}
                     strokeColor='blue'
                     id="pip1"
-                    hitSlop={0}
+                    hitSlop={{ horizontal: 20 }}
                   />
                   {
                     show &&
