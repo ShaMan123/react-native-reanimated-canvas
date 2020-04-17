@@ -3,17 +3,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, findNodeHandle } from 'react-native';
 import { BorderlessButton, LongPressGestureHandler, RectButton, State, TapGestureHandler, TapGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import { RCanvasModule, RCanvasBaseModule, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
-import { runDelayed, styles } from './common';
+import { RCanvasModule, RCanvasBaseModule, RCanvasRef, RPath } from 'react-native-reanimated-canvas';
+import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
-const { View, cond, eq, add, or, not, set, sub, greaterOrEq, greaterThan, block, and, clockRunning, startClock, stopClock, debug, spring, Value, useCode, Clock, round, onChange, timing, min, event, neq, call, invoke, callback, map, DirectManipulationHelper, intercept } = Animated;
+const { View, cond, eq, set, block, Value, useCode, Clock, round, min, event, call } = Animated;
 
 export default function Basic() {
   const ref = useRef<RCanvasRef>();
   const tap = useRef();
   const button = useRef();
   const longPress = useRef();
-  const clock = useMemo(() => new Clock(), []);
 
   const [show, setShow] = useState(true);
 
@@ -24,10 +23,6 @@ export default function Basic() {
       setShow(!show);
 
 
-      const k = setTimeout(() => {
-        console.log(saveCount)
-        //ref.current.restore(saveCount);
-      }, 4000);
 
     }, 2000);
 
@@ -35,13 +30,10 @@ export default function Basic() {
   }, [show])
 
   const animator = useMemo(() => new Value(0), []);
-  const points = useMemo(() => new Array(200).fill(0).map((v, i) => ({ x: i, y: i })), []);
-  const index = useMemo(() => min(round(animator), points.length - 1), [animator, points]);
+  const points = useMemo(() => new Array(200).fill(0).map((v, i) => ({ x: i * Math.sin(i / 200), y: i * Math.sin(i / 200) })), []);
   const tag = useMemo(() => new Value(0), []);
   const path = useMemo(() => new Value(0), []);
-  const error = useMemo(() => new Value(), []);
 
-  const runDraw = useMemo(() => new Value(0), []);
 
   const x = useMemo(() => new Value(0), []);
   const y = useMemo(() => new Value(0), []);
@@ -49,7 +41,7 @@ export default function Basic() {
   const strokeWidth = useMemo(() => new Value(0), []);
   const bip = useMemo(() => new Value(0), []);
 
-  const [pip, setPip] = useState(0);
+  const [, setPip] = useState(0);
 
   const onTap = useMemo(() =>
     event<TapGestureHandlerStateChangeEvent>([{
@@ -66,24 +58,6 @@ export default function Basic() {
     }]),
     [x, y]
   );
-  /*
-    useCode(() =>
-      runDelayed(set(runDraw, 1)),
-      [runDraw]
-    );
-  
-    useCode(() =>
-      block([
-        cond(
-          and(neq(tag, 0), runDraw),
-          set(animator, runSpring(clock, animator, points.length - 1))
-        )
-      ]),
-      [clock, animator, points, runDraw]
-    );
-    */
-
-  const width = useMemo(() => new Value(0), []);
   useCode(() =>
     block([
       RCanvasModule.isPointOnPath(tag, x, y, path),
@@ -137,9 +111,10 @@ export default function Basic() {
       <TapGestureHandler
         ref={tap}
         waitFor={[button, longPress]}
-        onHandlerStateChange={onTap}
+        //onHandlerStateChange={onTap}
         onHandlerStateChange={async e => {
           const { x, y } = e.nativeEvent;
+          console.log(ref.current?.getPaths())
           const res = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y);
           console.log(res)
         }}
@@ -168,16 +143,20 @@ export default function Basic() {
                   }}
                   defaultStrokeWidth={20}
                   hitSlop={20}
+                  onChange={e => console.log(e.nativeEvent)}
                 >
                   <RPath
                     points={points}
                     strokeWidth={20}
                     strokeColor='pink'
+                    id="pip"
+                    hitSlop={80}
                   />
                   <RPath
                     points={show ? points.slice(50, 150) : points.slice(20, 100)}
                     strokeWidth={20}
                     strokeColor='blue'
+                    id="pip1"
                   />
                   {
                     show &&
@@ -185,6 +164,7 @@ export default function Basic() {
                       points={points.slice(50, 150)}
                       strokeWidth={20}
                       strokeColor='gold'
+                      id="pip2"
                     />
                   }
 
