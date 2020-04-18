@@ -22,7 +22,7 @@ public class RCanvasState {
 
     WritableMap toWritableMap() {
         WritableNativeMap out = new WritableNativeMap();
-        out.putInt("strokeColor", strokeColor);
+        out.putString("strokeColor", Utility.parseColorForJS(strokeColor));
         out.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(strokeWidth));
         return out;
     }
@@ -31,7 +31,7 @@ public class RCanvasState {
     @Override
     public String toString() {
         HashMap<String, Object> out = new HashMap<>();
-        out.put("strokeColor", strokeColor);
+        out.put("strokeColor", Utility.parseColorForJS(strokeColor));
         out.put("strokeWidth", PixelUtil.toDIPFromPixel(strokeWidth));
         return out.toString();
     }

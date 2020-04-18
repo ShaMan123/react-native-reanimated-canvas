@@ -208,7 +208,7 @@ public class RPath extends View {
         WritableArray arr = Arguments.createArray();
         RPathState currentState = mPathStateStack.peek();
         path.putString("id", mPathId);
-        path.putInt("strokeColor", currentState.strokeColor);
+        path.putString("strokeColor", Utility.parseColorForJS(currentState.strokeColor));
         path.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
 
         if (includePoints) {
@@ -267,7 +267,7 @@ public class RPath extends View {
         HashMap<String, Object> props = new HashMap<>();
         RPathState currentState = mPathStateStack.peek();
         props.put("id", mPathId);
-        props.put("strokeColor", currentState.strokeColor);
+        props.put("strokeColor", Utility.parseColorForJS(currentState.strokeColor));
         props.put("strokeWidth", currentState.strokeWidth);
         props.put("nativeStrokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
         props.put("points", currentState.points);

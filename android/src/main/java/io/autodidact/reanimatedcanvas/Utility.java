@@ -111,5 +111,8 @@ public final class Utility {
         }
     }
 
-
+    static String parseColorForJS(int color) {
+        String rawHex = String.format("%08x", color);
+        return String.format("#%s%s", rawHex.substring(2), rawHex.substring(0, 2));
+    }
 }
