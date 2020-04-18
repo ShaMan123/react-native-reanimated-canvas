@@ -32,6 +32,7 @@ public class RCanvasManager extends ReactViewManager {
         String STROKE_COLOR = "strokeColor";
         String STROKE_WIDTH = "strokeWidth";
         String HIT_SLOP = "hitSlop";
+        String DEBUG = "debug";
     }
 
     public RCanvasManager(){
@@ -102,6 +103,11 @@ public class RCanvasManager extends ReactViewManager {
     @ReactProp(name = RPathManager.Props.RESIZE_MODE)
     public void setResizeMode(RCanvasHandler view, @Nullable @ResizeMode String resizeMode) {
         view.setResizeMode(resizeMode != null ? resizeMode : RPath.ResizeMode.NONE);
+    }
+
+    @ReactProp(name = Props.DEBUG, defaultBoolean = false)
+    public void setDrawDebug(RCanvasHandler view, boolean draw) {
+        view.setDrawDebug(draw);
     }
 
     @Retention(RetentionPolicy.SOURCE)

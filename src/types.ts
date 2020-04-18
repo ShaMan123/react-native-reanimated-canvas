@@ -116,7 +116,12 @@ export interface RPathProps extends RCanvasCommonProps {
 }
 
 export interface RCanvasProps extends RCanvasCommonProps {
-  onChange?: (e: ChangeEvent) => void
+  onChange?: (e: ChangeEvent) => void,
+  /**
+   * controls whether to draw indicators of the paths' hitSlops when calling `isPointOnPath`
+   * defaults to `false`, only works in DEBUG mode.
+   */
+  debug?: boolean
 }
 
 export type RPathProperties = ViewProps & RPathProps;

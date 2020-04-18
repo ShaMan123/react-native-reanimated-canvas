@@ -155,6 +155,7 @@ LegacyCanvas.defaultProps = {
       <View style={[{ backgroundColor: color, borderWidth: 2 }, styles.strokeColorButton]} />
     )
   },
+  debug: true
 } as RCanvasProperties;
 
 function StrokeWidthButton({ strokeWidth }: { strokeWidth: Animated.Adaptable<number> }) {

@@ -41,6 +41,10 @@ public class RCanvas extends ReactViewGroup {
         return mIntersectionHelper;
     }
 
+    public void setDrawDebug(boolean drawDebug) {
+        mIntersectionHelper.setDebug(drawDebug);
+    }
+
     public void setStrokeColor(int color) {
         RCanvasState currentState = mStateStack.peek();
         currentState.strokeColor = color;

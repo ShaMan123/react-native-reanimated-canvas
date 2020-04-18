@@ -19,9 +19,14 @@ import java.util.ArrayList;
 public class IntersectionHelper {
 
     private final RCanvas mView;
+    private boolean mDebug = false;
 
     public IntersectionHelper(RCanvas view) {
         mView = view;
+    }
+
+    public void setDebug(boolean debug) {
+        mDebug = debug;
     }
 
     private ArrayList<RPath> getPaths() {
@@ -30,6 +35,10 @@ public class IntersectionHelper {
 
     private int getIndex(String pathId) {
         return mView.getPathIndex(pathId);
+    }
+
+    private boolean shouldDrawDebug() {
+        return BuildConfig.DEBUG && mDebug;
     }
 
     @TargetApi(19)
@@ -53,7 +62,7 @@ public class IntersectionHelper {
         }
         else {
             RPath mPath = getPaths().get(getIndex(pathId));
-            DebugRect.draw(mPath, point);
+            if (shouldDrawDebug()) DebugRect.draw(mPath, point);
             return mPath.isPointOnPath(point);
         }
     }
@@ -65,7 +74,7 @@ public class IntersectionHelper {
         ArrayList<RPath> paths = getPaths();
         String id;
 
-        if (BuildConfig.DEBUG) {
+        if (shouldDrawDebug()) {
             for (int i = 0; i < paths.size(); i++) {
                 mPath = paths.get(i);
                 DebugRect.draw(mPath, point);
