@@ -64,7 +64,7 @@ export interface NativeChangeEvent {
     strokeColor: number,
     strokeWidth: number
   },
-  paths: PathChangeData[],
+  paths: RPathData[],
   added: number[],
   changed: number[],
   removed: number[]

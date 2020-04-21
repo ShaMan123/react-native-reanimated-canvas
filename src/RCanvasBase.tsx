@@ -28,7 +28,8 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const onChange = useCallback((e: ChangeEvent) => {
     const { state, paths: changedPaths, added, changed, removed } = e.nativeEvent;
-    const updatedPaths = _.compact(_.concat(paths.value(), _.map(changedPaths, 'value')));
+    const untouchedPaths = _.differenceWith(paths.value(), _.concat(changed, removed), (a, b) => a.id === b);
+    const updatedPaths = _.concat(untouchedPaths, _.intersectionWith(changedPaths, _.concat(added, changed), (a, b) => a.id === b));
     paths.set(updatedPaths);
 
     updateContext.set(new Date());
