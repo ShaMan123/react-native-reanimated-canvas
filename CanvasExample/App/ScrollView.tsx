@@ -1,10 +1,10 @@
 
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { FlatList, Text } from 'react-native';
+import React, { useRef } from 'react';
+import { Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { styles } from './common';
 import RCanvas from 'react-native-reanimated-canvas';
+import { styles } from './common';
 
 export default function Example() {
   const ref = useRef();

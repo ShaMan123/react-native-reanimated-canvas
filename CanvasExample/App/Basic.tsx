@@ -2,13 +2,21 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, findNodeHandle } from 'react-native';
 import { BorderlessButton, LongPressGestureHandler, RectButton, State, TapGestureHandler, TapGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
-import { RCanvasModule, RCanvasBaseModule, RCanvasRef, RPath } from 'react-native-reanimated-canvas';
-import { styles } from './common';
+import Animated, { and, neq, onChange, greaterThan, add } from 'react-native-reanimated';
+import { RCanvasModule, RCanvasBaseModule, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
+import { styles, runDelayed } from './common';
 import LegacyCanvas from './LegacyCanvas';
-const { View, cond, eq, set, block, Value, useCode, Clock, round, min, event, call } = Animated;
+import { useCallback } from 'react';
+import { map } from 'lodash';
+const { View, cond, eq, set, block, Value, useCode, Clock, round, min, event, call, callback } = Animated;
 
 const num = 200;
+
+const ID = {
+  a: 5000,
+  b: 5001,
+  c: 5002
+}
 
 export default function Basic() {
   const ref = useRef<RCanvasRef>();
@@ -23,9 +31,6 @@ export default function Basic() {
       if (!ref.current) return;
       const saveCount = await ref.current.save();
       setShow(!show);
-
-
-
     }, 2000);
 
     return () => clearImmediate(p);
@@ -41,7 +46,7 @@ export default function Basic() {
   const y = useMemo(() => new Value(0), []);
 
   const strokeWidth = useMemo(() => new Value(0), []);
-  const bip = useMemo(() => new Value(0), []);
+  const flag = useMemo(() => new Value(0), []);
 
   const [, setPip] = useState(0);
 
@@ -50,11 +55,10 @@ export default function Basic() {
       nativeEvent: ({ x: _x, y: _y, oldState }) => cond(
         eq(oldState, State.ACTIVE),
         [
+          set(path, 0),
+          set(strokeWidth, 0),
           set(x, _x),
           set(y, _y),
-          set(path, -1),
-          set(bip, 0),
-          set(strokeWidth, 0)
         ]
       )
     }]),
@@ -63,47 +67,45 @@ export default function Basic() {
   useCode(() =>
     block([
       RCanvasModule.isPointOnPath(tag, x, y, path),
-      call([path], ([p]) => console.log('touched', p))
+      onChange(
+        path,
+        cond(
+          and(neq(path, 0), eq(flag, 0)),
+          RCanvasModule.getPath(tag, path, callback<RPathData>(map([{ strokeWidth }]))),
+          call([strokeWidth], ([p]) => console.log('strokeWidth', p))
+        )
+      ),
+      onChange(
+        strokeWidth,
+        cond(
+          and(neq(path, 0), greaterThan(strokeWidth, 0)),
+          [
+            RCanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
+            set(flag, 1)
+          ]
+        )
+      ),
+      onChange(
+        flag,
+        cond(
+          and(neq(path, 0), flag),
+          [
+            runDelayed(RCanvasModule.setPathWidth(tag, path, strokeWidth)),
+            set(flag, 0)
+          ]
+        )
+      )
     ]),
     [x, y]
   );
-  /*
-    useCode(() =>
-      cond(
-        and(neq(path, -1), neq(path, 0)),
-        [
-          onChange(
-            path,
-            cond(
-              eq(bip, 0),
-              RCanvasModule.getPaths(tag, map([path]), callback<RPathData>(map([{ strokeWidth }]))),
-            )
-          ),
-          onChange(
-            strokeWidth,
-            cond(
-              greaterThan(strokeWidth, 0),
-              [
-                RCanvasModule.setPathWidth(tag, path, add(strokeWidth, 5)),
-                set(bip, 1)
-              ]
-            )
-          ),
-          onChange(
-            bip,
-            cond(
-              bip,
-              [
-                runDelayed(RCanvasModule.setPathWidth(tag, path, strokeWidth)),
-                set(bip, 0)
-              ]
-            )
-          )
-        ]
-      ),
-      [path, bip]
-    );
-    */
+
+
+  const jsOnTap = useCallback(async e => {
+    const { x, y } = e.nativeEvent;
+    const res = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y);
+    const res1 = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y, ID.a);
+    console.log(res, res1)
+  }, []);
 
   return (
     <>
@@ -113,13 +115,7 @@ export default function Basic() {
       <TapGestureHandler
         ref={tap}
         waitFor={[button, longPress]}
-        //onHandlerStateChange={onTap}
-        onHandlerStateChange={async e => {
-          const { x, y } = e.nativeEvent;
-          const res = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y);
-          const res1 = await RCanvasBaseModule.isPointOnPath(findNodeHandle(ref.current), x, y, "pip");
-          console.log(res, res1)
-        }}
+        onHandlerStateChange={onTap}
       //enabled={false}
       >
         <View collapsable={false} style={styles.default}>
@@ -151,14 +147,14 @@ export default function Basic() {
                     points={points}
                     strokeWidth={20}
                     strokeColor='pink'
-                    id="pip"
+                    id={ID.a}
                     hitSlop={50}
                   />
                   <RPath
                     points={show ? points.slice(50, 150) : points.slice(20, 100)}
                     strokeWidth={20}
                     strokeColor='blue'
-                    id="pip1"
+                    id={ID.b}
                     hitSlop={{ horizontal: 20 }}
                   />
                   {
@@ -167,7 +163,7 @@ export default function Basic() {
                       points={points.slice(50, 150)}
                       strokeWidth={20}
                       strokeColor='gold'
-                      id="pip2"
+                      id={ID.c}
                       hitSlop={0}
                     />
                   }

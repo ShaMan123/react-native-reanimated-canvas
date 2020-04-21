@@ -50,13 +50,13 @@ public class RCanvasEventHandler {
 
     private class GestureListener implements GestureDetector.OnGestureListener {
         private boolean isLongPress;
-        private String pathId;
+        private int pathId = 0;
 
         private void endPath() {
-            if (pathId != null) {
+            if (pathId != 0) {
                 mView.endInteraction(pathId);
                 mEventListener.emitStrokeEnd(pathId);
-                pathId = null;
+                pathId = 0;
             }
         }
 
@@ -102,7 +102,7 @@ public class RCanvasEventHandler {
                 return false;
             }
 
-            if (pathId != null){
+            if (pathId != 0){
                 mView.drawPoint(pathId, point);
                 mEventListener.emitStrokeChange(pathId, point);
             }
@@ -122,25 +122,25 @@ public class RCanvasEventHandler {
     }
 
     abstract class EventListener {
-        abstract void onStrokeStart(String id);
-        abstract void onStrokeChange(String id, PointF point);
-        abstract void onStrokeEnd(String id);
+        abstract void onStrokeStart(int id);
+        abstract void onStrokeChange(int id, PointF point);
+        abstract void onStrokeEnd(int id);
         abstract void onPress(PointF point);
         abstract void onLongPress(PointF point);
 
-        private void emitStrokeStart(String id) {
+        private void emitStrokeStart(int id) {
             if (shouldEmitStrokeStart) {
                 onStrokeStart(id);
             }
         }
 
-        private void emitStrokeChange(String id, PointF point) {
+        private void emitStrokeChange(int id, PointF point) {
             if (shouldEmitStrokeChange) {
                 onStrokeChange(id, point);
             }
         }
 
-        private void emitStrokeEnd(String id) {
+        private void emitStrokeEnd(int id) {
             if (shouldEmitStrokeEnd) {
                 onStrokeEnd(id);
             }

@@ -11,7 +11,7 @@ export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObje
     [touchEnabled]
   );
 
-  const currentPathId = useRefGetter<string>();
+  const currentPathId = useRefGetter<number>();
 
   const panResponder = useMemo(() =>
     PanResponder.create({
@@ -39,7 +39,7 @@ export function useCanvasPanResponder(touchEnabled: boolean, ref: MutableRefObje
 }
 
 export function useCanvasGestureHandler(props: RCanvasProperties, ref: MutableRefObject<RCanvasRef>) {
-  const currentPathId = useRefGetter<string>();
+  const currentPathId = useRefGetter<number>();
   const onHandlerStateChange = useCallback((e: PanGestureHandlerStateChangeEvent) => {
     switch (e.nativeEvent.state) {
       case State.BEGAN:

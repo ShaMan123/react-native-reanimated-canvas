@@ -25,9 +25,17 @@ public class RPathHandler extends RPath {
     }
 
     @Override
-    public void setPathId(String id) {
+    public void setPathId(int id) {
+        if (id <= 0) {
+            throw new JSApplicationIllegalArgumentException(
+                String.format(
+                    "%s id must be a positive integer, received %d.\nNegative values are reserved for native initialization.",
+                    getClass().getSimpleName(),
+                    id)
+            );
+        }
         RCanvasHandler handler = getCanvasHandler();
-        boolean changed = mPathId != null && !mPathId.equals(id);
+        boolean changed = mPathId != id;
         if (handler != null && changed) handler.finalizePathRemoval(this);
         super.setPathId(id);
         if (handler != null && changed) handler.finalizePathAddition(this);

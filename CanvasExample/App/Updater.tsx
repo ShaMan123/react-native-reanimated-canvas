@@ -2,7 +2,7 @@
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { Text } from 'react-native';
-import RCanvas, { generatePathId, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
+import RCanvas, { generatePathId, RCanvasRef, RPath, RPathData, PathChangeData } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 
 const points = new Array(200).fill(0).map((v, i) => ({ x: i, y: i }));
@@ -42,14 +42,14 @@ export default function CustomTouchHandling() {
     const t = setInterval(() => {
       i++;
       const id = generatePathId();
-      const updater = {
-        [id]: genPathData(id)
-      };
+      const updater: PathChangeData[] = [
+        { id, value: genPathData(id) }
+      ];
 
       if (refA.current && refA.current.getPaths().length > 0 && i % 2 === 0) {
         const size = refA.current.getPaths().length
         const path = refA.current.getPaths()[Math.round(Math.random() * size) % size];
-        updater[path.id] = null;
+        updater.push({ id: path.id, value: null });
       }
 
       if (i % (renderToHWT ? 2 : 5) === 0) {

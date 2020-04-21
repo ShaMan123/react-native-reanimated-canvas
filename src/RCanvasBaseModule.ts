@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { MutableRefObject, useMemo } from 'react';
 import { findNodeHandle, NativeModules, Platform, processColor, UIManager } from 'react-native';
-import { Commands, Point, RCanvasRef, RPathData, RPathAttributes } from './types';
+import { Commands, Point, RCanvasRef, RPathData, RPathAttributes, PathChangeData } from './types';
 import { processColorProp, parseHitSlop } from './util';
 
 export const VIEW_MANAGER = 'ReanimatedCanvasManager';
@@ -17,15 +17,15 @@ export function dispatchCommand(tag: number, command: Commands, data: any[] = []
   UIManager.dispatchViewManagerCommand(tag, command, data);
 }
 
-export function alloc(tag: number, pathId: string, strokeColor: any, strokeWidth: number) {
+export function alloc(tag: number, pathId: number, strokeColor: any, strokeWidth: number) {
   dispatchCommand(tag, Commands.alloc, [pathId, processColorProp(strokeColor), strokeWidth]);
 }
 
-export function drawPoint(tag: number, pathId: string, point: Point) {
+export function drawPoint(tag: number, pathId: number, point: Point) {
   dispatchCommand(tag, Commands.drawPoint, [pathId, point.x, point.y]);
 }
 
-export function endInteraction(tag: number, pathId: string) {
+export function endInteraction(tag: number, pathId: number) {
   dispatchCommand(tag, Commands.endInteraction, [pathId]);
 }
 
@@ -33,11 +33,11 @@ export function clear(tag: number) {
   dispatchCommand(tag, Commands.clear);
 }
 
-export function update(tag: number, paths: { [id: string]: RPathData | null }) {
-  dispatchCommand(tag, Commands.update, [paths]);
+export function update(tag: number, updates: PathChangeData[]) {
+  dispatchCommand(tag, Commands.update, [updates]);
 }
 
-export function setPathAttributes(tag: number, pathId: string, attr: RPathAttributes) {
+export function setPathAttributes(tag: number, pathId: number, attr: RPathAttributes) {
   if (typeof attr.strokeColor === 'string') {
     attr.strokeColor = processColor(attr.strokeColor);
   }
@@ -48,10 +48,10 @@ export function setPathAttributes(tag: number, pathId: string, attr: RPathAttrib
   dispatchCommand(tag, Commands.setAttributes, [pathId, attr]);
 }
 
-export function isPointOnPath(handle: number, x: number, y: number): Promise<string[]>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: string): Promise<boolean>
-export function isPointOnPath(handle: number, x: number, y: number, pathId: string, callback: (error: any, result?: boolean) => void): void
-export function isPointOnPath<T, R extends T extends string ? boolean : Array<string>>(
+export function isPointOnPath(handle: number, x: number, y: number): Promise<number[]>
+export function isPointOnPath(handle: number, x: number, y: number, pathId: number): Promise<boolean>
+export function isPointOnPath(handle: number, x: number, y: number, pathId: number, callback: (error: any, result?: boolean) => void): void
+export function isPointOnPath<T, R extends T extends number ? boolean : number[]>(
   handle: number,
   x: number,
   y: number,
@@ -61,7 +61,7 @@ export function isPointOnPath<T, R extends T extends string ? boolean : Array<st
 ) {
   const nativeX = x;
   const nativeY = y;
-  const normalizedPathId = typeof pathId === 'string' ? pathId : null;
+  const normalizedPathId = typeof pathId === 'number' ? pathId : null;
   const nativeMethod = ((onSuccess: (result: R) => void, onFailure: (error: any) => void) => {
     return NativeModuleManager.isPointOnPath(handle, nativeX, nativeY, normalizedPathId, onSuccess, onFailure);
   });

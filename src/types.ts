@@ -37,7 +37,7 @@ export interface RPathDataBase {
 }
 
 export interface RPathData extends RPathDataBase {
-  id: string
+  id: number
 }
 
 export interface RPathAttributes extends RPathDataBase {
@@ -45,10 +45,18 @@ export interface RPathAttributes extends RPathDataBase {
   hitSlop?: ExtendedInsets | number
 }
 
-export type IntersectionResponse = string[];
+export type IntersectionResponse = number[];
 
 export interface NativeStrokeEvent extends Point {
-  id: string,
+  id: number,
+}
+
+export interface PathChangeData {
+  id: number,
+  /**
+   * pass null to remove the path
+   */
+  value: RPathData | null
 }
 
 export interface NativeChangeEvent {
@@ -56,10 +64,10 @@ export interface NativeChangeEvent {
     strokeColor: number,
     strokeWidth: number
   },
-  paths: { [id: string]: RPathData | null },
-  added: string[],
-  changed: string[],
-  removed: string[]
+  paths: PathChangeData[],
+  added: number[],
+  changed: number[],
+  removed: number[]
 }
 
 export type NativeTouchEvent = IntersectionResponse & Point;
@@ -111,8 +119,8 @@ interface RCanvasCommonProps {
 }
 
 export interface RPathProps extends RCanvasCommonProps {
-  id?: string
-  points: Point[]
+  id?: number,
+  points?: Point[]
 }
 
 export interface RCanvasProps extends RCanvasCommonProps {
@@ -137,7 +145,7 @@ export type RCanvasRef = {
    * [startPath, addPoint, endPath]
    * @param id when omitted a unique id is generated using `generatePathId()` and returned from the method
    */
-  alloc(id?: string, strokeColor?: string | number, strokeWidth?: number): string
+  alloc(id?: number, strokeColor?: string | number, strokeWidth?: number): string
   /**
    * draw a point to the current/specified path
    * use this method to customize touch handling or to mock drawing animations
@@ -148,7 +156,7 @@ export type RCanvasRef = {
    * @param y
    * @param id the path's id
    */
-  drawPoint(id: string, point: Point): void
+  drawPoint(id: number, point: Point): void
   /**
    * end current interaction for path
    * use this method to customize touch handling or to mock drawing animations
@@ -157,17 +165,17 @@ export type RCanvasRef = {
    * [startPath, addPoint, endPath]
    * @param id 
    */
-  endInteraction(id: string): void
+  endInteraction(id: number): void
 
   clear(): void
 
   getPaths(): RPathData[]
 
-  getPath(id: string): RPathData | null
+  getPath(id: number): RPathData | null
 
-  update(paths: { [id: string]: RPathDataBase | null }): void
+  update(paths: PathChangeData[]): void
 
-  setPathAttributes(id: string, attr: { width: number, color: string | number }): void
+  setPathAttributes(id: number, attr: { width: number, color: string | number }): void
 
   dispatchCommand(command: Commands, data?: any[]): void
 
@@ -177,7 +185,7 @@ export type RCanvasRef = {
  * @param pathId Set to the pathId or undefined
  * @param callback If omitted the method returns a Promise
  */
-  isPointOnPath<T extends string>(
+  isPointOnPath<T extends number>(
     x: number,
     y: number,
     pathId: T,

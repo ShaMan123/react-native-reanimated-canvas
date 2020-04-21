@@ -5,7 +5,7 @@ import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo } fro
 import { findNodeHandle, processColor, requireNativeComponent, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useModule, VIEW_MANAGER } from './RCanvasBaseModule';
-import { ChangeEvent, RPathData, RCanvasProperties, RCanvasRef, RPathDataBase } from './types';
+import { ChangeEvent, RPathData, RCanvasProperties, RCanvasRef, RPathDataBase, PathChangeData } from './types';
 import { generatePathId, processColorProp, useEventProp, useHitSlop, useRefGetter } from './util';
 
 const RNativeCanvas = Animated.createAnimatedComponent(requireNativeComponent(VIEW_MANAGER));
@@ -28,8 +28,7 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
 
   const onChange = useCallback((e: ChangeEvent) => {
     const { state, paths: changedPaths, added, changed, removed } = e.nativeEvent;
-    let updatedPaths = _.differenceWith(paths.value(), _.concat(changed, removed), (a, b) => a.id === b);
-    updatedPaths = _.concat(updatedPaths, _.values(_.pick(changedPaths, _.concat(added, changed))) as RPathData[]);
+    const updatedPaths = _.compact(_.concat(paths.value(), _.map(changedPaths, 'value')));
     paths.set(updatedPaths);
 
     updateContext.set(new Date());
@@ -45,27 +44,29 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
       ...module,
-      update(data: { [id: string]: RPathDataBase | null }) {
-        const parsedPaths = _.mapValues(_.cloneDeep(data), (path, id) => {
+      update(data: PathChangeData[]) {
+        const update = _.map(data, ({ value: path, id }) => {
+          let value = path;
           if (path) {
-            if (path.strokeColor) path.strokeColor = processColor(path.strokeColor);
+            value = _.cloneDeep(path);
+            if (value.strokeColor) value.strokeColor = processColor(path.strokeColor);
             //@ts-ignore
-            if (!path.id) path.id = id;
+            if (!value.id) value.id = id;
           }
-          return path as RPathData | null;
+          return { value, id };
         });
 
-        const filteredPaths = _.filter(paths.value(), (path) => !_.has(data, path.id));
-        paths.set(_.concat(filteredPaths, _.compact(_.values(parsedPaths))))
-        module.update(parsedPaths);
+        const untouchedPaths = _.differenceWith(paths.value(), update, (a, b) => a.id === b.id);
+        paths.set(_.concat(untouchedPaths, _.compact(_.map(update, 'value'))));
+        module.update(update);
       },
       getPaths() {
         return paths.value();
       },
-      getPath(id: string) {
+      getPath(id: number) {
         return _.find(paths.value(), (p) => p.id === id);
       },
-      alloc(id: string = generatePathId(), color = strokeColor.value(), width = strokeWidth.value()) {
+      alloc(id: number = generatePathId(), color = strokeColor.value(), width = strokeWidth.value()) {
         module.alloc(
           id,
           typeof color === 'number' || typeof color === 'string' ? processColor(color) : null,

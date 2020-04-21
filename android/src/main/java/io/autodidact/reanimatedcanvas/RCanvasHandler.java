@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.JSApplicationIllegalArgumentException;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ReactShadowNode;
@@ -39,7 +40,7 @@ public class RCanvasHandler extends RCanvas {
     }
 
     @Override
-    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
+    public void init(int pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
                      @Nullable @ResizeMode String resizeMode) {
         super.init(pathId, strokeColor, strokeWidth, resizeMode);
         ArrayList<RPath> added = new ArrayList<>();
@@ -48,7 +49,7 @@ public class RCanvasHandler extends RCanvas {
     }
 
     @Override
-    public void endInteraction(String pathId) {
+    public void endInteraction(int pathId) {
         super.endInteraction(pathId);
         ArrayList<RPath> changed = new ArrayList<>();
         changed.add(getPath(pathId));
@@ -62,29 +63,28 @@ public class RCanvasHandler extends RCanvas {
         mEventDispatcher.emitChange(null, null, pathsToRemove);
     }
 
-    public void handleUpdate(@Nullable ReadableMap paths) {
-        if (paths == null) return;
+    public void handleUpdate(@Nullable ReadableArray pathsUpdate) {
+        if (pathsUpdate == null) return;
         ArrayList<RPath> pathsToRemove = new ArrayList<>();
-        Iterator<Map.Entry<String, Object>> iterator = paths.getEntryIterator();
-        Map.Entry<String, Object> entry;
+        ReadableMap entry, update;
         boolean exists, remove;
-        String pathId;
+        int pathId;
 
-        while (iterator.hasNext()) {
-            entry = iterator.next();
-            exists = getPathIndex(entry.getKey()) > -1;
-            remove = entry.getValue() == null;
-            pathId = entry.getKey();
+        for (int i = 0; i < pathsUpdate.size(); i++) {
+            entry = pathsUpdate.getMap(i);
+            pathId = entry.getInt("id");
+            update = entry.getMap("value");
+            exists = getPathIndex(pathId) > -1;
+            remove = update == null;
 
             if (!remove && !exists) {
                 init(pathId);
-                setAttributes(pathId, (ReadableMap) entry.getValue(), false);
+                setAttributes(pathId, update, false);
             } else if (!remove) {
-                setAttributes(pathId, (ReadableMap) entry.getValue(), false);
+                setAttributes(pathId, update, false);
             } else if (exists) {
                 pathsToRemove.add(getPath(pathId));
             }
-
         }
 
         if (pathsToRemove.size() > 0) {
@@ -94,7 +94,7 @@ public class RCanvasHandler extends RCanvas {
         postInvalidateOnAnimation();
     }
 
-    public void setAttributes(String id, ReadableMap attributes, boolean standalone) {
+    public void setAttributes(int id, ReadableMap attributes, boolean standalone) {
         RPath path = getPath(id);
         if (standalone) {
             path.getState().startListening();

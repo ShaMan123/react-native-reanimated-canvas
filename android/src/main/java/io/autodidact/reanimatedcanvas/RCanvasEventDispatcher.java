@@ -42,34 +42,34 @@ public class RCanvasEventDispatcher {
             @Nullable ArrayList<RPath> removed
     ) {
         WritableNativeMap event = new WritableNativeMap();
-        WritableNativeMap changedPaths = new WritableNativeMap();
+        WritableNativeArray changedPaths = new WritableNativeArray();
         WritableNativeArray addedArray = new WritableNativeArray();
         WritableNativeArray changedArray = new WritableNativeArray();
         WritableNativeArray removedArray = new WritableNativeArray();
 
         if (changed != null) {
             for (RPath path: changed) {
-                changedPaths.putMap(path.getPathId(), path.toWritableMap(true));
-                changedArray.pushString(path.getPathId());
+                changedPaths.pushMap(path.toWritableMap(true));
+                changedArray.pushInt(path.getPathId());
             }
         }
 
         if (added != null) {
             for (RPath path: added) {
-                changedPaths.putMap(path.getPathId(), path.toWritableMap(false));
-                addedArray.pushString(path.getPathId());
+                changedPaths.pushMap(path.toWritableMap(false));
+                addedArray.pushInt(path.getPathId());
             }
         }
 
         if (removed != null) {
             for (RPath path: removed) {
-                changedPaths.putNull(path.getPathId());
-                removedArray.pushString(path.getPathId());
+                changedPaths.pushMap(path.toWritableMap(false));
+                removedArray.pushInt(path.getPathId());
             }
         }
 
         event.putMap("state", mCanvas.mStateStack.peek().toWritableMap());
-        event.putMap("paths", changedPaths);
+        event.putArray("paths", changedPaths);
         event.putArray("added", addedArray);
         event.putArray("changed", changedArray);
         event.putArray("removed", removedArray);

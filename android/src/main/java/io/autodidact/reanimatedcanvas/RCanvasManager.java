@@ -174,7 +174,7 @@ public class RCanvasManager extends ReactViewManager {
         RCanvasHandler view = ((RCanvasHandler) root);
         switch (command) {
             case Commands.ALLOC: {
-                String id = args.getString(0);
+                int id = args.getInt(0);
                 Integer strokeColor = !args.isNull(1) ? args.getInt(1) : null;
                 Float strokeWidth = !args.isNull(2) ? PixelUtil.toPixelFromDIP(args.getDouble(2)) : null;
                 @ResizeMode String resizeMode = args.size() == 4 && !args.isNull(3) ? args.getString(3) : null;
@@ -182,14 +182,14 @@ public class RCanvasManager extends ReactViewManager {
                 return;
             }
             case Commands.DRAW_POINT: {
-                String id = args.getString(0);
+                int id = args.getInt(0);
                 float x = PixelUtil.toPixelFromDIP(args.getDouble(1));
                 float y = PixelUtil.toPixelFromDIP(args.getDouble(2));
                 view.drawPoint(id, new PointF(x, y));
                 return;
             }
             case Commands.END_INTERACTION: {
-                String id = args.getString(0);
+                int id = args.getInt(0);
                 view.endInteraction(id);
                 return;
             }
@@ -198,11 +198,11 @@ public class RCanvasManager extends ReactViewManager {
                 return;
             }
             case Commands.UPDATE: {
-                view.handleUpdate(args.getMap(0));
+                view.handleUpdate(args.getArray(0));
                 return;
             }
             case Commands.SET_PATH_ATTRIBUTES: {
-                String id = args.getString(0);
+                int id = args.getInt(0);
                 ReadableMap attributes = args.getMap(1);
                 view.setAttributes(id, attributes, true);
                 return;

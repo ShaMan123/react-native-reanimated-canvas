@@ -29,7 +29,7 @@ import java.util.Stack;
 
 public class RPath extends View {
     protected Stack<RPathState> mPathStateStack;
-    protected String mPathId;
+    protected int mPathId = 0;
     private RectF mHitSlop;
     private boolean mOverriddenHitSlop = false;
     private @RPath.ResizeMode String mResizeMode = RPath.ResizeMode.NONE;
@@ -47,11 +47,11 @@ public class RPath extends View {
         mHitSlop = new RectF();
     }
 
-    public String getPathId() {
+    public int getPathId() {
         return mPathId;
     }
 
-    public void setPathId(String id) {
+    public void setPathId(int id) {
         mPathId = id;
     }
 
@@ -203,11 +203,11 @@ public class RPath extends View {
                 .intersectsPath(point, getHitSlop(), mPath);
     }
 
-    public WritableMap toWritableMap(Boolean includePoints){
+    public WritableMap toWritableMap(boolean includePoints){
         WritableMap path = Arguments.createMap();
         WritableArray arr = Arguments.createArray();
         RPathState currentState = mPathStateStack.peek();
-        path.putString("id", mPathId);
+        path.putInt("id", mPathId);
         path.putString("strokeColor", Utility.parseColorForJS(currentState.strokeColor));
         path.putDouble("strokeWidth", PixelUtil.toDIPFromPixel(currentState.strokeWidth));
 

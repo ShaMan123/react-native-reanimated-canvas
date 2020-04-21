@@ -14,7 +14,7 @@ function LegacyCanvasBase(props: any, ref: React.Ref<RCanvasRef>) {
   const alphaStep = useRef(-1);
   const strokeWidthStep = useRef(-1);
 
-  const _ref = useRef();
+  const _ref = useRef<RCanvasRef>();
   useImperativeHandle(ref, () => _ref.current);
 
   const nextStrokeWidth = useCallback(() => {

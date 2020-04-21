@@ -21,9 +21,14 @@ import java.util.ArrayList;
 public final class Utility {
 
     private static int i = 0;
-    static String generateId(){
+
+    /**
+     * native path ids are negative, while path ids received from js are positive in order to avoid conflicts
+     * @return pathID
+     */
+    static int generateId(){
         i++;
-        return new StringBuilder("NativeRCanvasPath").append(i).toString();
+        return -i;
     }
 
     static PointF processPoint(ReadableMap point) {

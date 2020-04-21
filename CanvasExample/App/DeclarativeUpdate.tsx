@@ -36,7 +36,7 @@ export default function CustomTouchHandling() {
       renderToHardwareTextureAndroid={false}
       onChange={e => console.log(e.nativeEvent)}
     >
-      {_.map(paths, (data, i) => <RPath {...data} key={`DRPath${i}`} id={`DRPath${i}`} />)}
+      {_.map(paths, (data, i) => <RPath {...data} key={`DRPath${i}`} id={8000 + i} />)}
     </RCanvas>
   )
 }

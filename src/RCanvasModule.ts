@@ -1,4 +1,4 @@
-
+'use strict';
 import Animated from 'react-native-reanimated';
 import { MODULE, VIEW_MANAGER } from './RCanvasBaseModule';
 import { Commands, IntersectionResponse, Methods } from './types';
@@ -6,8 +6,6 @@ import { Commands, IntersectionResponse, Methods } from './types';
 const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange } = Animated;
 
 export const pathIdMem = new Value(0);
-
-export const stringId = proc((id) => concat('RACanvasPath', id));
 
 export const safeDispatch = proc((tag, node) => cond(neq(tag as Animated.Adaptable<number>, 0), node));
 
@@ -35,8 +33,8 @@ export const clear = proc((tag) => {
   return safeDispatch(tag, dispatch(VIEW_MANAGER, Commands.clear, tag));
 });
 
-export const getPaths = proc((tag, id, cb) => {
-  return safeDispatch(tag, invoke(MODULE, Methods.getPaths, tag, id, 0, cb, callback()));
+export const getPath = proc((tag, id, cb) => {
+  return safeDispatch(tag, invoke(MODULE, Methods.getPaths, tag, map([id]), 0, cb, callback()));
 });
 
 export const isPointOnPath = proc((tag, x, y, topPath) => {

@@ -22,7 +22,7 @@ import static io.autodidact.reanimatedcanvas.RCanvasManager.TAG;
 public class RCanvas extends ReactViewGroup {
 
     protected ArrayList<RPath> mPaths = new ArrayList<>();
-    protected ArrayList<String> mInteractionContainer = new ArrayList<>();
+    protected ArrayList<Integer> mInteractionContainer = new ArrayList<>();
     protected RectF mHitSlop = new RectF();
     private @ResizeMode String mResizeMode = ResizeMode.NONE;
     private RPath mNextPath;
@@ -100,22 +100,21 @@ public class RCanvas extends ReactViewGroup {
         return new ArrayList<>(mPaths);
     }
 
-    public RPath getPath(String id) {
+    public RPath getPath(int id) {
         for (RPath path: paths()) {
-            if (path.getPathId() != null && path.getPathId().equals(id)) {
+            if (path.getPathId() == id) {
                 return path;
             }
         }
 
-        throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s failed to find path#%s", TAG, id));
+        throw new JSApplicationIllegalArgumentException(String.format(Locale.ENGLISH, "%s failed to find path#%d", TAG, id));
     }
 
-    public int getPathIndex(String pathId) {
+    public int getPathIndex(int pathId) {
         ArrayList<RPath> paths = paths();
-        RPath path;
         for (int i = 0; i < paths.size(); i++) {
-            path = paths.get(i);
-            if(path.getPathId() != null && path.getPathId().equals(pathId)) {
+            RPath path = paths.get(i);
+            if (path.getPathId() == pathId) {
                 return i;
             }
         }
@@ -128,13 +127,13 @@ public class RCanvas extends ReactViewGroup {
         mNextPath.onSizeChanged(getWidth(), getHeight(), 0, 0);
     }
 
-    public String init() {
-        String pathId = Utility.generateId();
+    public int init() {
+        int pathId = Utility.generateId();
         init(pathId, null, null, null);
         return pathId;
     }
 
-    public void init(String pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
+    public void init(int pathId, @Nullable Integer strokeColor, @Nullable Float strokeWidth,
                      @Nullable @ResizeMode String resizeMode) {
         RCanvasState currentState = mStateStack.peek();
         strokeColor = strokeColor == null ? currentState.strokeColor : strokeColor;
@@ -146,7 +145,7 @@ public class RCanvas extends ReactViewGroup {
         path.setResizeMode(resizeMode);
     }
 
-    protected RPath init(String pathId) {
+    protected RPath init(int pathId) {
         if (getPathIndex(pathId) == -1) {
             RPath path = mNextPath;
             path.setPathId(pathId);
@@ -160,21 +159,21 @@ public class RCanvas extends ReactViewGroup {
         }
     }
 
-    public void drawPoint(String pathId, PointF point) {
+    public void drawPoint(int pathId, PointF point) {
         UiThreadUtil.assertOnUiThread();
         ensureInteraction(pathId);
         getPath(pathId).addPoint(point);
         postInvalidateOnAnimation();
     }
 
-    public void ensureInteraction(String pathId) {
+    public void ensureInteraction(int pathId) {
         if (mInteractionContainer.indexOf(pathId) == -1) {
             mInteractionContainer.add(pathId);
         }
     }
 
-    public void endInteraction(String pathId) {
-        mInteractionContainer.remove(pathId);
+    public void endInteraction(int pathId) {
+        mInteractionContainer.remove((Integer) pathId);
     }
 
     public void clear() {

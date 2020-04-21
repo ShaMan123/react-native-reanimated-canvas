@@ -1,7 +1,7 @@
 
 import { useCallback, useRef } from 'react';
-import { StyleSheet, Animated, Easing } from 'react-native';
-import { Value, block, cond, clockRunning, set, startClock, spring, debug, stopClock, timing, Clock, not, greaterOrEq, sub } from 'react-native-reanimated';
+import { StyleSheet } from 'react-native';
+import Animated, { block, Clock, clockRunning, cond, debug, Easing, greaterOrEq, not, set, spring, startClock, stopClock, sub, timing, Value } from 'react-native-reanimated';
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);

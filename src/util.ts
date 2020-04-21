@@ -4,8 +4,11 @@ import { processColor } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { RCanvasProperties } from './types';
 
+let i = 0;
+
 export function generatePathId() {
-  return _.uniqueId('RPath');
+  i++;
+  return i;
 }
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {

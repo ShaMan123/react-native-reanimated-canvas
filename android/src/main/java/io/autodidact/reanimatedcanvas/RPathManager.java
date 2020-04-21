@@ -40,7 +40,7 @@ public class RPathManager extends SimpleViewManager<RPathHandler> {
     }
 
     @ReactProp(name = Props.ID)
-    public void setPathId(RPathHandler view, String id) {
+    public void setPathId(RPathHandler view, int id) {
         view.setPathId(id);
     }
 

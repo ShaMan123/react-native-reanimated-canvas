@@ -33,7 +33,7 @@ public class IntersectionHelper {
         return mView.paths();
     }
 
-    private int getIndex(String pathId) {
+    private int getIndex(int pathId) {
         return mView.getPathIndex(pathId);
     }
 
@@ -42,7 +42,7 @@ public class IntersectionHelper {
     }
 
     @TargetApi(19)
-    boolean isTransparent(PointF point, String pathId){
+    boolean isTransparent(PointF point, int pathId){
         ArrayList<RPath> mPaths = getPaths();
         int start = getIndex(pathId);
         //int beginAt = Math.min(start + 1, mPaths.size() - 1);
@@ -56,7 +56,7 @@ public class IntersectionHelper {
     }
 
     @TargetApi(19)
-    public boolean isPointOnPath(PointF point, String pathId){
+    public boolean isPointOnPath(PointF point, int pathId){
         if(isTransparent(point, pathId)) {
             return false;
         }
@@ -72,7 +72,7 @@ public class IntersectionHelper {
         WritableArray array = Arguments.createArray();
         RPath mPath;
         ArrayList<RPath> paths = getPaths();
-        String id;
+        int id;
 
         if (shouldDrawDebug()) {
             for (int i = 0; i < paths.size(); i++) {
@@ -85,7 +85,7 @@ public class IntersectionHelper {
             mPath = paths.get(i);
             id = mPath.getPathId();
             if (mPath.isPointOnPath(point) && !isTransparent(point, id)) {
-                array.pushString(id);
+                array.pushInt(id);
             }
         }
 
@@ -150,7 +150,7 @@ public class IntersectionHelper {
         DebugRect(RPath view, PointF point) {
             super((ReactContext) view.getContext());
             mRect = Utility.applyHitSlop(point, view.getHitSlop());
-            mString = view.getPathId();
+            mString = String.valueOf(view.getPathId());
             setStrokeColor(Color.BLUE);
             setStrokeWidth(10);
             mPaint = getPaint();
