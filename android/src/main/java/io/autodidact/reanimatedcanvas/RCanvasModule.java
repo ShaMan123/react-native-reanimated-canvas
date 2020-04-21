@@ -40,13 +40,16 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     public void isPointOnPath(final int tag, final float x, final float y, @Nullable final Dynamic pathId,
                               final Callback success, final Callback error) {
         try {
-            run(tag, view -> {
-                IntersectionHelper intersectionHelper = view.getIntersectionHelper();
-                PointF point = new PointF(PixelUtil.toPixelFromDIP(x), PixelUtil.toPixelFromDIP(y));
-                success.invoke((pathId == null || pathId.getType() == ReadableType.Null) ?
-                        intersectionHelper.isPointOnPath(point):
-                        intersectionHelper.isPointOnPath(point, pathId.asInt())
-                );
+            run(tag, new Runnable() {
+                @Override
+                public void run(RCanvas view) {
+                    IntersectionHelper intersectionHelper = view.getIntersectionHelper();
+                    PointF point = new PointF(PixelUtil.toPixelFromDIP(x), PixelUtil.toPixelFromDIP(y));
+                    success.invoke((pathId == null || pathId.getType() == ReadableType.Null) ?
+                            intersectionHelper.isPointOnPath(point):
+                            intersectionHelper.isPointOnPath(point, pathId.asInt())
+                    );
+                }
             });
         } catch (Throwable e) {
             error.invoke(e);
@@ -56,14 +59,17 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getPaths(final int tag, final ReadableArray idArray, final boolean includePoints, final Callback success, final Callback error) {
         try {
-            run(tag, view -> {
-                WritableNativeArray paths = new WritableNativeArray();
-                int pathId;
-                for (int i = 0; i < idArray.size(); i++) {
-                    pathId = idArray.getInt(i);
-                    paths.pushMap(view.getPath(pathId).toWritableMap(includePoints));
+            run(tag, new Runnable() {
+                @Override
+                public void run(RCanvas view) {
+                    WritableNativeArray paths = new WritableNativeArray();
+                    int pathId;
+                    for (int i = 0; i < idArray.size(); i++) {
+                        pathId = idArray.getInt(i);
+                        paths.pushMap(view.getPath(pathId).toWritableMap(includePoints));
+                    }
+                    success.invoke(paths);
                 }
-                success.invoke(paths);
             });
         } catch (Throwable e) {
             error.invoke(e);
@@ -73,7 +79,12 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void save(final int tag, final Callback success, final Callback error) {
         try {
-            run(tag, view -> success.invoke(view.save()));
+            run(tag, new Runnable() {
+                @Override
+                public void run(RCanvas view) {
+                    success.invoke(view.save());
+                }
+            });
         } catch (Throwable e) {
             error.invoke(e);
         }
@@ -82,9 +93,12 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void restore(final int tag, final int saveCount, final Callback success, final Callback error) {
         try {
-            run(tag, view -> {
-                view.restore(saveCount);
-                success.invoke();
+            run(tag, new Runnable() {
+                @Override
+                public void run(RCanvas view) {
+                    view.restore(saveCount);
+                    success.invoke();
+                }
             });
         } catch (Throwable e) {
             error.invoke(e);
@@ -98,9 +112,11 @@ public class RCanvasModule extends ReactContextBaseJavaModule {
     private void run(final int tag, final Runnable action) {
         final ReactApplicationContext context = getReactApplicationContext();
         UIManagerModule uiManager = context.getNativeModule(UIManagerModule.class);
-        uiManager.addUIBlock(nvhm -> {
-            RCanvas view = (RCanvas) nvhm.resolveView(tag);
-            action.run(view);
+        uiManager.addUIBlock(new UIBlock() {
+            public void execute(NativeViewHierarchyManager nvhm) {
+                RCanvas view = (RCanvas) nvhm.resolveView(tag);
+                action.run(view);
+            }
         });
     }
 }
