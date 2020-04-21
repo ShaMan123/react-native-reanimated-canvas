@@ -56,7 +56,7 @@ public class RCanvasEventDispatcher {
 
         if (added != null) {
             for (RPath path: added) {
-                changedPaths.pushMap(path.toWritableMap(false));
+                changedPaths.pushMap(path.toWritableMap(true));
                 addedArray.pushInt(path.getPathId());
             }
         }
