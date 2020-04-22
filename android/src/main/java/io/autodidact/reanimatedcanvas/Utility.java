@@ -20,15 +20,16 @@ import java.util.ArrayList;
 
 public final class Utility {
 
-    private static int i = 0;
+    private static int i = 3;
 
     /**
      * native path ids are negative, while path ids received from js are positive in order to avoid conflicts
      * @return pathID
      */
     static int generateId(){
-        i++;
-        return -i;
+        int out = i;
+        i = i + 3;
+        return out;
     }
 
     static PointF processPoint(ReadableMap point) {

@@ -4,6 +4,13 @@ import { PanGestureHandlerProperties } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
 export enum Commands {
+  /**
+  * IMPORTANT:
+  * Path IDs must be unique across a canvas and must follow the described convention
+  * 1, 4, 7... for js allocations
+  * 2, 5, 8... for reanimated allocations,
+  * 3, 6, 9... for native allocations
+  */
   alloc = 1,
   drawPoint,
   endInteraction,
@@ -119,6 +126,13 @@ interface RCanvasCommonProps {
 }
 
 export interface RPathProps extends RCanvasCommonProps {
+  /**
+  * IMPORTANT:
+  * Path IDs must be unique across a canvas and must follow the described convention
+  * 1, 4, 7... for js allocations
+  * 2, 5, 8... for reanimated allocations,
+  * 3, 6, 9... for native allocations
+  */
   id?: number,
   points?: Point[]
 }
@@ -143,6 +157,13 @@ export type RCanvasRef = {
    * use this method to customize touch handling or to mock drawing animations
    * if customizing touch handling, be sure to pass `enabled = false` to avoid duplicate drawing/touches
    * [startPath, addPoint, endPath]
+   * 
+   * IMPORTANT:
+   * Path IDs must be unique across a canvas and must follow the described convention
+   * 1, 4, 7... for js allocations
+   * 2, 5, 8... for reanimated allocations,
+   * 3, 6, 9... for native allocations
+   *
    * @param id when omitted a unique id is generated using `generatePathId()` and returned from the method
    */
   alloc(id?: number, strokeColor?: string | number, strokeWidth?: number): string

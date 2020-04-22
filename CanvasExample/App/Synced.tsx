@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
-import Animated, { add, and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
+import Animated, { and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
 import { RCanvasModule, RCanvasRef } from 'react-native-reanimated-canvas';
 import { styles } from './common';
 import LegacyCanvas from './LegacyCanvas';
 
-const { alloc, drawPoint, endInteraction, pathIdMem } = RCanvasModule;
+const { alloc, drawPoint, endInteraction, pathIDMem, createPathID } = RCanvasModule;
 const { View } = Animated;
 
 function useValue(value: number | (() => number)) {
@@ -17,7 +17,7 @@ export default function Synced() {
   const panRef = useRef<RCanvasRef>();
   const tagA = useValue(0);
   const tagB = useValue(0);
-  const id = pathIdMem;
+  const id = pathIDMem;
   const x = useValue(0);
   const y = useValue(0);
   const isActive = useValue(0);
@@ -60,7 +60,7 @@ export default function Synced() {
           cond(
             not(isActive),
             [
-              set(pathIdMem, add(pathIdMem, 1)),
+              createPathID(),
               alloc(tagA, id, stub, stub),
               alloc(tagB, id, stub, stub),
               set(isActive, 1),

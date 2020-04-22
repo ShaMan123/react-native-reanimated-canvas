@@ -3,9 +3,13 @@ import Animated from 'react-native-reanimated';
 import { MODULE, VIEW_MANAGER } from './RCanvasBaseModule';
 import { Commands, IntersectionResponse, Methods } from './types';
 
-const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange } = Animated;
+const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange, set, add } = Animated;
 
-export const pathIdMem = new Value(0);
+export const pathIDMem = new Value(2);
+
+const nextPathID = proc((pathID) => set(pathID, add(pathIDMem, 3)));
+
+export const createPathID = () => nextPathID(pathIDMem);
 
 export const safeDispatch = proc((tag, node) => cond(neq(tag as Animated.Adaptable<number>, 0), node));
 
