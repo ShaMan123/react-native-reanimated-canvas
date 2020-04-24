@@ -2,6 +2,8 @@
 import { useCallback, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { block, Clock, clockRunning, cond, debug, Easing, greaterOrEq, not, set, spring, startClock, stopClock, sub, timing, Value } from 'react-native-reanimated';
+import { ChangeEvent, RCanvasRef, RPathData } from 'react-native-reanimated-canvas';
+import _ from 'lodash';
 
 export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R = (current) => (current as unknown as R)) {
   const ref = useRef(initialValue);
@@ -15,6 +17,17 @@ export function useRefGetter<T, R = T>(initialValue?: T, action: (ref: T) => R =
   );
 
   return [ref, getter, defaultGetter] as [typeof ref, typeof getter, typeof defaultGetter];
+}
+
+export function usePathUpdateAssertion(ref: React.RefObject<RCanvasRef | undefined>) {
+  return useCallback((e: ChangeEvent) => {
+    const { paths, added, changed, removed } = e.nativeEvent;
+    const refPaths = ref.current?.getPaths();
+    const withoutRemoved = (paths?: RPathData[]) => _.intersectionWith(paths, _.concat(added, changed), (a, b) => a.id === b);
+    const clean = _.intersectionWith(refPaths, removed, (a, b) => a.id === b).length === 0;
+    const assert = _.isEqual(withoutRemoved(paths), withoutRemoved(refPaths)) && clean;
+    if (!assert) throw new Error('assertion error: RCAnvas paths are not in sync with last update');
+  }, [ref]);
 }
 
 export function runSpring(clock: Animated.Clock, value: Animated.Adaptable<number>, dest: Animated.Adaptable<number>) {

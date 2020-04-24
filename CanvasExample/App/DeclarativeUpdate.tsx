@@ -3,7 +3,7 @@ import _ from 'lodash';
 import React, { useRef } from 'react';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import RCanvas, { generatePathId, RCanvasRef, RPath, RPathData } from 'react-native-reanimated-canvas';
-import { styles } from './common';
+import { styles, usePathUpdateAssertion } from './common';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
@@ -19,7 +19,8 @@ function genPathData(id = generatePathId()) {
 }
 
 export default function CustomTouchHandling() {
-  const refA = useRef<RCanvasRef & PanGestureHandler>();
+  const ref = useRef<RCanvasRef & PanGestureHandler>();
+  const onChange = usePathUpdateAssertion(ref);
   const [paths, setPaths] = useState(_.map(new Array(10).fill(0), () => genPathData()));
   useEffect(() => {
     let t = setInterval(() => {
@@ -32,9 +33,9 @@ export default function CustomTouchHandling() {
       style={styles.default}
       strokeColor='red'
       strokeWidth={20}
-      ref={refA}
+      ref={ref}
       renderToHardwareTextureAndroid={false}
-      onChange={e => console.log(e.nativeEvent.paths)}
+      onChange={onChange}
     >
       {_.map(paths, (data, i) => <RPath {...data} key={`DRPath${i}`} id={9001 + i * 3} />)}
     </RCanvas>

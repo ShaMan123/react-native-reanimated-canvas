@@ -3,7 +3,7 @@ import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { Text } from 'react-native';
 import RCanvas, { generatePathId, RCanvasRef, RPath, RPathData, PathChangeData } from 'react-native-reanimated-canvas';
-import { styles } from './common';
+import { styles, usePathUpdateAssertion } from './common';
 
 const points = new Array(200).fill(0).map((v, i) => ({ x: i, y: i }));
 
@@ -17,7 +17,8 @@ function genPathData(id = generatePathId()) {
 }
 
 export default function CustomTouchHandling() {
-  const refA = useRef<RCanvasRef>();
+  const ref = useRef<RCanvasRef>();
+  const onChange = usePathUpdateAssertion(ref);
   const [renderToHWT, setHWT] = useState(false);
   const [paths, setPaths] = useState([genPathData()]);
   /*
@@ -46,9 +47,9 @@ export default function CustomTouchHandling() {
         { id, value: genPathData(id) }
       ];
 
-      if (refA.current && refA.current.getPaths().length > 0 && i % 2 === 0) {
-        const size = refA.current.getPaths().length
-        const path = refA.current.getPaths()[Math.round(Math.random() * size) % size];
+      if (ref.current && ref.current.getPaths().length > 0 && i % 2 === 0) {
+        const size = ref.current.getPaths().length
+        const path = ref.current.getPaths()[Math.round(Math.random() * size) % size];
         updater.push({ id: path.id, value: null });
       }
 
@@ -56,7 +57,7 @@ export default function CustomTouchHandling() {
         setHWT(!renderToHWT)
       }
 
-      refA.current && refA.current.update(updater);
+      ref.current && ref.current.update(updater);
     }, 1000);
     return () => clearImmediate(t);
   }, [renderToHWT]);
@@ -67,9 +68,9 @@ export default function CustomTouchHandling() {
         style={styles.default}
         strokeColor='red'
         strokeWidth={20}
-        ref={refA}
+        ref={ref}
         renderToHardwareTextureAndroid={renderToHWT}
-        onChange={e => console.log(e.nativeEvent)}
+        onChange={onChange}
       >
         {_.map(paths, data => <RPath {...data} key={data.id} />)}
       </RCanvas>
