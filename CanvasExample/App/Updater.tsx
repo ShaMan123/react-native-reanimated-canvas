@@ -69,7 +69,7 @@ export default function CustomTouchHandling() {
         strokeWidth={20}
         ref={refA}
         renderToHardwareTextureAndroid={renderToHWT}
-        onChange={e => console.log(e.nativeEvent.paths)}
+        onChange={e => console.log(e.nativeEvent)}
       >
         {_.map(paths, data => <RPath {...data} key={data.id} />)}
       </RCanvas>
