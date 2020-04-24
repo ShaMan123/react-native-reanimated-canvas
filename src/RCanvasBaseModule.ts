@@ -34,7 +34,17 @@ export function clear(tag: number) {
 }
 
 export function update(tag: number, updates: PathChangeData[]) {
-  dispatchCommand(tag, Commands.update, [updates]);
+  const parsedUpdates = _.map(updates, ({ value: path, id }) => {
+    let value = path;
+    if (path) {
+      value = _.cloneDeep(path);
+      if (value.strokeColor) value.strokeColor = processColor(path.strokeColor);
+      //@ts-ignore
+      if (!value.id) value.id = id;
+    }
+    return { value, id };
+  });
+  dispatchCommand(tag, Commands.update, [parsedUpdates]);
 }
 
 export function setPathAttributes(tag: number, pathId: number, attr: RPathAttributes) {

@@ -45,22 +45,6 @@ function RCanvasBase(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef>) {
   useImperativeHandle(forwardedRef, () =>
     _.assign(node.value(), {
       ...module,
-      update(data: PathChangeData[]) {
-        const update = _.map(data, ({ value: path, id }) => {
-          let value = path;
-          if (path) {
-            value = _.cloneDeep(path);
-            if (value.strokeColor) value.strokeColor = processColor(path.strokeColor);
-            //@ts-ignore
-            if (!value.id) value.id = id;
-          }
-          return { value, id };
-        });
-
-        const untouchedPaths = _.differenceWith(paths.value(), update, (a, b) => a.id === b.id);
-        paths.set(_.concat(untouchedPaths, _.compact(_.map(update, 'value'))));
-        module.update(update);
-      },
       getPaths() {
         return paths.value();
       },
