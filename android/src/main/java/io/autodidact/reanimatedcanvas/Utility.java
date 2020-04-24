@@ -23,7 +23,8 @@ public final class Utility {
     private static int i = 3;
 
     /**
-     * native path ids are negative, while path ids received from js are positive in order to avoid conflicts
+     * follows the path ID convention
+     * native ID: 3, 6, 9...
      * @return pathID
      */
     static int generateId(){
