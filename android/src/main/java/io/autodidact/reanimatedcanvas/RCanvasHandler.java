@@ -65,6 +65,8 @@ public class RCanvasHandler extends RCanvas {
 
     public void handleUpdate(@Nullable ReadableArray pathsUpdate) {
         if (pathsUpdate == null) return;
+        ArrayList<RPath> added = new ArrayList<>();
+        ArrayList<RPath> changed = new ArrayList<>();
         ArrayList<RPath> pathsToRemove = new ArrayList<>();
         ReadableMap entry, update;
         boolean exists, remove;
@@ -80,8 +82,10 @@ public class RCanvasHandler extends RCanvas {
             if (!remove && !exists) {
                 init(pathId);
                 setAttributes(pathId, update, false);
+                added.add(getPath(pathId));
             } else if (!remove) {
                 setAttributes(pathId, update, false);
+                changed.add(getPath(pathId));
             } else if (exists) {
                 pathsToRemove.add(getPath(pathId));
             }
@@ -92,6 +96,9 @@ public class RCanvasHandler extends RCanvas {
         }
 
         postInvalidateOnAnimation();
+        if (added.size() > 0 || changed.size() > 0 || pathsToRemove.size() > 0) {
+            mEventDispatcher.emitChange(added, changed, pathsToRemove);
+        }
     }
 
     public void setAttributes(int id, ReadableMap attributes, boolean standalone) {
