@@ -34,9 +34,9 @@ export default function CustomTouchHandling() {
       strokeWidth={20}
       ref={refA}
       renderToHardwareTextureAndroid={false}
-      onChange={e => console.log(e.nativeEvent)}
+      onChange={e => console.log(e.nativeEvent.paths)}
     >
-      {_.map(paths, (data, i) => <RPath {...data} key={`DRPath${i}`} id={8000 + i} />)}
+      {_.map(paths, (data, i) => <RPath {...data} key={`DRPath${i}`} id={9001 + i * 3} />)}
     </RCanvas>
   )
 }
