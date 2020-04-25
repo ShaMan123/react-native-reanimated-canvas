@@ -4,7 +4,7 @@ import React, { forwardRef, Ref, useCallback, useImperativeHandle, useMemo, useR
 import { PanGestureHandler, PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import { add, and, block, cond, eq, event, not, set, useCode, Value } from 'react-native-reanimated';
 import RCanvasBase from './RCanvasBase';
-import { alloc, drawPoint, endInteraction, pathIDMem, createPathID } from './RCanvasModule';
+import { alloc, drawPoint, endInteraction, rPathID, createPathID } from './RCanvasModule';
 import { RCanvasProperties, RCanvasRef } from './types';
 import { useEventProp } from './util';
 
@@ -16,7 +16,7 @@ function RCanvas(props: RCanvasProperties, forwardedRef: Ref<RCanvasRef & PanGes
   const ref = useRef<RCanvasRef>();
   const panRef = useRef<RCanvasRef>();
   const tag = useValue(0);
-  const id = pathIDMem;
+  const id = rPathID;
   const x = useValue(0);
   const y = useValue(0);
   const isActive = useValue(0);

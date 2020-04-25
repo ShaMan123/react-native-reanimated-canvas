@@ -5,11 +5,11 @@ import { Commands, IntersectionResponse, Methods } from './types';
 
 const { callback, cond, Value, proc, neq, invoke, dispatch, concat, map, onChange, set, add } = Animated;
 
-export const pathIDMem = new Value(2);
+export const rPathID = new Value(2);
 
-const nextPathID = proc((pathID) => set(pathID, add(pathIDMem, 3)));
+const nextPathID = proc((pathID) => set(pathID, add(rPathID, 3)));
 
-export const createPathID = () => nextPathID(pathIDMem);
+export const createPathID = () => nextPathID(rPathID);
 
 export const safeDispatch = proc((tag, node) => cond(neq(tag as Animated.Adaptable<number>, 0), node));
 
