@@ -18,6 +18,7 @@ module.exports = {
           invariant: './node_modules/invariant',
         },
       },
-    ]
+    ],
+    'react-native-reanimated/plugin'
   ]
 };
