@@ -1,4 +1,4 @@
 {
-	"useBaseImplementation": false,
+	"useBaseImplementation": true,
 	"useLocalReanimatedModule": false
 }

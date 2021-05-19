@@ -31,8 +31,8 @@
     "react-native": "*"
   },
   "optionalDependencies": {
-    "react-native-gesture-handler": "^1.5.0",
-    "react-native-reanimated": "github:ShaMan123/react-native-reanimated"
+    "react-native-gesture-handler": "*",
+    "react-native-reanimated": "*"
   },
   "dependencies": {},
   "devDependencies": {
